@@ -16,27 +16,22 @@ class RoomService {
     this.playerName = playerName;
     
     // Create a new peer with a random ID and improved configuration
+    // Using the official PeerJS cloud server (0.peerjs.com) which is more reliable
     this.peer = new Peer(undefined, {
-      // Use the free PeerJS cloud server
-      host: 'peerjs.92k.de',
-      secure: true,
-      port: 443,
-      path: '/',
       config: {
         iceServers: [
           // Google STUN servers
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
           { urls: 'stun:stun2.l.google.com:19302' },
+          { urls: 'stun:stun3.l.google.com:19302' },
+          { urls: 'stun:stun4.l.google.com:19302' },
           // Twilio STUN server
           { urls: 'stun:global.stun.twilio.com:3478' },
-          // Additional public STUN servers for better connectivity
-          { urls: 'stun:stun.services.mozilla.com' },
-          { urls: 'stun:stun.stunprotocol.org:3478' }
         ],
         iceTransportPolicy: 'all'
       },
-      debug: 2 // Enable detailed logging for debugging
+      debug: 3 // Maximum logging for debugging
     });
 
     return new Promise((resolve, reject) => {
@@ -49,13 +44,14 @@ class RoomService {
 
       this.peer.on('open', (id) => {
         clearTimeout(timeoutId);
-        console.log('Peer initialized with ID:', id);
+        console.log('✅ Peer initialized with ID:', id);
+        console.log('🔗 You can now create or join rooms');
         resolve(id);
       });
 
       this.peer.on('error', (error) => {
         clearTimeout(timeoutId);
-        console.error('Peer error:', error);
+        console.error('❌ Peer error:', error);
         
         // Provide more helpful error messages
         let errorMessage = 'Connection failed. ';
@@ -82,7 +78,7 @@ class RoomService {
       });
 
       this.peer.on('disconnected', () => {
-        console.log('Peer disconnected, attempting to reconnect...');
+        console.log('⚠️ Peer disconnected, attempting to reconnect...');
         // Attempt to reconnect
         if (this.peer && !this.peer.destroyed) {
           this.peer.reconnect();
@@ -91,7 +87,7 @@ class RoomService {
 
       // Handle incoming connections
       this.peer.on('connection', (conn) => {
-        console.log('Incoming connection from:', conn.peer);
+        console.log('📞 Incoming connection from:', conn.peer);
         this.setupConnection(conn);
       });
     });
