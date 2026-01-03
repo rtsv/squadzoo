@@ -28,6 +28,7 @@ function TicTacToe({ onBack }) {
   const [myPlayerIndex, setMyPlayerIndex] = useState(null);
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState([]);
+  const [showCopiedNotification, setShowCopiedNotification] = useState(false);
 
   const symbols = ["❌", "⭕"];
 
@@ -510,8 +511,6 @@ function TicTacToe({ onBack }) {
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForOpponent) {
-    const [showCopiedNotification, setShowCopiedNotification] = useState(false);
-
     const copyRoomCode = () => {
       navigator.clipboard.writeText(roomCode).then(() => {
         setShowCopiedNotification(true);
