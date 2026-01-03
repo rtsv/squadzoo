@@ -490,11 +490,16 @@ function TicTacToe({ onBack }) {
               <input
                 type="text"
                 value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase().trim())}
                 placeholder="Enter 8-char code"
                 className={inputStyles.input}
                 maxLength={8}
-                style={{ marginBottom: '10px', fontFamily: 'monospace', letterSpacing: '2px' }}
+                style={{ 
+                  marginBottom: '10px', 
+                  fontFamily: 'monospace', 
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase'
+                }}
               />
               <button
                 onClick={handleJoinOnlineRoom}
