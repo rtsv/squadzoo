@@ -1,0 +1,21 @@
+{
+  "name": "SquadZoo - Multiplayer Brain Games",
+  "short_name": "SquadZoo",
+  "description": "Play free multiplayer brain games with friends online",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/images/squad-zoo-logo.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/images/squad-zoo-logo.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}
