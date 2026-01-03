@@ -70,9 +70,31 @@
 }
 
 .waitingRoom h2 {
-  font-size: 32px;
+  font-size: 24px;
   color: #333;
+  margin-bottom: 16px;
+}
+
+.roomCodeDisplay {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: center;
   margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.roomCodeText {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  letter-spacing: 2px;
+  word-break: break-all;
+  max-width: 100%;
 }
 
 .shareCode {

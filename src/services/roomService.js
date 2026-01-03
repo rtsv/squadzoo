@@ -8,6 +8,7 @@ class RoomService {
     this.isHost = false;
     this.playerName = '';
     this.callbacks = {};
+    this.roomCodeMap = new Map(); // Map short codes to full peer IDs
   }
 
   // Initialize peer connection
@@ -105,9 +106,13 @@ class RoomService {
     this.isHost = true;
     this.roomId = this.peer.id;
     
+    // Use the full peer ID as the room code (it's the only way to connect in P2P)
+    // Format it nicely for display
+    const roomCode = this.roomId.toUpperCase();
+    
     return {
       roomId: this.roomId,
-      roomCode: this.generateRoomCode(this.roomId)
+      roomCode: roomCode
     };
   }
 
@@ -336,15 +341,16 @@ class RoomService {
     this.callbacks = {};
   }
 
-  // Generate a short room code from peer ID
+  // Generate a short room code from peer ID (not used anymore)
   generateRoomCode(peerId) {
-    // Use the full peer ID as room code (PeerJS IDs are already short and unique)
+    // Just return the peer ID formatted nicely
     return peerId.toUpperCase();
   }
 
-  // Convert room code back to peer ID
+  // Convert room code to peer ID
   getRoomIdFromCode(code) {
-    return code.toLowerCase();
+    // Simply convert back to lowercase (PeerJS IDs are lowercase)
+    return code.toLowerCase().trim();
   }
 
   // Check if connected

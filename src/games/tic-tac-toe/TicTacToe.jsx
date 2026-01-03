@@ -382,15 +382,14 @@ function TicTacToe({ onBack }) {
 
             <div className={styles.onlineOption}>
               <h3>Join Room</h3>
-              <p>Enter a room code to join an existing game</p>
+              <p>Enter the room code shared by your friend</p>
               <input
                 type="text"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                placeholder="Enter room code"
+                placeholder="Paste room code here"
                 className={inputStyles.input}
-                style={{ marginBottom: '10px' }}
-                maxLength={6}
+                style={{ marginBottom: '10px', fontFamily: 'monospace' }}
               />
               <button
                 onClick={handleJoinOnlineRoom}
@@ -407,12 +406,35 @@ function TicTacToe({ onBack }) {
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForOpponent) {
+    const copyRoomCode = () => {
+      navigator.clipboard.writeText(roomCode).then(() => {
+        setAlertMessage("Room code copied to clipboard!");
+      }).catch(() => {
+        setAlertMessage("Failed to copy. Please copy manually.");
+      });
+    };
+
     return (
       <GameLayout title="⭕❌ Tic-Tac-Toe - Waiting Room" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
           <div className={styles.waitingRoom}>
-            <h2>Room Code: {roomCode}</h2>
-            <p className={styles.shareCode}>Share this code with your opponent</p>
+            <h2>Share Room Code</h2>
+            <div className={styles.roomCodeDisplay}>
+              <code className={styles.roomCodeText}>{roomCode}</code>
+              <button 
+                onClick={copyRoomCode}
+                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
+              >
+                📋 Copy
+              </button>
+            </div>
+            <p className={styles.shareCode}>Share this code with your opponent to join</p>
             
             <div className={styles.playersList}>
               <h3>Players in Room ({connectedPlayers.length}/2):</h3>
