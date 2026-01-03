@@ -155,36 +155,50 @@ class RoomService {
       throw new Error('Peer not initialized');
     }
 
-    console.log('Attempting to join room with peer ID:', hostPeerId);
+    console.log('🔍 Attempting to join room with peer ID:', hostPeerId);
+    console.log('🔍 My peer ID:', this.peer.id);
+    console.log('🔍 Peer connection state:', this.peer.disconnected ? 'disconnected' : 'connected');
+    
     this.isHost = false;
     this.roomId = hostPeerId;
 
     return new Promise((resolve, reject) => {
       let timeoutId;
+      let connectionAttempted = false;
 
-      // Set a timeout for connection
+      // Set a timeout for connection  
       timeoutId = setTimeout(() => {
-        console.error('Connection timeout after 15 seconds');
+        console.error('❌ Connection timeout after 15 seconds');
+        console.log('Debug info:', {
+          hostPeerId,
+          myPeerId: this.peer?.id,
+          peerOpen: this.peer?.open,
+          connectionAttempted
+        });
         reject(new Error('Connection timeout. The host may not be available or has closed the room.'));
-      }, 15000); // 15 second timeout
+      }, 15000);
 
-      console.log('Creating connection to host:', hostPeerId);
+      console.log('📡 Creating connection to host:', hostPeerId);
       const conn = this.peer.connect(hostPeerId, {
         reliable: true,
         metadata: { playerName: this.playerName },
         serialization: 'json'
       });
 
-      // Add immediate error logging
+      connectionAttempted = true;
+
       if (!conn) {
         clearTimeout(timeoutId);
+        console.error('❌ Failed to create connection object');
         reject(new Error('Failed to create connection object'));
         return;
       }
 
+      console.log('📋 Connection object created, waiting for "open" event...');
+
       conn.on('open', () => {
         clearTimeout(timeoutId);
-        console.log('✅ Connection established with host');
+        console.log('✅ Connection OPENED! Sending join message...');
         this.setupConnection(conn);
         // Send join message
         this.sendToConnection(conn, {
@@ -192,12 +206,13 @@ class RoomService {
           playerName: this.playerName,
           peerId: this.peer.id
         });
+        console.log('✅ Join message sent successfully');
         resolve(conn);
       });
 
       conn.on('error', (error) => {
         clearTimeout(timeoutId);
-        console.error('❌ Connection error details:', error);
+        console.error('❌ Connection error:', error);
         let errorMessage = 'Failed to join room. ';
         
         if (error.type === 'peer-unavailable') {
@@ -216,20 +231,53 @@ class RoomService {
         reject(new Error(errorMessage));
       });
 
-      // Add close handler during connection attempt
       conn.on('close', () => {
         if (timeoutId) {
           clearTimeout(timeoutId);
-          console.error('Connection closed before opening');
+          console.error('❌ Connection closed before opening');
           reject(new Error('Connection closed by host or network issue.'));
         }
+      });
+
+      // Log connection state changes
+      conn.peerConnection?.addEventListener('iceconnectionstatechange', () => {
+        console.log('🧊 ICE connection state:', conn.peerConnection?.iceConnectionState);
+      });
+
+      conn.peerConnection?.addEventListener('connectionstatechange', () => {
+        console.log('🔗 Connection state:', conn.peerConnection?.connectionState);
       });
     });
   }
 
   // Setup connection event handlers
   setupConnection(conn) {
+    console.log('🔧 Setting up connection with:', conn.peer);
     this.connections.set(conn.peer, conn);
+
+    // Ensure connection is ready before setting up listeners
+    if (conn.open) {
+      console.log('✅ Connection already open');
+      // Connection is already open, notify immediately
+      if (this.isHost && this.callbacks.onPlayerJoined) {
+        this.callbacks.onPlayerJoined({
+          playerName: conn.metadata?.playerName,
+          peerId: conn.peer
+        });
+      }
+    }
+
+    // Listen for when connection opens
+    conn.on('open', () => {
+      console.log('🎉 Data channel opened with:', conn.peer);
+      // Notify that player joined when connection opens
+      if (this.isHost && this.callbacks.onPlayerJoined) {
+        this.callbacks.onPlayerJoined({
+          playerName: conn.metadata?.playerName,
+          peerId: conn.peer
+        });
+      }
+    });
 
     conn.on('data', (data) => {
       this.handleMessage(data, conn);
@@ -250,14 +298,6 @@ class RoomService {
         this.callbacks.onError('Connection issue with opponent. They may have connection problems.');
       }
     });
-
-    // Notify that player joined
-    if (this.isHost && this.callbacks.onPlayerJoined) {
-      this.callbacks.onPlayerJoined({
-        playerName: conn.metadata?.playerName,
-        peerId: conn.peer
-      });
-    }
   }
 
   // Handle incoming messages
