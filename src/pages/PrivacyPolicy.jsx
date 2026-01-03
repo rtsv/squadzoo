@@ -1,11 +1,12 @@
 import styles from "../styles/StaticPage.module.css";
+import logo from "/public/images/squad-zoo-logo.png";
 
 function PrivacyPolicy({ onBack }) {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
         <div className={styles.headerLogo}>
-          <img src="/images/brainy-playground.png" alt="SquadZoo Logo" className={styles.logoImage} />
+          <img src={logo} alt="SquadZoo Logo" className={styles.logoImage} />
           <span className={styles.logoText}>
             <span className={styles.logoTextSquad}>Squad</span>
             <span className={styles.logoTextZoo}>Zoo</span>
