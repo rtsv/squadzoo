@@ -16,6 +16,160 @@
   line-height: 1.5;
 }
 
+/* Mode Selection */
+.modeSelection {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.modeSelection button {
+  padding: 24px;
+  height: auto;
+}
+
+/* Online Multiplayer Styles */
+.onlineOptions {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.onlineOption {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.onlineOption h3 {
+  margin: 0 0 8px 0;
+  color: #333;
+  font-size: 18px;
+}
+
+.onlineOption p {
+  color: #666;
+  font-size: 14px;
+  margin: 0 0 16px 0;
+}
+
+.divider {
+  text-align: center;
+  color: #999;
+  font-weight: 600;
+  padding: 8px 0;
+}
+
+/* Waiting Room */
+.waitingRoom {
+  text-align: center;
+  padding: 20px;
+}
+
+.waitingRoom h2 {
+  font-size: 32px;
+  color: #333;
+  margin-bottom: 8px;
+}
+
+.shareCode {
+  color: #666;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.playersList {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin: 20px 0;
+}
+
+.playersList h3 {
+  margin: 0 0 16px 0;
+  color: #333;
+}
+
+.playerItem {
+  background: white;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: #333;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.waitingAnimation {
+  margin-top: 20px;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+/* Online Info */
+.onlineInfo {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+/* Turn Status in Online Mode */
+.yourTurn {
+  color: #4ade80;
+  font-weight: 700;
+  animation: blink 1.5s ease-in-out infinite;
+}
+
+.opponentTurn {
+  color: #fbbf24;
+  font-weight: 700;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+.cellDisabled {
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+/* Player Input Row */
+.playerInputRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.playerLabel {
+  font-weight: 600;
+  color: #333;
+  min-width: 120px;
+}
+
+/* Setup Buttons */
+.setupButtons {
+  display: flex;
+  justify-content: center;
+  margin-top: 24px;
+}
+
 /* Game Rules Section */
 .rulesSection {
   margin-bottom: 24px;
@@ -172,13 +326,13 @@
   min-height: 100px;
 }
 
-.cell:hover:not(.cellFilled) {
+.cell:hover:not(.cellFilled):not(.cellDisabled) {
   background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
   transform: scale(1.05);
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
-.cell:active:not(.cellFilled) {
+.cell:active:not(.cellFilled):not(.cellDisabled) {
   transform: scale(0.98);
 }
 
@@ -291,5 +445,15 @@
 
   .setupContainer {
     padding: 20px;
+  }
+
+  .onlineOptions {
+    gap: 16px;
+  }
+
+  .onlineInfo {
+    flex-direction: column;
+    gap: 8px;
+    text-align: center;
   }
 }
