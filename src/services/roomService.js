@@ -14,29 +14,83 @@ class RoomService {
   async initialize(playerName) {
     this.playerName = playerName;
     
-    // Create a new peer with a random ID
-    this.peer = new Peer({
+    // Create a new peer with a random ID and improved configuration
+    this.peer = new Peer(undefined, {
+      // Use the free PeerJS cloud server
+      host: 'peerjs.92k.de',
+      secure: true,
+      port: 443,
+      path: '/',
       config: {
         iceServers: [
+          // Google STUN servers
           { urls: 'stun:stun.l.google.com:19302' },
-          { urls: 'stun:global.stun.twilio.com:3478' }
-        ]
-      }
+          { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
+          // Twilio STUN server
+          { urls: 'stun:global.stun.twilio.com:3478' },
+          // Additional public STUN servers for better connectivity
+          { urls: 'stun:stun.services.mozilla.com' },
+          { urls: 'stun:stun.stunprotocol.org:3478' }
+        ],
+        iceTransportPolicy: 'all'
+      },
+      debug: 2 // Enable detailed logging for debugging
     });
 
     return new Promise((resolve, reject) => {
+      let timeoutId;
+
+      // Set a timeout for peer initialization
+      timeoutId = setTimeout(() => {
+        reject(new Error('Connection timeout. Please check your internet connection and try again.'));
+      }, 15000); // 15 second timeout
+
       this.peer.on('open', (id) => {
+        clearTimeout(timeoutId);
         console.log('Peer initialized with ID:', id);
         resolve(id);
       });
 
       this.peer.on('error', (error) => {
+        clearTimeout(timeoutId);
         console.error('Peer error:', error);
-        reject(error);
+        
+        // Provide more helpful error messages
+        let errorMessage = 'Connection failed. ';
+        if (error.type === 'peer-unavailable') {
+          errorMessage += 'The room code is invalid or the host has left.';
+        } else if (error.type === 'network') {
+          errorMessage += 'Network error. Please check your internet connection.';
+        } else if (error.type === 'server-error') {
+          errorMessage += 'Server error. Please try again in a moment.';
+        } else if (error.type === 'socket-error') {
+          errorMessage += 'Connection to server failed. Please try again.';
+        } else if (error.type === 'socket-closed') {
+          errorMessage += 'Connection closed. Please try reconnecting.';
+        } else {
+          errorMessage += error.message || 'An unknown error occurred.';
+        }
+        
+        // Call error callback if set
+        if (this.callbacks.onError) {
+          this.callbacks.onError(errorMessage);
+        }
+        
+        reject(new Error(errorMessage));
+      });
+
+      this.peer.on('disconnected', () => {
+        console.log('Peer disconnected, attempting to reconnect...');
+        // Attempt to reconnect
+        if (this.peer && !this.peer.destroyed) {
+          this.peer.reconnect();
+        }
       });
 
       // Handle incoming connections
       this.peer.on('connection', (conn) => {
+        console.log('Incoming connection from:', conn.peer);
         this.setupConnection(conn);
       });
     });
@@ -67,12 +121,22 @@ class RoomService {
     this.roomId = hostPeerId;
 
     return new Promise((resolve, reject) => {
+      let timeoutId;
+
+      // Set a timeout for connection
+      timeoutId = setTimeout(() => {
+        reject(new Error('Failed to connect to room. The room may not exist or the host may have left.'));
+      }, 15000); // 15 second timeout
+
       const conn = this.peer.connect(hostPeerId, {
         reliable: true,
-        metadata: { playerName: this.playerName }
+        metadata: { playerName: this.playerName },
+        serialization: 'json'
       });
 
       conn.on('open', () => {
+        clearTimeout(timeoutId);
+        console.log('Connection established with host');
         this.setupConnection(conn);
         // Send join message
         this.sendToConnection(conn, {
@@ -84,8 +148,13 @@ class RoomService {
       });
 
       conn.on('error', (error) => {
+        clearTimeout(timeoutId);
         console.error('Connection error:', error);
-        reject(error);
+        const errorMessage = 'Failed to join room. Please check the room code and try again.';
+        if (this.callbacks.onError) {
+          this.callbacks.onError(errorMessage);
+        }
+        reject(new Error(errorMessage));
       });
     });
   }
@@ -99,6 +168,7 @@ class RoomService {
     });
 
     conn.on('close', () => {
+      console.log('Connection closed with:', conn.peer);
       this.connections.delete(conn.peer);
       if (this.callbacks.onPlayerLeft) {
         this.callbacks.onPlayerLeft({ peerId: conn.peer });
@@ -106,7 +176,11 @@ class RoomService {
     });
 
     conn.on('error', (error) => {
-      console.error('Connection error:', error);
+      console.error('Connection error with', conn.peer, ':', error);
+      // Don't remove connection immediately, it might recover
+      if (this.callbacks.onError) {
+        this.callbacks.onError('Connection issue with opponent. They may have connection problems.');
+      }
     });
 
     // Notify that player joined
@@ -264,19 +338,26 @@ class RoomService {
 
   // Generate a short room code from peer ID
   generateRoomCode(peerId) {
-    // Take first 6 characters and convert to uppercase
-    return peerId.substring(0, 6).toUpperCase();
+    // Use the full peer ID as room code (PeerJS IDs are already short and unique)
+    return peerId.toUpperCase();
   }
 
-  // Convert room code back to peer ID (you'll need to store full IDs somewhere)
-  // This is a simplified version - in production, you'd want a proper mapping
+  // Convert room code back to peer ID
   getRoomIdFromCode(code) {
     return code.toLowerCase();
   }
 
   // Check if connected
   isConnected() {
-    return this.peer && !this.peer.destroyed;
+    return this.peer && !this.peer.destroyed && !this.peer.disconnected;
+  }
+
+  // Get connection status
+  getConnectionStatus() {
+    if (!this.peer) return 'not-initialized';
+    if (this.peer.destroyed) return 'destroyed';
+    if (this.peer.disconnected) return 'disconnected';
+    return 'connected';
   }
 }
 

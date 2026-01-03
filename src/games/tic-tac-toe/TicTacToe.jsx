@@ -35,6 +35,11 @@ function TicTacToe({ onBack }) {
   useEffect(() => {
     if (!isOnlineMode) return;
 
+    // Handle errors
+    roomService.on('onError', (errorMessage) => {
+      setAlertMessage(errorMessage);
+    });
+
     roomService.on('onPlayerJoined', (data) => {
       console.log('Player joined:', data);
       const allPlayers = roomService.getConnectedPlayers();
