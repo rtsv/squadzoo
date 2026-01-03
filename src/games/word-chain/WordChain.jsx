@@ -1,11 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import roomService from "../../services/roomService";
 import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
 function WordChain({ onBack }) {
+  const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", "", ""]);
   const [playerLives, setPlayerLives] = useState({});
@@ -18,10 +20,326 @@ function WordChain({ onBack }) {
   const [showRules, setShowRules] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
 
+  // Online multiplayer states
+  const [isOnlineMode, setIsOnlineMode] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [roomCode, setRoomCode] = useState("");
+  const [isInRoom, setIsInRoom] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [myPlayerIndex, setMyPlayerIndex] = useState(null);
+  const [waitingForPlayers, setWaitingForPlayers] = useState(false);
+  const [connectedPlayers, setConnectedPlayers] = useState([]);
+  const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+
   const lastLetter =
     usedWords.length === 0
       ? null
       : usedWords[usedWords.length - 1].slice(-1).toLowerCase();
+
+  // Setup online game listeners
+  useEffect(() => {
+    if (!isOnlineMode) return;
+
+    return () => {
+      // Empty cleanup - we handle disconnection manually in handleBackToMenu
+    };
+  }, [isOnlineMode]);
+
+  useEffect(() => {
+    if (!isOnlineMode || !isInRoom) return;
+
+    // Handle errors
+    roomService.on('onError', (errorMessage) => {
+      setAlertMessage(errorMessage);
+    });
+
+    roomService.on('onPlayerJoined', (data) => {
+      console.log('Player joined:', data);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+    });
+
+    roomService.on('onPlayerLeft', (data) => {
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+      
+      // If we're in game and a player left, handle it
+      if (gameStarted) {
+        setAlertMessage(`${data.playerName || 'A player'} disconnected!`);
+        // Remove from game if they were playing
+        handlePlayerDisconnect(data.playerId);
+      }
+    });
+
+    roomService.on('onGameAction', (data) => {
+      console.log('Game action received:', data);
+      
+      switch (data.action) {
+        case 'game-start':
+          // All players receive game start
+          handleGameStart(data.payload);
+          break;
+          
+        case 'word-submit':
+          // Receive word submission
+          handleRemoteWordSubmit(data.payload);
+          break;
+          
+        case 'next-turn':
+          // Move to next player
+          setCurrentPlayer(data.payload.nextPlayerIndex);
+          setError("");
+          break;
+
+        case 'player-eliminated':
+          // Player lost all lives
+          handleRemoteElimination(data.payload);
+          break;
+          
+        case 'game-over':
+          // Game ended
+          handleGameOver(data.payload);
+          break;
+
+        case 'new-game':
+          resetGame();
+          break;
+      }
+    });
+
+    return () => {
+      if (roomService.isConnected()) {
+        roomService.leaveRoom();
+      }
+    };
+  }, [isOnlineMode, isInRoom, gameStarted]);
+
+  function handlePlayerDisconnect(playerId) {
+    const disconnectedPlayer = players.find((_, idx) => 
+      connectedPlayers[idx]?.playerId === playerId
+    );
+    
+    if (disconnectedPlayer && !eliminated.includes(disconnectedPlayer)) {
+      setEliminated([...eliminated, disconnectedPlayer]);
+    }
+  }
+
+  function handleGameStart(payload) {
+    const { players: gamePlayers, lives } = payload;
+    setPlayers(gamePlayers);
+    setPlayerLives(lives);
+    setGameStarted(true);
+    setWaitingForPlayers(false);
+    setCurrentPlayer(0);
+  }
+
+  function handleRemoteWordSubmit(payload) {
+    const { word, success, error: errorMsg, playerLives: newLives, eliminated: newEliminated } = payload;
+    
+    if (success) {
+      setUsedWords(prev => [...prev, word]);
+      setError("");
+    } else {
+      setError(errorMsg);
+      setPlayerLives(newLives);
+      if (newEliminated) {
+        setEliminated(prev => [...prev, newEliminated]);
+      }
+    }
+  }
+
+  function handleRemoteElimination(payload) {
+    const { playerName } = payload;
+    setEliminated(prev => [...prev, playerName]);
+  }
+
+  function handleGameOver(payload) {
+    const { winner } = payload;
+    setAlertMessage(`🏆 ${winner} wins!`);
+  }
+
+  async function handleCreateOnlineRoom() {
+    if (!playerName.trim()) {
+      setAlertMessage("Please enter your name!");
+      return;
+    }
+
+    try {
+      roomService.on('onPlayerJoined', (data) => {
+        console.log('🎉 Player joined callback:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerLeft', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onGameAction', (data) => {
+        console.log('Game action received:', data);
+        
+        switch (data.action) {
+          case 'game-start':
+            handleGameStart(data.payload);
+            break;
+            
+          case 'word-submit':
+            handleRemoteWordSubmit(data.payload);
+            break;
+            
+          case 'next-turn':
+            setCurrentPlayer(data.payload.nextPlayerIndex);
+            setError("");
+            break;
+
+          case 'player-eliminated':
+            handleRemoteElimination(data.payload);
+            break;
+            
+          case 'game-over':
+            handleGameOver(data.payload);
+            break;
+
+          case 'new-game':
+            resetGame();
+            break;
+        }
+      });
+
+      roomService.playerName = playerName;
+      const { roomCode: code } = await roomService.createRoom();
+      setRoomCode(code);
+      setIsHost(true);
+      setIsInRoom(true);
+      setWaitingForPlayers(true);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+    } catch (error) {
+      console.error('Error creating room:', error);
+      setAlertMessage('Failed to create room. Please try again.');
+    }
+  }
+
+  async function handleJoinOnlineRoom() {
+    if (!playerName.trim() || !roomCode.trim()) {
+      setAlertMessage("Please enter your name and room code!");
+      return;
+    }
+
+    try {
+      roomService.on('onPlayerJoined', (data) => {
+        console.log('🎉 Player joined callback:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerLeft', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onGameAction', (data) => {
+        console.log('Game action received:', data);
+        
+        switch (data.action) {
+          case 'game-start':
+            handleGameStart(data.payload);
+            break;
+            
+          case 'word-submit':
+            handleRemoteWordSubmit(data.payload);
+            break;
+            
+          case 'next-turn':
+            setCurrentPlayer(data.payload.nextPlayerIndex);
+            setError("");
+            break;
+
+          case 'player-eliminated':
+            handleRemoteElimination(data.payload);
+            break;
+            
+          case 'game-over':
+            handleGameOver(data.payload);
+            break;
+
+          case 'new-game':
+            resetGame();
+            break;
+        }
+      });
+
+      roomService.playerName = playerName;
+      await roomService.joinRoom(roomCode);
+      setIsInRoom(true);
+      setIsHost(false);
+      setWaitingForPlayers(true);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+      
+      // Set player index based on order joined
+      setMyPlayerIndex(allPlayers.length - 1);
+    } catch (error) {
+      console.error('Error joining room:', error);
+      setAlertMessage('Failed to join room. Check the room code and try again.');
+    }
+  }
+
+  function handleStartOnlineGame() {
+    if (connectedPlayers.length < 2) {
+      setAlertMessage("Need at least 2 players to start!");
+      return;
+    }
+
+    if (connectedPlayers.length > 12) {
+      setAlertMessage("Maximum 12 players allowed!");
+      return;
+    }
+
+    // Initialize game state
+    const playerNames = connectedPlayers.map(p => p.playerName);
+    const lives = {};
+    playerNames.forEach(name => {
+      lives[name] = 3;
+    });
+
+    // Broadcast game start to all players
+    roomService.sendGameAction('game-start', {
+      players: playerNames,
+      lives: lives
+    });
+
+    // Start game locally for host
+    setPlayers(playerNames);
+    setPlayerLives(lives);
+    setGameStarted(true);
+    setWaitingForPlayers(false);
+    setCurrentPlayer(0);
+    setMyPlayerIndex(0); // Host is always first player
+  }
+
+  function handleBackToMenu() {
+    if (roomService.isConnected()) {
+      roomService.leaveRoom();
+    }
+    setGameMode(null);
+    setGameStarted(false);
+    setIsOnlineMode(false);
+    setIsInRoom(false);
+    setIsHost(false);
+    setWaitingForPlayers(false);
+    setRoomCode("");
+    setPlayerName("");
+    setPlayers(["", "", ""]);
+    setPlayerLives({});
+    setUsedWords([]);
+    setCurrentPlayer(0);
+    setInput("");
+    setEliminated([]);
+    setError("");
+    setConnectedPlayers([]);
+  }
 
   function handlePlayerNameChange(index, value) {
     const newPlayers = [...players];
@@ -83,6 +401,12 @@ function WordChain({ onBack }) {
   async function submitWord() {
     const word = input.toLowerCase().trim();
 
+    // Online mode: check if it's player's turn
+    if (isOnlineMode && players[currentPlayer] !== playerName) {
+      setAlertMessage("Wait for your turn!");
+      return;
+    }
+
     if (!word) {
       setError("Please enter a word");
       return;
@@ -99,14 +423,27 @@ function WordChain({ onBack }) {
     }
 
     if (usedWords.includes(word)) {
-      setError(`"${word}" has already been used!`);
-      eliminate();
+      const errorMsg = `"${word}" has already been used!`;
+      setError(errorMsg);
+      
+      if (isOnlineMode) {
+        // Broadcast word rejection and life loss
+        await eliminateOnline(errorMsg);
+      } else {
+        eliminate();
+      }
       return;
     }
 
     if (lastLetter && word[0] !== lastLetter) {
-      setError(`Word must start with "${lastLetter.toUpperCase()}"!`);
-      eliminate();
+      const errorMsg = `Word must start with "${lastLetter.toUpperCase()}"!`;
+      setError(errorMsg);
+      
+      if (isOnlineMode) {
+        await eliminateOnline(errorMsg);
+      } else {
+        eliminate();
+      }
       return;
     }
 
@@ -116,67 +453,327 @@ function WordChain({ onBack }) {
     setIsValidating(false);
 
     if (!isValid) {
-      setError(`"${word}" is not a valid English word!`);
-      eliminate();
+      const errorMsg = `"${word}" is not a valid English word!`;
+      setError(errorMsg);
+      
+      if (isOnlineMode) {
+        await eliminateOnline(errorMsg);
+      } else {
+        eliminate();
+      }
       return;
+    }
+
+    // Word is valid!
+    if (isOnlineMode) {
+      // Broadcast word to all players
+      roomService.sendGameAction('word-submit', {
+        word,
+        success: true,
+        playerName: players[currentPlayer]
+      });
     }
 
     setUsedWords([...usedWords, word]);
     setError("");
-    nextPlayer();
+    
+    // Move to next player
+    if (isOnlineMode) {
+      const nextPlayerIndex = getNextPlayerIndex();
+      roomService.sendGameAction('next-turn', {
+        nextPlayerIndex
+      });
+      setCurrentPlayer(nextPlayerIndex);
+    } else {
+      nextPlayer();
+    }
+    
     setInput("");
   }
 
-  function eliminate() {
+  async function eliminateOnline(errorMsg) {
     const playerName = players[currentPlayer];
     const currentLives = playerLives[playerName];
     
     if (currentLives > 1) {
       // Lose a life
-      setPlayerLives({
+      const newLives = {
         ...playerLives,
         [playerName]: currentLives - 1
+      };
+      setPlayerLives(newLives);
+      
+      // Broadcast life loss
+      roomService.sendGameAction('word-submit', {
+        word: input,
+        success: false,
+        error: errorMsg,
+        playerLives: newLives,
+        playerName
       });
       
       setTimeout(() => {
         setError("");
-        nextPlayer();
+        const nextPlayerIndex = getNextPlayerIndex();
+        roomService.sendGameAction('next-turn', { nextPlayerIndex });
+        setCurrentPlayer(nextPlayerIndex);
         setInput("");
       }, 2000);
     } else {
       // Eliminate player
-      setEliminated([...eliminated, playerName]);
-      setPlayerLives({
+      const newEliminated = [...eliminated, playerName];
+      setEliminated(newEliminated);
+      
+      const newLives = {
         ...playerLives,
         [playerName]: 0
+      };
+      setPlayerLives(newLives);
+      
+      // Broadcast elimination
+      roomService.sendGameAction('player-eliminated', {
+        playerName
       });
+      
+      roomService.sendGameAction('word-submit', {
+        word: input,
+        success: false,
+        error: errorMsg,
+        playerLives: newLives,
+        eliminated: playerName
+      });
+      
+      // Check if game is over
+      const activePlayers = players.filter(p => !newEliminated.includes(p));
+      if (activePlayers.length === 1) {
+        roomService.sendGameAction('game-over', {
+          winner: activePlayers[0]
+        });
+      }
       
       setTimeout(() => {
         setError("");
-        nextPlayer();
+        const nextPlayerIndex = getNextPlayerIndex();
+        roomService.sendGameAction('next-turn', { nextPlayerIndex });
+        setCurrentPlayer(nextPlayerIndex);
         setInput("");
       }, 2000);
     }
   }
 
-  function nextPlayer() {
+  function getNextPlayerIndex() {
     let next = (currentPlayer + 1) % players.length;
     let attempts = 0;
     while (eliminated.includes(players[next]) && attempts < players.length) {
       next = (next + 1) % players.length;
       attempts++;
     }
-    setCurrentPlayer(next);
+    return next;
   }
 
   const activePlayers = players.filter(
     (p) => !eliminated.includes(p)
   );
 
-  // Player Setup Screen
-  if (!gameStarted) {
+  // Mode Selection Screen
+  if (!gameMode) {
     return (
-      <GameLayout title="🔤 Word Chain - Player Setup" onBack={onBack}>
+      <GameLayout title="🔤 Word Chain - Select Mode" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Choose how you want to play Word Chain
+          </p>
+
+          <div className={styles.modeSelection}>
+            <button
+              onClick={() => {
+                setGameMode('local');
+                setIsOnlineMode(false);
+              }}
+              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
+            >
+              👥 Local Play
+              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
+                Play with people next to you
+              </small>
+            </button>
+
+            <button
+              onClick={() => {
+                setGameMode('online');
+                setIsOnlineMode(true);
+              }}
+              className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
+            >
+              🌐 Online Multiplayer (2-12 players)
+              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
+                Play with friends remotely
+              </small>
+            </button>
+          </div>
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Room Setup Screen
+  if (gameMode === 'online' && !isInRoom) {
+    return (
+      <GameLayout title="🔤 Word Chain - Online Setup" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Create a room or join an existing one to play online (2-12 players)
+          </p>
+
+          <div className={styles.playerInputRow}>
+            <span className={styles.playerLabel}>Your Name:</span>
+            <input
+              type="text"
+              value={playerName}
+              onChange={(e) => setPlayerName(e.target.value)}
+              placeholder="Enter your name"
+              className={inputStyles.input}
+              style={{ flex: 1 }}
+            />
+          </div>
+
+          <div className={styles.onlineOptions}>
+            <div className={styles.onlineOption}>
+              <h3>Create Room</h3>
+              <p>Start a new game and share the 8-character room code</p>
+              <button
+                onClick={handleCreateOnlineRoom}
+                className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
+              >
+                Create Room
+              </button>
+            </div>
+
+            <div className={styles.divider}>OR</div>
+
+            <div className={styles.onlineOption}>
+              <h3>Join Room</h3>
+              <p>Enter the 8-character room code shared by your friend</p>
+              <input
+                type="text"
+                value={roomCode}
+                onChange={(e) => setRoomCode(e.target.value.toUpperCase().trim())}
+                placeholder="Enter 8-char code"
+                className={inputStyles.input}
+                maxLength={8}
+                style={{ 
+                  marginBottom: '10px', 
+                  fontFamily: 'monospace', 
+                  letterSpacing: '2px',
+                  textTransform: 'uppercase'
+                }}
+              />
+              <button
+                onClick={handleJoinOnlineRoom}
+                className={`${btnStyles.btn} ${btnStyles.btnSuccess}`}
+              >
+                Join Room
+              </button>
+            </div>
+          </div>
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Waiting Room
+  if (isOnlineMode && isInRoom && waitingForPlayers) {
+    const copyRoomCode = () => {
+      navigator.clipboard.writeText(roomCode).then(() => {
+        setShowCopiedNotification(true);
+        setTimeout(() => setShowCopiedNotification(false), 2000);
+      }).catch(() => {
+        setAlertMessage("Failed to copy. Please copy manually.");
+      });
+    };
+
+    return (
+      <GameLayout title="🔤 Word Chain - Waiting Room" onBack={handleBackToMenu}>
+        {showCopiedNotification && (
+          <div className={styles.copiedNotification}>
+            ✓ Copied!
+          </div>
+        )}
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <div className={styles.waitingRoom}>
+            <h2>Share Room Code</h2>
+            <div className={styles.roomCodeDisplay}>
+              <code className={styles.roomCodeText}>{roomCode}</code>
+              <button 
+                onClick={copyRoomCode}
+                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
+              >
+                📋 Copy
+              </button>
+            </div>
+            <p className={styles.shareCode}>Share this code with your friends to join (2-12 players)</p>
+            
+            <div className={styles.playersList}>
+              <h3>Players in Room ({connectedPlayers.length}/12):</h3>
+              <div className={styles.playersGrid}>
+                {connectedPlayers.map((player, idx) => (
+                  <div key={idx} className={styles.playerItem}>
+                    👤 {player.playerName} {player.isHost && "👑"}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {connectedPlayers.length < 2 && (
+              <div className={styles.waitingAnimation}>
+                <p>⏳ Waiting for at least 1 more player to join...</p>
+              </div>
+            )}
+
+            {isHost && connectedPlayers.length >= 2 && (
+              <div className={styles.startGameSection}>
+                <button
+                  onClick={handleStartOnlineGame}
+                  className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
+                >
+                  Start Game ({connectedPlayers.length} players)
+                </button>
+              </div>
+            )}
+
+            {!isHost && connectedPlayers.length >= 2 && (
+              <div className={styles.waitingAnimation}>
+                <p>⏳ Waiting for host to start the game...</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Local Player Setup Screen
+  if (gameMode === 'local' && !gameStarted) {
+    return (
+      <GameLayout title="🔤 Word Chain - Player Setup" onBack={handleBackToMenu}>
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 
@@ -259,12 +856,20 @@ function WordChain({ onBack }) {
   // Game Screen
   return (
     <GameLayout
-      title="🔤 Word Chain"
+      title={`🔤 Word Chain ${isOnlineMode ? '(Online)' : ''}`}
       currentPlayer={players[currentPlayer]}
-      onBack={onBack}
+      onBack={handleBackToMenu}
     >
       {activePlayers.length > 1 ? (
         <>
+          {/* Online Room Info */}
+          {isOnlineMode && (
+            <div className={styles.onlineInfo}>
+              <span>Room: {roomCode}</span>
+              <span>Players: {connectedPlayers.length}</span>
+            </div>
+          )}
+
           {/* Game Rules Toggle */}
           <div className={styles.rulesToggle}>
             <button
@@ -358,12 +963,17 @@ function WordChain({ onBack }) {
       ) : (
         <div className={styles.winnerCard}>
           <h2 className={styles.winnerTitle}>🏆 Winner: {activePlayers[0]}</h2>
-          <button 
-            onClick={resetGame} 
-            className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
-          >
-            Play Again
-          </button>
+          {(!isOnlineMode || isHost) && (
+            <button 
+              onClick={resetGame} 
+              className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
+            >
+              Play Again
+            </button>
+          )}
+          {isOnlineMode && !isHost && (
+            <p>Waiting for host to start new game...</p>
+          )}
         </div>
       )}
     </GameLayout>
