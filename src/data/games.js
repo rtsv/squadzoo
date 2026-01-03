@@ -39,7 +39,7 @@ const games = [
       id: "word-chain",
       title: "Word Chain",
       description: "Create word chain with distinct word",
-      icon: "🧱"
+      icon: "⛓️"
     },
     {
       id: "tic-tac-toe",

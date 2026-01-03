@@ -185,9 +185,27 @@
 
 .gamesGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: 1fr;
   gap: 2rem;
   margin-top: 2rem;
+}
+
+/* Tablet and above - 2 columns */
+@media (min-width: 769px) {
+  .gamesGrid {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 750px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* Large screens - 3 columns max */
+@media (min-width: 1101px) {
+  .gamesGrid {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1050px;
+  }
 }
 
 /* About Section */
