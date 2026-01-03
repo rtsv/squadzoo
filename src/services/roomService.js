@@ -38,7 +38,7 @@ class RoomService {
       // For production: use your deployed PartyKit URL
       const host = window.location.hostname === 'localhost' 
         ? 'localhost:1999' 
-        : 'squad-zoo-multiplayer.riteshyadav.partykit.dev';
+        : 'squad-zoo-multiplayer.rtsv.partykit.dev';
 
       console.log('🔗 Connecting to PartyKit at:', host, 'room:', this.roomId);
 
