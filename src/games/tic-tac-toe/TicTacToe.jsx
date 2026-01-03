@@ -510,9 +510,12 @@ function TicTacToe({ onBack }) {
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForOpponent) {
+    const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+
     const copyRoomCode = () => {
       navigator.clipboard.writeText(roomCode).then(() => {
-        setAlertMessage("Room code copied to clipboard!");
+        setShowCopiedNotification(true);
+        setTimeout(() => setShowCopiedNotification(false), 2000);
       }).catch(() => {
         setAlertMessage("Failed to copy. Please copy manually.");
       });
@@ -520,6 +523,11 @@ function TicTacToe({ onBack }) {
 
     return (
       <GameLayout title="⭕❌ Tic-Tac-Toe - Waiting Room" onBack={handleBackToMenu}>
+        {showCopiedNotification && (
+          <div className={styles.copiedNotification}>
+            ✓ Copied!
+          </div>
+        )}
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 
