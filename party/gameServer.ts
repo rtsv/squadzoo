@@ -1,32 +1,71 @@
 import type * as Party from "partykit/server";
 
 // Store active room metadata
-const activeRooms = new Map<string, { createdAt: number; playerCount: number }>();
+const activeRooms = new Map<string, { 
+  createdAt: number; 
+  playerCount: number;
+  hostId: string | null;
+}>();
 
 export default class GameServer implements Party.Server {
   constructor(readonly room: Party.Room) {}
 
   onConnect(conn: Party.Connection, ctx: Party.ConnectionContext) {
-    // Update room metadata
     const roomId = this.room.id;
-    const currentRoom = activeRooms.get(roomId) || { 
-      createdAt: Date.now(), 
-      playerCount: 0 
-    };
+    const currentRoom = activeRooms.get(roomId);
+    
+    // Check if room exists (has a host) or if this is the first player (creating room)
+    if (!currentRoom) {
+      // First player - they are the host creating the room
+      activeRooms.set(roomId, { 
+        createdAt: Date.now(), 
+        playerCount: 1,
+        hostId: conn.id
+      });
+      
+      console.log(`✅ Room ${roomId} created by host ${conn.id}`);
+      
+      // Send connection confirmation with host status
+      conn.send(JSON.stringify({
+        type: 'connected',
+        id: conn.id,
+        roomId: this.room.id,
+        playerCount: 1,
+        isHost: true
+      }));
+      
+      return;
+    }
+    
+    // Check if room is full (already has 2 players)
+    if (currentRoom.playerCount >= 2) {
+      console.log(`❌ Room ${roomId} is full, rejecting player ${conn.id}`);
+      
+      conn.send(JSON.stringify({
+        type: 'error',
+        message: 'Room is full. Maximum 2 players allowed.'
+      }));
+      
+      conn.close(1000, 'Room is full');
+      return;
+    }
+    
+    // Second player joining existing room
     currentRoom.playerCount++;
     activeRooms.set(roomId, currentRoom);
 
-    console.log(`Player ${conn.id} connected to room ${roomId} (${currentRoom.playerCount} players)`);
+    console.log(`✅ Player ${conn.id} joined room ${roomId} (${currentRoom.playerCount} players)`);
 
-    // Send connection confirmation with room info
+    // Send connection confirmation
     conn.send(JSON.stringify({
       type: 'connected',
       id: conn.id,
       roomId: this.room.id,
-      playerCount: currentRoom.playerCount
+      playerCount: currentRoom.playerCount,
+      isHost: false
     }));
 
-    // Notify others that a player joined
+    // Notify host that a player joined
     this.room.broadcast(
       JSON.stringify({
         type: 'player-joined',
@@ -54,15 +93,29 @@ export default class GameServer implements Party.Server {
     if (currentRoom) {
       currentRoom.playerCount--;
       
-      // If room is empty, schedule cleanup
-      if (currentRoom.playerCount <= 0) {
-        console.log(`Room ${roomId} is now empty, scheduling cleanup`);
+      // Check if the host left
+      const hostLeft = currentRoom.hostId === conn.id;
+      
+      // If room is empty or host left, schedule cleanup
+      if (currentRoom.playerCount <= 0 || hostLeft) {
+        console.log(`🧹 Room ${roomId} ${hostLeft ? 'host left' : 'is empty'}, scheduling cleanup`);
+        
+        // If host left but guest is still there, notify guest
+        if (hostLeft && currentRoom.playerCount > 0) {
+          this.room.broadcast(
+            JSON.stringify({
+              type: 'host-left',
+              message: 'Host has left the room'
+            })
+          );
+        }
+        
         // Remove room from active list after 5 minutes of inactivity
         setTimeout(() => {
           const room = activeRooms.get(roomId);
-          if (room && room.playerCount <= 0) {
+          if (room && (room.playerCount <= 0 || room.hostId === conn.id)) {
             activeRooms.delete(roomId);
-            console.log(`Room ${roomId} cleaned up`);
+            console.log(`🗑️ Room ${roomId} cleaned up`);
           }
         }, 5 * 60 * 1000); // 5 minutes
       } else {
@@ -83,11 +136,25 @@ export default class GameServer implements Party.Server {
     console.log(`Player ${conn.id} disconnected from room ${roomId} (${currentRoom?.playerCount || 0} players remaining)`);
   }
 
-  // Static method to check if room exists and has space
-  static async isRoomAvailable(roomId: string): Promise<boolean> {
-    const room = activeRooms.get(roomId);
-    // Room is available if it doesn't exist or has less than 2 players
-    return !room || room.playerCount < 2;
+  // Handle room existence check via HTTP request
+  async onRequest(req: Party.Request) {
+    const url = new URL(req.url);
+    
+    // Check if room exists endpoint
+    if (url.pathname.endsWith('/exists')) {
+      const roomId = this.room.id;
+      const room = activeRooms.get(roomId);
+      
+      return new Response(JSON.stringify({
+        exists: !!room && room.playerCount > 0,
+        playerCount: room?.playerCount || 0,
+        isFull: room ? room.playerCount >= 2 : false
+      }), {
+        headers: { 'Content-Type': 'application/json' }
+      });
+    }
+    
+    return new Response('Not found', { status: 404 });
   }
 }
 

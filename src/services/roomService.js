@@ -82,12 +82,36 @@ class RoomService {
       case 'connected':
         this.playerId = data.id;
         console.log('🆔 My player ID:', this.playerId);
+        console.log('👤 Room status - Players:', data.playerCount, 'IsHost:', data.isHost);
+        
+        // Update host status from server
+        if (data.isHost !== undefined) {
+          this.isHost = data.isHost;
+        }
+        
         // Add self to connected players
         this.connectedPlayers.push({
           playerId: this.playerId,
           playerName: this.playerName,
           isHost: this.isHost
         });
+        break;
+
+      case 'error':
+        console.error('❌ Server error:', data.message);
+        if (this.callbacks.onError) {
+          this.callbacks.onError(data.message);
+        }
+        break;
+
+      case 'host-left':
+        console.log('👑 Host has left the room');
+        if (this.callbacks.onError) {
+          this.callbacks.onError('Host has left the room. Game ended.');
+        }
+        if (this.callbacks.onPlayerLeft) {
+          this.callbacks.onPlayerLeft({ isHost: true });
+        }
         break;
 
       case 'player-joined':
