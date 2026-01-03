@@ -99,8 +99,34 @@ class RoomService {
       throw new Error('Peer not initialized');
     }
     
+    if (!this.peer.open) {
+      console.warn('⚠️ Peer is not fully open yet, waiting...');
+      // Wait a bit for the peer to fully open
+      await new Promise(resolve => {
+        if (this.peer.open) {
+          resolve();
+        } else {
+          const checkOpen = setInterval(() => {
+            if (this.peer.open) {
+              clearInterval(checkOpen);
+              resolve();
+            }
+          }, 100);
+          
+          // Timeout after 5 seconds
+          setTimeout(() => {
+            clearInterval(checkOpen);
+            resolve();
+          }, 5000);
+        }
+      });
+    }
+    
     this.isHost = true;
     this.roomId = this.peer.id;
+    
+    console.log('🏠 Room created with ID:', this.roomId);
+    console.log('👂 Host is now listening for connections...');
     
     // Use the full peer ID as the room code (it's the only way to connect in P2P)
     // Format it nicely for display
