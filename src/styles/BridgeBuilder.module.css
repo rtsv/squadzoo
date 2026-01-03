@@ -1,0 +1,180 @@
+.levelSelectContainer {
+  padding: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.levelHeader {
+  margin-bottom: 32px;
+}
+
+.difficultySection {
+  margin-bottom: 40px;
+}
+
+.difficultyTitle {
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3748;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 3px solid #667eea;
+  display: inline-block;
+}
+
+.levelGrid {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.levelCard {
+  padding: 20px;
+  border-radius: 12px;
+  min-width: 140px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+  border: none;
+  font-family: inherit;
+}
+
+.levelCard:hover {
+  transform: translateY(-4px) scale(1.05);
+  box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.levelNumber {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.levelName {
+  font-size: 13px;
+  opacity: 0.9;
+}
+
+.gameBoard {
+  margin: 24px 0;
+  display: inline-block;
+}
+
+.gridContainer {
+  display: grid;
+  gap: 8px;
+  padding: 20px;
+  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.gridRow {
+  display: flex;
+  gap: 8px;
+}
+
+.cell {
+  width: 60px;
+  height: 60px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 26px;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cellRiver {
+  background: linear-gradient(135deg, #4da6ff, #6fbaff);
+  cursor: pointer;
+  animation: wave 2.5s ease-in-out infinite;
+}
+
+.cellRiver:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(77, 166, 255, 0.4);
+}
+
+@keyframes wave {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+.cellBridge {
+  background: linear-gradient(135deg, #d4a574 0%, #c2a476 100%);
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(194, 164, 118, 0.5);
+  animation: placeBridge 0.3s ease;
+}
+
+@keyframes placeBridge {
+  0% {
+    transform: scale(0.8) rotate(-5deg);
+    opacity: 0;
+  }
+  50% {
+    transform: scale(1.2) rotate(5deg);
+  }
+  100% {
+    transform: scale(1.1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+.cellGround {
+  background: linear-gradient(135deg, #7cc67c 0%, #68b368 100%);
+}
+
+.levelInfo {
+  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  padding: 16px 24px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+  text-align: center;
+  border: 2px solid #f59e0b;
+}
+
+.levelTitle {
+  font-size: 20px;
+  font-weight: 700;
+  color: #78350f;
+}
+
+.bridgesRemaining {
+  background: #f0f4ff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  margin: 16px 0;
+  font-weight: 600;
+  color: #4c51bf;
+  text-align: center;
+}
+
+.winBanner {
+  padding: 20px;
+  margin-bottom: 20px;
+  background: linear-gradient(135deg, #d4f8d4 0%, #a8e6cf 100%);
+  border-radius: 12px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: #22543d;
+  animation: pop 0.5s ease;
+  box-shadow: 0 4px 20px rgba(72, 187, 120, 0.3);
+}
+
+.gameActions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 24px;
+}

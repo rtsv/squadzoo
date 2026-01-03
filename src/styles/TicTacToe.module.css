@@ -1,0 +1,295 @@
+/* Setup Container */
+.setupContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Game Rules Section */
+.rulesSection {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.rulesContent {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 12px;
+  text-align: left;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rulesContent h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.rulesContent ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.rulesContent li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.5;
+}
+
+/* Rules Toggle in Game */
+.rulesToggle {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.rulesContentSmall {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 8px;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Game Container */
+.gameContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+/* Scoreboard */
+.scoreboard {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 24px;
+}
+
+.scoreItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.playerName {
+  font-weight: 600;
+  color: #333;
+  font-size: 16px;
+}
+
+.drawLabel {
+  font-weight: 600;
+  color: #666;
+  font-size: 16px;
+}
+
+.playerScore {
+  font-size: 28px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Turn Indicator */
+.turnIndicator {
+  text-align: center;
+  margin-bottom: 24px;
+  padding: 16px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.turnText {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.currentPlayerBadge {
+  background: rgba(255, 255, 255, 0.3);
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-weight: 700;
+  margin-left: 8px;
+}
+
+/* Game Board */
+.board {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+  margin: 0 auto 24px;
+  max-width: 400px;
+  aspect-ratio: 1;
+}
+
+.cell {
+  background: white;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  position: relative;
+  min-height: 100px;
+}
+
+.cell:hover:not(.cellFilled) {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.cell:active:not(.cellFilled) {
+  transform: scale(0.98);
+}
+
+.cellFilled {
+  cursor: not-allowed;
+}
+
+.cellWinning {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  animation: winningPulse 0.6s ease-in-out;
+}
+
+@keyframes winningPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+}
+
+.symbol {
+  font-size: 64px;
+  animation: symbolAppear 0.3s ease-out;
+}
+
+.symbolX {
+  color: #ff4757;
+  filter: drop-shadow(0 2px 4px rgba(255, 71, 87, 0.3));
+}
+
+.symbolO {
+  color: #3742fa;
+  filter: drop-shadow(0 2px 4px rgba(55, 66, 250, 0.3));
+}
+
+@keyframes symbolAppear {
+  from {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Result Card */
+.resultCard {
+  background: white;
+  padding: 32px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  margin-bottom: 24px;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resultTitle {
+  font-size: 32px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 24px 0;
+  font-weight: 700;
+}
+
+/* Reset Button Container */
+.resetButtonContainer {
+  display: flex;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .board {
+    max-width: 300px;
+    gap: 8px;
+  }
+
+  .cell {
+    min-height: 80px;
+  }
+
+  .symbol {
+    font-size: 48px;
+  }
+
+  .scoreboard {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .resultTitle {
+    font-size: 24px;
+  }
+
+  .setupContainer {
+    padding: 20px;
+  }
+}

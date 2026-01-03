@@ -1,0 +1,529 @@
+/* Setup Container */
+.setupContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px;
+  background: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+/* Game Rules Section */
+.rulesSection {
+  margin-bottom: 24px;
+  text-align: center;
+}
+
+.rulesContent {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 20px;
+  border-radius: 12px;
+  margin-top: 12px;
+  text-align: left;
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rulesContent h4 {
+  margin: 0 0 12px 0;
+  color: #333;
+  font-size: 16px;
+}
+
+.rulesContent ul {
+  margin: 0;
+  padding-left: 20px;
+  list-style-type: disc;
+}
+
+.rulesContent li {
+  margin-bottom: 8px;
+  color: #555;
+  line-height: 1.5;
+}
+
+.rulesContent strong {
+  color: #333;
+}
+
+/* Rules Toggle in Game */
+.rulesToggle {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.rulesContentSmall {
+  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-top: 8px;
+  text-align: center;
+  animation: slideDown 0.3s ease-out;
+  font-size: 14px;
+  color: #555;
+}
+
+/* Placement Container */
+.placementContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.placementHeader {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.placementTitle {
+  font-size: 20px;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+.currentShipInfo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 20px;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.shipIcon {
+  font-size: 20px;
+}
+
+.shipName {
+  font-weight: 700;
+}
+
+.shipSize {
+  opacity: 0.9;
+  font-size: 14px;
+}
+
+.orientationControl {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+/* Grid Container - More Compact */
+.gridContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.gridLabels {
+  display: grid;
+  grid-template-columns: 25px repeat(8, 1fr);
+  gap: 3px;
+  width: 100%;
+  max-width: 400px;
+  margin-bottom: 3px;
+}
+
+.cornerLabel {
+  width: 25px;
+}
+
+.colLabel {
+  text-align: center;
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+}
+
+.gridWithRowLabels {
+  display: grid;
+  grid-template-columns: 25px 1fr;
+  gap: 3px;
+  width: 100%;
+  max-width: 400px;
+}
+
+.rowLabels {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.rowLabel {
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  color: #666;
+  font-size: 12px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 3px;
+  background: #e0e0e0;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.cell {
+  aspect-ratio: 1;
+  background: white;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: 2px solid transparent;
+  font-size: 20px;
+}
+
+.cell:hover {
+  border-color: #667eea;
+}
+
+.cellShip {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.cellHover {
+  background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+  border-color: #667eea;
+  transform: scale(0.95);
+}
+
+.cellClickable:hover {
+  background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.cellFired {
+  cursor: not-allowed;
+}
+
+.cellHit {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  animation: hitPulse 0.4s ease-out;
+}
+
+.cellMiss {
+  background: linear-gradient(135deg, #d7d2cc 0%, #304352 100%);
+}
+
+@keyframes hitPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.15);
+  }
+}
+
+.shipMarker,
+.hitMarker,
+.missMarker {
+  animation: markerAppear 0.3s ease-out;
+}
+
+@keyframes markerAppear {
+  from {
+    transform: scale(0) rotate(-180deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0deg);
+    opacity: 1;
+  }
+}
+
+/* Ships to Place - Compact */
+.shipsToPlace {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.shipsToPlaceTitle {
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.shipsList {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.shipItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f5f5f5;
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.shipActive {
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  color: white;
+  transform: scale(1.05);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.shipPlaced {
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  opacity: 0.7;
+}
+
+.shipDestroyed {
+  background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+  color: white;
+  opacity: 0.6;
+  text-decoration: line-through;
+}
+
+.shipItemIcon {
+  font-size: 20px;
+}
+
+.shipItemName {
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.shipItemSize {
+  opacity: 0.8;
+  font-size: 13px;
+}
+
+.checkMark {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Battle Container - Compact */
+.battleContainer {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.scoreboard {
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.scoreItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.playerName {
+  font-weight: 600;
+  color: #333;
+  font-size: 14px;
+}
+
+.playerScore {
+  font-size: 24px;
+  font-weight: bold;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.battleInfo {
+  text-align: center;
+  margin-bottom: 16px;
+  padding: 12px;
+  background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+}
+
+.battleText {
+  color: white;
+  font-size: 16px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.boardSection {
+  margin-bottom: 16px;
+}
+
+.boardTitle {
+  text-align: center;
+  font-size: 18px;
+  color: #333;
+  margin: 0 0 12px 0;
+}
+
+/* Ships Status - Compact */
+.shipsStatus {
+  background: white;
+  padding: 16px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  margin-bottom: 16px;
+}
+
+.shipsStatusTitle {
+  font-size: 16px;
+  color: #333;
+  margin: 0 0 12px 0;
+  text-align: center;
+}
+
+.shipHealth {
+  display: flex;
+  gap: 4px;
+}
+
+.healthDot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: #4facfe;
+  border: 2px solid #2196f3;
+}
+
+.healthDotHit {
+  background: #fa709a;
+  border-color: #f50057;
+}
+
+/* Result Card - Compact */
+.resultCard {
+  background: white;
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  text-align: center;
+  animation: slideIn 0.4s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.resultTitle {
+  font-size: 28px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin: 0 0 12px 0;
+  font-weight: 700;
+}
+
+.resultText {
+  font-size: 16px;
+  color: #666;
+  margin: 0 0 20px 0;
+}
+
+.resultButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* Responsive Design */
+@media (max-width: 640px) {
+  .gridLabels,
+  .gridWithRowLabels {
+    max-width: 320px;
+  }
+
+  .rowLabel {
+    height: 35px;
+    font-size: 11px;
+  }
+
+  .colLabel {
+    font-size: 11px;
+  }
+
+  .cell {
+    font-size: 16px;
+  }
+
+  .placementTitle {
+    font-size: 18px;
+  }
+
+  .currentShipInfo {
+    font-size: 14px;
+    padding: 6px 16px;
+  }
+
+  .shipIcon {
+    font-size: 18px;
+  }
+
+  .resultTitle {
+    font-size: 22px;
+  }
+
+  .setupContainer,
+  .placementContainer,
+  .battleContainer {
+    padding: 15px;
+  }
+
+  .shipsList {
+    flex-direction: column;
+  }
+}
