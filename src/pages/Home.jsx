@@ -1,6 +1,7 @@
 import games from "../data/games";
 import GameCard from "../components/GameCard";
 import styles from "../styles/Home.module.css";
+import logo from "/public/images/squad-zoo-logo.png";
 
 function Home({ onPlayGame, onNavigate }) {
   const currentYear = new Date().getFullYear();
@@ -11,7 +12,7 @@ function Home({ onPlayGame, onNavigate }) {
       <header className={styles.header}>
         <div className={styles.headerContent}>
           <div className={styles.logo}>
-            <img src="/images/squad-zoo-logo.png" alt="SquadZoo Logo" className={styles.logoImage} />
+            <img src={logo} alt="SquadZoo Logo" className={styles.logoImage} />
             <span className={styles.logoText}>
               <span className={styles.logoTextSquad}>Squad</span>
               <span className={styles.logoTextZoo}>Zoo</span>
