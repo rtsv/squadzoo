@@ -472,7 +472,7 @@ function TicTacToe({ onBack }) {
           <div className={styles.onlineOptions}>
             <div className={styles.onlineOption}>
               <h3>Create Room</h3>
-              <p>Start a new game and share the room code</p>
+              <p>Start a new game and share the 8-character room code</p>
               <button
                 onClick={handleCreateOnlineRoom}
                 className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
@@ -485,14 +485,15 @@ function TicTacToe({ onBack }) {
 
             <div className={styles.onlineOption}>
               <h3>Join Room</h3>
-              <p>Enter the room code shared by your friend</p>
+              <p>Enter the 8-character room code shared by your friend</p>
               <input
                 type="text"
                 value={roomCode}
                 onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-                placeholder="Paste room code here"
+                placeholder="Enter 8-char code"
                 className={inputStyles.input}
-                style={{ marginBottom: '10px', fontFamily: 'monospace' }}
+                maxLength={8}
+                style={{ marginBottom: '10px', fontFamily: 'monospace', letterSpacing: '2px' }}
               />
               <button
                 onClick={handleJoinOnlineRoom}

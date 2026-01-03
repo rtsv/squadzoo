@@ -140,23 +140,49 @@ class RoomService {
 
   // Create a new room (host)
   async createRoom() {
-    const roomCode = this.generateRoomCode();
-    await this.initialize(this.playerName, roomCode.toLowerCase()); // Store as lowercase
-    this.isHost = true;
+    const maxRetries = 5;
+    let attempts = 0;
     
-    console.log('🏠 Room created with code:', roomCode);
-    
-    return {
-      roomId: roomCode.toLowerCase(),
-      roomCode: roomCode.toUpperCase() // Display as uppercase
-    };
+    while (attempts < maxRetries) {
+      const roomCode = this.generateRoomCode();
+      const normalizedCode = roomCode.toLowerCase();
+      
+      try {
+        // Try to connect to the room
+        await this.initialize(this.playerName, normalizedCode);
+        this.isHost = true;
+        
+        console.log('🏠 Room created with code:', roomCode, `(attempt ${attempts + 1})`);
+        
+        return {
+          roomId: normalizedCode,
+          roomCode: roomCode.toUpperCase()
+        };
+      } catch (error) {
+        attempts++;
+        console.warn(`Room code collision detected, retrying... (${attempts}/${maxRetries})`);
+        
+        if (attempts >= maxRetries) {
+          throw new Error('Failed to create room after multiple attempts. Please try again.');
+        }
+        
+        // Wait a bit before retrying
+        await new Promise(resolve => setTimeout(resolve, 100));
+      }
+    }
   }
 
   // Join an existing room (guest)
   async joinRoom(roomCode) {
     const normalizedCode = roomCode.toLowerCase().trim();
+    
+    // Validate room code format
+    if (normalizedCode.length < 6) {
+      throw new Error('Invalid room code. Please check and try again.');
+    }
+    
     await this.initialize(this.playerName, normalizedCode);
-    this.isHost = false; // Set isHost to false for guests
+    this.isHost = false;
     
     console.log('✅ Joined room:', normalizedCode);
     
@@ -222,11 +248,13 @@ class RoomService {
     return Math.random().toString(36).substring(2, 10);
   }
 
-  // Generate a short 6-character room code
+  // Generate a short 8-character room code (increased from 6 for better distribution)
+  // With 8 characters: 36^8 = ~2.8 trillion possible codes
+  // Collision probability with 1M active rooms: ~0.00004% (negligible)
   generateRoomCode() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     let code = '';
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 8; i++) {
       code += chars.charAt(Math.floor(Math.random() * chars.length));
     }
     return code;
