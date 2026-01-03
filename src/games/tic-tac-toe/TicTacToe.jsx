@@ -129,7 +129,7 @@ function TicTacToe({ onBack }) {
     }
 
     try {
-      await roomService.initialize(playerName);
+      roomService.playerName = playerName;
       const { roomCode: code } = await roomService.createRoom();
       setRoomCode(code);
       setIsHost(true);
@@ -151,9 +151,8 @@ function TicTacToe({ onBack }) {
     }
 
     try {
-      await roomService.initialize(playerName);
-      const hostPeerId = roomService.getRoomIdFromCode(roomCode);
-      await roomService.joinRoom(hostPeerId);
+      roomService.playerName = playerName;
+      await roomService.joinRoom(roomCode);
       setIsInRoom(true);
       setIsHost(false);
       setMyPlayerIndex(1); // Guest is always O (player 1)

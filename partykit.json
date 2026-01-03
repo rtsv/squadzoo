@@ -1,0 +1,4 @@
+{
+  "name": "squad-zoo-multiplayer",
+  "main": "party/gameServer.ts"
+}
