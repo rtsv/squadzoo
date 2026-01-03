@@ -89,12 +89,15 @@ class RoomService {
           this.isHost = data.isHost;
         }
         
-        // Add self to connected players
-        this.connectedPlayers.push({
-          playerId: this.playerId,
-          playerName: this.playerName,
-          isHost: this.isHost
-        });
+        // Initialize connected players from server response
+        if (data.players && data.players.length > 0) {
+          this.connectedPlayers = data.players.map(p => ({
+            playerId: p.id,
+            playerName: p.name,
+            isHost: p.isHost
+          }));
+          console.log('📋 Initial players:', this.connectedPlayers);
+        }
         break;
 
       case 'error':
@@ -116,12 +119,24 @@ class RoomService {
 
       case 'player-joined':
         console.log('👋 Player joined:', data.playerName);
-        // Add player to list
-        this.connectedPlayers.push({
-          playerId: data.playerId,
-          playerName: decodeURIComponent(data.playerName),
-          isHost: false
-        });
+        
+        // Update with full player list from server
+        if (data.allPlayers && data.allPlayers.length > 0) {
+          this.connectedPlayers = data.allPlayers.map(p => ({
+            playerId: p.id,
+            playerName: p.name,
+            isHost: p.isHost
+          }));
+        } else {
+          // Fallback: just add the new player
+          this.connectedPlayers.push({
+            playerId: data.playerId,
+            playerName: decodeURIComponent(data.playerName),
+            isHost: false
+          });
+        }
+        
+        console.log('📋 Updated players:', this.connectedPlayers);
         
         if (this.callbacks.onPlayerJoined) {
           this.callbacks.onPlayerJoined({
@@ -133,13 +148,25 @@ class RoomService {
 
       case 'player-left':
         console.log('👋 Player left:', data.playerId);
-        // Remove player from list
-        this.connectedPlayers = this.connectedPlayers.filter(
-          p => p.playerId !== data.playerId
-        );
+        
+        // Update with full player list from server
+        if (data.allPlayers && data.allPlayers.length >= 0) {
+          this.connectedPlayers = data.allPlayers.map(p => ({
+            playerId: p.id,
+            playerName: p.name,
+            isHost: p.isHost
+          }));
+        } else {
+          // Fallback: just remove the player
+          this.connectedPlayers = this.connectedPlayers.filter(
+            p => p.playerId !== data.playerId
+          );
+        }
+        
+        console.log('📋 Updated players:', this.connectedPlayers);
         
         if (this.callbacks.onPlayerLeft) {
-          this.callbacks.onPlayerLeft({ playerId: data.playerId });
+          this.callbacks.onPlayerLeft({ playerId: data.playerId, playerName: data.playerName });
         }
         break;
 

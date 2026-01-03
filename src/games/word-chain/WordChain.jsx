@@ -38,81 +38,109 @@ function WordChain({ onBack }) {
 
   // Setup online game listeners
   useEffect(() => {
-    if (!isOnlineMode) return;
-
-    return () => {
-      // Empty cleanup - we handle disconnection manually in handleBackToMenu
-    };
-  }, [isOnlineMode]);
-
-  useEffect(() => {
     if (!isOnlineMode || !isInRoom) return;
 
+    console.log('🎮 Setting up online game listeners');
+
     // Handle errors
-    roomService.on('onError', (errorMessage) => {
+    const handleError = (errorMessage) => {
+      console.log('❌ Error received:', errorMessage);
       setAlertMessage(errorMessage);
-    });
+    };
 
-    roomService.on('onPlayerJoined', (data) => {
-      console.log('Player joined:', data);
+    const handlePlayerJoined = (data) => {
+      console.log('👋 Player joined:', data);
       const allPlayers = roomService.getConnectedPlayers();
-      setConnectedPlayers(allPlayers);
-    });
+      console.log('📋 All players after join:', allPlayers);
+      setConnectedPlayers([...allPlayers]); // Force new array reference
+    };
 
-    roomService.on('onPlayerLeft', (data) => {
+    const handlePlayerLeft = (data) => {
+      console.log('👋 Player left:', data);
       const allPlayers = roomService.getConnectedPlayers();
-      setConnectedPlayers(allPlayers);
+      console.log('📋 All players after leave:', allPlayers);
+      setConnectedPlayers([...allPlayers]); // Force new array reference
       
       // If we're in game and a player left, handle it
       if (gameStarted) {
         setAlertMessage(`${data.playerName || 'A player'} disconnected!`);
-        // Remove from game if they were playing
-        handlePlayerDisconnect(data.playerId);
       }
-    });
+    };
 
-    roomService.on('onGameAction', (data) => {
-      console.log('Game action received:', data);
+    const handleGameAction = (data) => {
+      console.log('🎮 Game action received:', data.action, data);
       
       switch (data.action) {
         case 'game-start':
-          // All players receive game start
           handleGameStart(data.payload);
           break;
           
         case 'word-submit':
-          // Receive word submission
           handleRemoteWordSubmit(data.payload);
           break;
           
         case 'next-turn':
-          // Move to next player
           setCurrentPlayer(data.payload.nextPlayerIndex);
           setError("");
           break;
 
         case 'player-eliminated':
-          // Player lost all lives
           handleRemoteElimination(data.payload);
           break;
           
         case 'game-over':
-          // Game ended
           handleGameOver(data.payload);
+          break;
+
+        case 'restart-game':
+          // Go back to waiting room for all players
+          setGameStarted(false);
+          setWaitingForPlayers(true);
+          setPlayers(["", "", ""]);
+          setPlayerLives({});
+          setUsedWords([]);
+          setCurrentPlayer(0);
+          setInput("");
+          setEliminated([]);
+          setError("");
+          setAlertMessage(data.payload.message);
           break;
 
         case 'new-game':
           resetGame();
           break;
       }
-    });
+    };
+
+    // Register callbacks
+    roomService.on('onError', handleError);
+    roomService.on('onPlayerJoined', handlePlayerJoined);
+    roomService.on('onPlayerLeft', handlePlayerLeft);
+    roomService.on('onGameAction', handleGameAction);
+
+    // Get initial player list
+    const initialPlayers = roomService.getConnectedPlayers();
+    console.log('📋 Initial players:', initialPlayers);
+    setConnectedPlayers([...initialPlayers]);
 
     return () => {
-      if (roomService.isConnected()) {
-        roomService.leaveRoom();
-      }
+      console.log('🧹 Cleaning up online game listeners');
+      // Cleanup is handled in handleBackToMenu
     };
-  }, [isOnlineMode, isInRoom, gameStarted]);
+  }, [isOnlineMode, isInRoom]);
+
+  // Separate effect for game-specific handlers
+  useEffect(() => {
+    if (!gameStarted) return;
+
+    const handlePlayerLeft = (data) => {
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers([...allPlayers]);
+      setAlertMessage(`${data.playerName || 'A player'} disconnected!`);
+    };
+
+    roomService.on('onPlayerLeft', handlePlayerLeft);
+  }, [gameStarted]);
 
   function handlePlayerDisconnect(playerId) {
     const disconnectedPlayer = players.find((_, idx) => 
@@ -377,14 +405,34 @@ function WordChain({ onBack }) {
   }
 
   function resetGame() {
-    setGameStarted(false);
-    setPlayers(["", "", ""]);
-    setPlayerLives({});
-    setUsedWords([]);
-    setCurrentPlayer(0);
-    setInput("");
-    setEliminated([]);
-    setError("");
+    if (isOnlineMode) {
+      // For online mode, broadcast game restart and go back to waiting room
+      if (isHost) {
+        roomService.sendGameAction('restart-game', {
+          message: 'Host is restarting the game'
+        });
+      }
+      // Reset to waiting room state
+      setGameStarted(false);
+      setWaitingForPlayers(true);
+      setPlayers(["", "", ""]);
+      setPlayerLives({});
+      setUsedWords([]);
+      setCurrentPlayer(0);
+      setInput("");
+      setEliminated([]);
+      setError("");
+    } else {
+      // Local mode - full reset
+      setGameStarted(false);
+      setPlayers(["", "", ""]);
+      setPlayerLives({});
+      setUsedWords([]);
+      setCurrentPlayer(0);
+      setInput("");
+      setEliminated([]);
+      setError("");
+    }
   }
 
   async function validateWord(word) {
@@ -569,6 +617,48 @@ function WordChain({ onBack }) {
       attempts++;
     }
     return next;
+  }
+
+  function eliminate() {
+    const playerName = players[currentPlayer];
+    const currentLives = playerLives[playerName];
+    
+    if (currentLives > 1) {
+      // Lose a life
+      setPlayerLives({
+        ...playerLives,
+        [playerName]: currentLives - 1
+      });
+      
+      setTimeout(() => {
+        setError("");
+        nextPlayer();
+        setInput("");
+      }, 2000);
+    } else {
+      // Eliminate player
+      setEliminated([...eliminated, playerName]);
+      setPlayerLives({
+        ...playerLives,
+        [playerName]: 0
+      });
+      
+      setTimeout(() => {
+        setError("");
+        nextPlayer();
+        setInput("");
+      }, 2000);
+    }
+  }
+
+  function nextPlayer() {
+    let next = (currentPlayer + 1) % players.length;
+    let attempts = 0;
+    while (eliminated.includes(players[next]) && attempts < players.length) {
+      next = (next + 1) % players.length;
+      attempts++;
+    }
+    setCurrentPlayer(next);
   }
 
   const activePlayers = players.filter(
@@ -923,19 +1013,34 @@ function WordChain({ onBack }) {
           <div className={styles.wordInput}>
             <input
               value={input}
-              onChange={(e) => setInput(e.target.value)}
+              onChange={(e) => {
+                // In online mode, prevent non-turn players from typing
+                if (isOnlineMode && players[currentPlayer] !== playerName) {
+                  setAlertMessage("⏳ Wait for your turn!");
+                  return;
+                }
+                setInput(e.target.value);
+              }}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !isValidating) submitWord();
               }}
-              placeholder="Enter word"
+              placeholder={
+                isOnlineMode && players[currentPlayer] !== playerName
+                  ? "Waiting for your turn..."
+                  : "Enter word"
+              }
               className={inputStyles.input}
-              disabled={isValidating}
-              style={{ flex: 1, maxWidth: '400px' }}
+              disabled={isValidating || (isOnlineMode && players[currentPlayer] !== playerName)}
+              style={{ 
+                flex: 1, 
+                maxWidth: '400px',
+                cursor: isOnlineMode && players[currentPlayer] !== playerName ? 'not-allowed' : 'text'
+              }}
             />
             <button 
               onClick={submitWord} 
               className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
-              disabled={isValidating}
+              disabled={isValidating || (isOnlineMode && players[currentPlayer] !== playerName)}
             >
               {isValidating ? "Validating..." : "Submit"}
             </button>

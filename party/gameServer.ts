@@ -1,10 +1,11 @@
 import type * as Party from "partykit/server";
 
-// Store active room metadata
+// Store active room metadata with player details
 const activeRooms = new Map<string, { 
   createdAt: number; 
   playerCount: number;
   hostId: string | null;
+  players: Array<{ id: string; name: string; isHost: boolean }>;
 }>();
 
 export default class GameServer implements Party.Server {
@@ -14,64 +15,78 @@ export default class GameServer implements Party.Server {
     const roomId = this.room.id;
     const currentRoom = activeRooms.get(roomId);
     
+    // Properly extract player name from URL query parameters
+    const url = new URL(ctx.request.url);
+    const playerName = url.searchParams.get('name') 
+      ? decodeURIComponent(url.searchParams.get('name')!) 
+      : 'Guest';
+    
+    console.log(`🔍 Extracted player name: "${playerName}" from URL: ${ctx.request.url}`);
+    
     // Check if room exists (has a host) or if this is the first player (creating room)
     if (!currentRoom) {
       // First player - they are the host creating the room
-      activeRooms.set(roomId, { 
+      const newRoom = {
         createdAt: Date.now(), 
         playerCount: 1,
-        hostId: conn.id
-      });
+        hostId: conn.id,
+        players: [{ id: conn.id, name: playerName, isHost: true }]
+      };
+      activeRooms.set(roomId, newRoom);
       
-      console.log(`✅ Room ${roomId} created by host ${conn.id}`);
+      console.log(`✅ Room ${roomId} created by host ${conn.id} (${playerName})`);
       
-      // Send connection confirmation with host status
+      // Send connection confirmation with host status and all players
       conn.send(JSON.stringify({
         type: 'connected',
         id: conn.id,
         roomId: this.room.id,
         playerCount: 1,
-        isHost: true
+        isHost: true,
+        players: newRoom.players
       }));
       
       return;
     }
     
-    // Check if room is full (already has 2 players)
-    if (currentRoom.playerCount >= 2) {
+    // Check if room is full (max 12 players for Word Chain)
+    if (currentRoom.playerCount >= 12) {
       console.log(`❌ Room ${roomId} is full, rejecting player ${conn.id}`);
       
       conn.send(JSON.stringify({
         type: 'error',
-        message: 'Room is full. Maximum 2 players allowed.'
+        message: 'Room is full. Maximum 12 players allowed.'
       }));
       
       conn.close(1000, 'Room is full');
       return;
     }
     
-    // Second player joining existing room
+    // Add player to room
     currentRoom.playerCount++;
+    currentRoom.players.push({ id: conn.id, name: playerName, isHost: false });
     activeRooms.set(roomId, currentRoom);
 
-    console.log(`✅ Player ${conn.id} joined room ${roomId} (${currentRoom.playerCount} players)`);
+    console.log(`✅ Player ${conn.id} (${playerName}) joined room ${roomId} (${currentRoom.playerCount} players)`);
 
-    // Send connection confirmation
+    // Send connection confirmation with all current players
     conn.send(JSON.stringify({
       type: 'connected',
       id: conn.id,
       roomId: this.room.id,
       playerCount: currentRoom.playerCount,
-      isHost: false
+      isHost: false,
+      players: currentRoom.players
     }));
 
-    // Notify host that a player joined
+    // Notify all other players that a new player joined
     this.room.broadcast(
       JSON.stringify({
         type: 'player-joined',
         playerId: conn.id,
-        playerName: ctx.request.url.split('?name=')[1] || 'Guest',
-        playerCount: currentRoom.playerCount
+        playerName: playerName,
+        playerCount: currentRoom.playerCount,
+        allPlayers: currentRoom.players
       }),
       [conn.id] // exclude sender
     );
@@ -91,7 +106,11 @@ export default class GameServer implements Party.Server {
     const currentRoom = activeRooms.get(roomId);
     
     if (currentRoom) {
+      // Remove player from players array and get their info before removing
+      const disconnectedPlayer = currentRoom.players.find(p => p.id === conn.id);
+      
       currentRoom.playerCount--;
+      currentRoom.players = currentRoom.players.filter(p => p.id !== conn.id);
       
       // Check if the host left
       const hostLeft = currentRoom.hostId === conn.id;
@@ -100,7 +119,7 @@ export default class GameServer implements Party.Server {
       if (currentRoom.playerCount <= 0 || hostLeft) {
         console.log(`🧹 Room ${roomId} ${hostLeft ? 'host left' : 'is empty'}, scheduling cleanup`);
         
-        // If host left but guest is still there, notify guest
+        // If host left but guests are still there, notify guests
         if (hostLeft && currentRoom.playerCount > 0) {
           this.room.broadcast(
             JSON.stringify({
@@ -121,17 +140,19 @@ export default class GameServer implements Party.Server {
       } else {
         activeRooms.set(roomId, currentRoom);
       }
+      
+      // Notify others that a player left
+      this.room.broadcast(
+        JSON.stringify({
+          type: 'player-left',
+          playerId: conn.id,
+          playerName: disconnectedPlayer?.name || 'Unknown',
+          playerCount: currentRoom.playerCount,
+          allPlayers: currentRoom.players
+        }),
+        [conn.id]
+      );
     }
-
-    // Notify others that a player left
-    this.room.broadcast(
-      JSON.stringify({
-        type: 'player-left',
-        playerId: conn.id,
-        playerCount: currentRoom?.playerCount || 0
-      }),
-      [conn.id]
-    );
 
     console.log(`Player ${conn.id} disconnected from room ${roomId} (${currentRoom?.playerCount || 0} players remaining)`);
   }
@@ -148,7 +169,7 @@ export default class GameServer implements Party.Server {
       return new Response(JSON.stringify({
         exists: !!room && room.playerCount > 0,
         playerCount: room?.playerCount || 0,
-        isFull: room ? room.playerCount >= 2 : false
+        isFull: room ? room.playerCount >= 12 : false
       }), {
         headers: { 'Content-Type': 'application/json' }
       });

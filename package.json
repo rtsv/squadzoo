@@ -9,12 +9,12 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "deploy": "gh-pages -d dist"
+    "deploy": "gh-pages -d dist",
+    "partykit": "partykit dev"
   },
   "dependencies": {
     "partykit": "^0.0.115",
     "partysocket": "^1.1.10",
-    "peerjs": "^1.5.5",
     "pusher-js": "^8.4.0",
     "react": "^19.2.0",
     "react-dom": "^19.2.0"
