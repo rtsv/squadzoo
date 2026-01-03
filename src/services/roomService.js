@@ -15,6 +15,13 @@ class RoomService {
   async initialize(playerName, roomId = null) {
     this.playerName = playerName;
     
+    // Clean up existing connection first
+    if (this.socket) {
+      console.log('🧹 Cleaning up existing connection...');
+      this.socket.close();
+      this.socket = null;
+    }
+    
     // Generate or use provided room ID
     this.roomId = roomId || this.generateRoomId();
     this.isHost = !roomId; // If no roomId provided, this player is the host
@@ -31,7 +38,9 @@ class RoomService {
       // For production: use your deployed PartyKit URL
       const host = window.location.hostname === 'localhost' 
         ? 'localhost:1999' 
-        : 'squad-zoo-multiplayer.riteshyadav.partykit.dev'; // You'll get this after deploying
+        : 'squad-zoo-multiplayer.riteshyadav.partykit.dev';
+
+      console.log('🔗 Connecting to PartyKit at:', host, 'room:', this.roomId);
 
       this.socket = new PartySocket({
         host,
@@ -132,14 +141,14 @@ class RoomService {
   // Create a new room (host)
   async createRoom() {
     const roomCode = this.generateRoomCode();
-    await this.initialize(this.playerName, roomCode);
+    await this.initialize(this.playerName, roomCode.toLowerCase()); // Store as lowercase
     this.isHost = true;
     
     console.log('🏠 Room created with code:', roomCode);
     
     return {
-      roomId: roomCode,
-      roomCode: roomCode.toUpperCase()
+      roomId: roomCode.toLowerCase(),
+      roomCode: roomCode.toUpperCase() // Display as uppercase
     };
   }
 
@@ -147,8 +156,9 @@ class RoomService {
   async joinRoom(roomCode) {
     const normalizedCode = roomCode.toLowerCase().trim();
     await this.initialize(this.playerName, normalizedCode);
+    this.isHost = false; // Set isHost to false for guests
     
-    console.log('✅ Joined room:', roomCode);
+    console.log('✅ Joined room:', normalizedCode);
     
     return normalizedCode;
   }

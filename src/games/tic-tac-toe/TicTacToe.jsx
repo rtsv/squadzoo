@@ -35,6 +35,15 @@ function TicTacToe({ onBack }) {
   useEffect(() => {
     if (!isOnlineMode) return;
 
+    // Don't cleanup on unmount - only when intentionally leaving
+    return () => {
+      // Empty cleanup - we handle disconnection manually in handleBackToMenu
+    };
+  }, [isOnlineMode]);
+
+  useEffect(() => {
+    if (!isOnlineMode || !isInRoom) return;
+
     // Handle errors
     roomService.on('onError', (errorMessage) => {
       setAlertMessage(errorMessage);
@@ -97,29 +106,37 @@ function TicTacToe({ onBack }) {
         roomService.leaveRoom();
       }
     };
-  }, [isOnlineMode, isHost]);
+  }, [isOnlineMode, isHost, isInRoom]);
 
   function handleOpponentMove(moveData) {
-    const newBoard = [...board];
-    newBoard[moveData.index] = moveData.playerIndex;
-    setBoard(newBoard);
-
-    const result = checkWinner(newBoard);
-    if (result) {
-      if (result.winner === "draw") {
-        setIsDraw(true);
-        setScores(prev => ({ ...prev, draws: prev.draws + 1 }));
+    console.log('📥 Opponent move:', moveData);
+    
+    // Update board with opponent's move
+    setBoard(prevBoard => {
+      const newBoard = [...prevBoard];
+      newBoard[moveData.index] = moveData.playerIndex;
+      
+      // Check for winner after updating board
+      const result = checkWinner(newBoard);
+      if (result) {
+        if (result.winner === "draw") {
+          setIsDraw(true);
+          setScores(prev => ({ ...prev, draws: prev.draws + 1 }));
+        } else {
+          setWinner(result.winner);
+          setWinningLine(result.line);
+          setScores(prev => ({
+            ...prev,
+            [result.winner]: prev[result.winner] + 1,
+          }));
+        }
       } else {
-        setWinner(result.winner);
-        setWinningLine(result.line);
-        setScores(prev => ({
-          ...prev,
-          [result.winner]: prev[result.winner] + 1,
-        }));
+        // Switch turn to current player
+        setCurrentPlayerIndex(moveData.playerIndex === 0 ? 1 : 0);
       }
-    } else {
-      setCurrentPlayerIndex(moveData.playerIndex === 0 ? 1 : 0);
-    }
+      
+      return newBoard;
+    });
   }
 
   async function handleCreateOnlineRoom() {
@@ -129,6 +146,55 @@ function TicTacToe({ onBack }) {
     }
 
     try {
+      // Register callbacks BEFORE creating room
+      roomService.on('onPlayerJoined', (data) => {
+        console.log('🎉 Player joined callback:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+        
+        if (allPlayers.length === 2) {
+          // Both players connected, start game
+          const playerNames = allPlayers.map(p => p.playerName);
+          setPlayers(playerNames);
+          setWaitingForOpponent(false);
+          setGameStarted(true);
+          
+          // Notify guest to start game
+          roomService.sendGameAction('game-start', { players: playerNames });
+        }
+      });
+
+      roomService.on('onPlayerLeft', () => {
+        setAlertMessage("Opponent disconnected!");
+        setTimeout(() => {
+          handleBackToMenu();
+        }, 2000);
+      });
+
+      roomService.on('onGameAction', (data) => {
+        console.log('Game action received:', data);
+        
+        switch (data.action) {
+          case 'game-start':
+            setPlayers(data.payload.players);
+            setWaitingForOpponent(false);
+            setGameStarted(true);
+            break;
+            
+          case 'move':
+            handleOpponentMove(data.payload);
+            break;
+            
+          case 'reset-board':
+            resetBoard();
+            break;
+            
+          case 'new-game':
+            resetGame();
+            break;
+        }
+      });
+
       roomService.playerName = playerName;
       const { roomCode: code } = await roomService.createRoom();
       setRoomCode(code);
@@ -151,6 +217,44 @@ function TicTacToe({ onBack }) {
     }
 
     try {
+      // Register callbacks BEFORE joining room
+      roomService.on('onPlayerJoined', (data) => {
+        console.log('🎉 Player joined callback:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerLeft', () => {
+        setAlertMessage("Opponent disconnected!");
+        setTimeout(() => {
+          handleBackToMenu();
+        }, 2000);
+      });
+
+      roomService.on('onGameAction', (data) => {
+        console.log('Game action received:', data);
+        
+        switch (data.action) {
+          case 'game-start':
+            setPlayers(data.payload.players);
+            setWaitingForOpponent(false);
+            setGameStarted(true);
+            break;
+            
+          case 'move':
+            handleOpponentMove(data.payload);
+            break;
+            
+          case 'reset-board':
+            resetBoard();
+            break;
+            
+          case 'new-game':
+            resetGame();
+            break;
+        }
+      });
+
       roomService.playerName = playerName;
       await roomService.joinRoom(roomCode);
       setIsInRoom(true);
@@ -224,7 +328,7 @@ function TicTacToe({ onBack }) {
   }
 
   function handleCellClick(index) {
-    if (board[index] || winner || isDraw) return;
+    if (board[index] !== null || winner || isDraw) return;
 
     // Online mode: check if it's player's turn
     if (isOnlineMode && myPlayerIndex !== currentPlayerIndex) {
@@ -248,14 +352,14 @@ function TicTacToe({ onBack }) {
     if (result) {
       if (result.winner === "draw") {
         setIsDraw(true);
-        setScores({ ...scores, draws: scores.draws + 1 });
+        setScores(prev => ({ ...prev, draws: prev.draws + 1 }));
       } else {
         setWinner(result.winner);
         setWinningLine(result.line);
-        setScores({
-          ...scores,
-          [result.winner]: scores[result.winner] + 1,
-        });
+        setScores(prev => ({
+          ...prev,
+          [result.winner]: prev[result.winner] + 1,
+        }));
       }
     } else {
       setCurrentPlayerIndex(currentPlayerIndex === 0 ? 1 : 0);
