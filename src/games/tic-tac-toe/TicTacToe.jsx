@@ -1,5 +1,6 @@
 import { useState } from "react";
 import GameLayout from "../../layout/GameLayout";
+import CustomAlert from "../../components/CustomAlert";
 import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -14,6 +15,7 @@ function TicTacToe({ onBack }) {
   const [winningLine, setWinningLine] = useState([]);
   const [isDraw, setIsDraw] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   const symbols = ["❌", "⭕"];
 
@@ -26,7 +28,7 @@ function TicTacToe({ onBack }) {
   function startGame() {
     const validPlayers = players.filter(name => name.trim() !== "");
     if (validPlayers.length < 2) {
-      alert("Please enter both player names!");
+      setAlertMessage("Please enter both player names!");
       return;
     }
     setPlayers(validPlayers);
@@ -108,6 +110,12 @@ function TicTacToe({ onBack }) {
   if (!gameStarted) {
     return (
       <GameLayout title="⭕❌ Tic-Tac-Toe - Player Setup" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>
             Enter player names to begin. Take turns placing your symbols to get three in a row!

@@ -29,9 +29,9 @@
 
 ### 1. Submit to Google Search Console
 - Go to: https://search.google.com/search-console
-- Add property: `https://rtsv.github.io/squadzoo/`
+- Add property: `https://squadzoo.games/`
 - Verify ownership
-- Submit sitemap: `https://rtsv.github.io/squadzoo/sitemap.xml`
+- Submit sitemap: `https://squadzoo.games/sitemap.xml`
 - Request indexing for main pages
 
 ### 2. Submit to Bing Webmaster Tools

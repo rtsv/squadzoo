@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
+import CustomAlert from "../../components/CustomAlert";
 import DrawingCanvas from "./DrawingCanvas";
 import { wordsByDifficulty } from "./wordList";
 import styles from "../../styles/DrawGuess.module.css";
@@ -23,6 +24,7 @@ function DrawGuess({ onBack }) {
   const [showHint, setShowHint] = useState(false);
   const [canvasKey, setCanvasKey] = useState(0);
   const [showRules, setShowRules] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   // Timer effect
   useEffect(() => {
@@ -54,7 +56,7 @@ function DrawGuess({ onBack }) {
   function startGame() {
     const validPlayers = players.filter(name => name.trim() !== "");
     if (validPlayers.length < 2) {
-      alert("Please enter at least 2 player names!");
+      setAlertMessage("Please enter at least 2 player names!");
       return;
     }
     setPlayers(validPlayers);
@@ -148,6 +150,12 @@ function DrawGuess({ onBack }) {
   if (!gameStarted) {
     return (
       <GameLayout title="🎨 Draw & Guess - Setup" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>
             Enter player names and choose difficulty. One player draws while others guess!

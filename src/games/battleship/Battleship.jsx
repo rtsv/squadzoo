@@ -1,5 +1,6 @@
 import { useState } from "react";
 import GameLayout from "../../layout/GameLayout";
+import CustomAlert from "../../components/CustomAlert";
 import styles from "../../styles/Battleship.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -17,6 +18,7 @@ function Battleship({ onBack }) {
   const [currentSetupPlayer, setCurrentSetupPlayer] = useState(0);
   const [currentBattlePlayer, setCurrentBattlePlayer] = useState(0);
   const [showRules, setShowRules] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
   
   // Player boards: null = empty, 'ship' = ship placed, 'hit' = ship hit, 'miss' = missed shot
   const [playerBoards, setPlayerBoards] = useState([
@@ -46,7 +48,7 @@ function Battleship({ onBack }) {
   function startGame() {
     const validPlayers = players.filter(name => name.trim() !== "");
     if (validPlayers.length < 2) {
-      alert("Please enter both player names!");
+      setAlertMessage("Please enter both player names!");
       return;
     }
     setPlayers(validPlayers);
@@ -217,6 +219,12 @@ function Battleship({ onBack }) {
   if (gamePhase === "setup") {
     return (
       <GameLayout title="🚢 Battleship - Player Setup" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>
             Place ships and sink your opponent's fleet!

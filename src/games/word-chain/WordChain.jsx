@@ -1,5 +1,6 @@
 import { useState } from "react";
 import GameLayout from "../../layout/GameLayout";
+import CustomAlert from "../../components/CustomAlert";
 import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -15,6 +16,7 @@ function WordChain({ onBack }) {
   const [error, setError] = useState("");
   const [isValidating, setIsValidating] = useState(false);
   const [showRules, setShowRules] = useState(false);
+  const [alertMessage, setAlertMessage] = useState(null);
 
   const lastLetter =
     usedWords.length === 0
@@ -41,7 +43,7 @@ function WordChain({ onBack }) {
   function startGame() {
     const validPlayers = players.filter(name => name.trim() !== "");
     if (validPlayers.length < 2) {
-      alert("Please enter at least 2 player names!");
+      setAlertMessage("Please enter at least 2 player names!");
       return;
     }
     setPlayers(validPlayers);
@@ -175,6 +177,12 @@ function WordChain({ onBack }) {
   if (!gameStarted) {
     return (
       <GameLayout title="🔤 Word Chain - Player Setup" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>
             Enter player names to begin. Each player will take turns creating a word chain!
