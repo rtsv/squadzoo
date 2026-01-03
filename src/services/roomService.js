@@ -16,13 +16,18 @@ class RoomService {
     this.playerName = playerName;
     
     // Create a new peer with a random ID and improved configuration
-    // Using the official PeerJS cloud server (0.peerjs.com) which is more reliable
+    // Using the official PeerJS cloud server with aggressive connection settings
     this.peer = new Peer(undefined, {
+      host: '0.peerjs.com',
+      port: 443,
+      path: '/',
+      secure: true,
       config: {
         iceServers: [
           // Google STUN servers
           { urls: 'stun:stun.l.google.com:19302' },
           { urls: 'stun:stun1.l.google.com:19302' },
+          { urls: 'stun:stun2.l.google.com:19302' },
           // Free TURN servers for connection relay (helps with NAT traversal)
           {
             urls: 'turn:openrelay.metered.ca:80',
@@ -39,8 +44,7 @@ class RoomService {
             username: 'openrelayproject',
             credential: 'openrelayproject'
           }
-        ],
-        iceTransportPolicy: 'all'
+        ]
       },
       debug: 3 // Maximum logging for debugging
     });
@@ -57,6 +61,14 @@ class RoomService {
         clearTimeout(timeoutId);
         console.log('✅ Peer initialized with ID:', id);
         console.log('🔗 You can now create or join rooms');
+        
+        // Re-register connection listener after peer is fully open
+        console.log('📡 Registering connection listener...');
+        this.peer.on('connection', (conn) => {
+          console.log('📞 Incoming connection from:', conn.peer);
+          this.setupConnection(conn);
+        });
+        
         resolve(id);
       });
 
@@ -96,7 +108,7 @@ class RoomService {
         }
       });
 
-      // Handle incoming connections
+      // Initial connection listener (will be re-registered after 'open')
       this.peer.on('connection', (conn) => {
         console.log('📞 Incoming connection from:', conn.peer);
         this.setupConnection(conn);
