@@ -122,6 +122,7 @@ class RoomService {
       throw new Error('Peer not initialized');
     }
 
+    console.log('Attempting to join room with peer ID:', hostPeerId);
     this.isHost = false;
     this.roomId = hostPeerId;
 
@@ -130,18 +131,27 @@ class RoomService {
 
       // Set a timeout for connection
       timeoutId = setTimeout(() => {
-        reject(new Error('Failed to connect to room. The room may not exist or the host may have left.'));
+        console.error('Connection timeout after 15 seconds');
+        reject(new Error('Connection timeout. The host may not be available or has closed the room.'));
       }, 15000); // 15 second timeout
 
+      console.log('Creating connection to host:', hostPeerId);
       const conn = this.peer.connect(hostPeerId, {
         reliable: true,
         metadata: { playerName: this.playerName },
         serialization: 'json'
       });
 
+      // Add immediate error logging
+      if (!conn) {
+        clearTimeout(timeoutId);
+        reject(new Error('Failed to create connection object'));
+        return;
+      }
+
       conn.on('open', () => {
         clearTimeout(timeoutId);
-        console.log('Connection established with host');
+        console.log('✅ Connection established with host');
         this.setupConnection(conn);
         // Send join message
         this.sendToConnection(conn, {
@@ -154,12 +164,32 @@ class RoomService {
 
       conn.on('error', (error) => {
         clearTimeout(timeoutId);
-        console.error('Connection error:', error);
-        const errorMessage = 'Failed to join room. Please check the room code and try again.';
+        console.error('❌ Connection error details:', error);
+        let errorMessage = 'Failed to join room. ';
+        
+        if (error.type === 'peer-unavailable') {
+          errorMessage += 'The host is not online or the room code is incorrect.';
+        } else if (error.type === 'network') {
+          errorMessage += 'Network error. Check your internet connection.';
+        } else if (error.type === 'disconnected') {
+          errorMessage += 'Connection was disconnected.';
+        } else {
+          errorMessage += 'Please verify the room code and make sure the host is in the waiting room.';
+        }
+        
         if (this.callbacks.onError) {
           this.callbacks.onError(errorMessage);
         }
         reject(new Error(errorMessage));
+      });
+
+      // Add close handler during connection attempt
+      conn.on('close', () => {
+        if (timeoutId) {
+          clearTimeout(timeoutId);
+          console.error('Connection closed before opening');
+          reject(new Error('Connection closed by host or network issue.'));
+        }
       });
     });
   }
