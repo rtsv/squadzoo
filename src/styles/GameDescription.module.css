@@ -1,0 +1,87 @@
+/* Game Description Component */
+.descriptionContainer {
+  max-width: 900px;
+  margin: 0 auto 2rem auto;
+  padding: 2rem;
+  background: linear-gradient(135deg, rgba(45, 55, 72, 0.6) 0%, rgba(30, 33, 46, 0.8) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  backdrop-filter: blur(10px);
+}
+
+.descriptionSection {
+  margin-bottom: 2rem;
+}
+
+.descriptionTitle {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #f1f5f9;
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.descriptionText {
+  font-size: 1.05rem;
+  line-height: 1.8;
+  color: #cbd5e0;
+  text-align: center;
+  margin: 0;
+}
+
+.featuresSection,
+.howToPlaySection {
+  margin-bottom: 1.5rem;
+}
+
+.sectionTitle {
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #a78bfa;
+  margin-bottom: 1rem;
+}
+
+.featuresList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 0.75rem;
+}
+
+.featureItem {
+  padding: 0.75rem 1rem;
+  background: rgba(99, 102, 241, 0.1);
+  border-left: 3px solid #818cf8;
+  border-radius: 6px;
+  color: #e2e8f0;
+  font-size: 0.95rem;
+}
+
+.howToPlayText {
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #cbd5e0;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .descriptionContainer {
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .descriptionTitle {
+    font-size: 1.5rem;
+  }
+
+  .descriptionText {
+    font-size: 1rem;
+  }
+
+  .featuresList {
+    grid-template-columns: 1fr;
+  }
+}

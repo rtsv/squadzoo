@@ -6,6 +6,7 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import Disclaimer from "./pages/Disclaimer";
+import FAQ from "./pages/FAQ";
 import DrawGuessPage from "./pages/games/DrawGuessPage";
 import WordChainPage from "./pages/games/WordChainPage";
 import TicTacToePage from "./pages/games/TicTacToePage";
@@ -22,6 +23,7 @@ function App() {
           <Route path="/terms" element={<TermsOfService />} />
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/faq" element={<FAQ />} />
           <Route path="/games/draw-and-guess" element={<DrawGuessPage />} />
           <Route path="/games/word-chain" element={<WordChainPage />} />
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />

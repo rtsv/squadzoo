@@ -11,7 +11,7 @@ function Footer() {
         <div className={styles.footerSection}>
           <h3 className={styles.footerTitle}>SquadZoo</h3>
           <p className={styles.footerDescription}>
-            Free multiplayer brain games for everyone. Challenge your mind, play with friends!
+            Free multiplayer puzzle and strategy games for everyone. Challenge your mind, play with friends!
           </p>
         </div>
         <div className={styles.footerSection}>
@@ -19,6 +19,7 @@ function Footer() {
           <nav className={styles.footerLinks} aria-label="Footer navigation">
             <button onClick={() => navigate("/")} className={styles.footerLink}>Home</button>
             <button onClick={() => navigate("/about")} className={styles.footerLink}>About Us</button>
+            <button onClick={() => navigate("/faq")} className={styles.footerLink}>FAQ</button>
             <button onClick={() => navigate("/contact")} className={styles.footerLink}>Contact</button>
           </nav>
         </div>

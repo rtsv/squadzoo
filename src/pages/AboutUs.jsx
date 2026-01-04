@@ -22,20 +22,19 @@ function AboutUs() {
         <section className={styles.section}>
           <h2>Our Mission</h2>
           <p>
-            Our mission is to create a platform where people of all ages can come together to enjoy 
-            brain-stimulating games that enhance cognitive abilities, improve vocabulary, boost creativity, 
-            and develop strategic thinking skills. We aim to make learning fun and accessible to everyone.
+            At SquadZoo, we believe in the power of games to bring people together. Our mission is to create 
+            mind-stimulating games that enhance cognitive abilities, improve vocabulary, boost creativity, 
+            and foster social connections. Whether you're looking for a quick mental workout or a fun way 
+            to connect with friends and family, SquadZoo has something for everyone.
           </p>
         </section>
 
         <section className={styles.section}>
           <h2>What We Offer</h2>
           <ul className={styles.list}>
-            <li><strong>Multiplayer Games:</strong> Play with friends and family in real-time competitive gameplay</li>
-            <li><strong>Brain Training:</strong> Games designed to enhance vocabulary, memory, and critical thinking</li>
-            <li><strong>Free to Play:</strong> All our games are completely free with no hidden costs</li>
-            <li><strong>No Downloads:</strong> Play instantly in your browser without any installations</li>
-            <li><strong>Regular Updates:</strong> We continuously add new games and features</li>
+            <li><strong>100% Free:</strong> All games are completely free to play with no hidden costs or subscriptions</li>
+            <li><strong>No Downloads:</strong> Play instantly in your browser on any device</li>
+            <li><strong>Mind Training:</strong> Games designed to enhance vocabulary, memory, and critical thinking</li>
           </ul>
         </section>
 

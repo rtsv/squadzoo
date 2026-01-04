@@ -1,11 +1,26 @@
 import { useNavigate, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Battleship from "../../games/battleship/Battleship";
+import GameDescription from "../../components/GameDescription";
 
 function BattleshipPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
+
+  const gameDescription = {
+    title: "Battleship",
+    description: "Play Battleship online free with friends! This classic naval strategy game challenges you to sink your opponent's fleet before they sink yours. Place your ships strategically, guess coordinates, and use tactical thinking to dominate the ocean. Play online multiplayer with friends or locally on the same device. No downloads required - works perfectly on mobile and desktop browsers.",
+    features: [
+      "🚢 Classic Battleship naval warfare gameplay",
+      "🎯 Strategic ship placement and tactical guessing",
+      "👥 Free online multiplayer for 2 players",
+      "🌊 Traditional 10x10 grid with 5 ships",
+      "📱 Mobile and desktop compatible",
+      "⚡ Instant play - No account or download needed"
+    ],
+    howToPlay: "Place your 5 ships (Carrier, Battleship, Cruiser, Submarine, and Destroyer) on a 10x10 grid. Take turns calling out coordinates to attack. Your opponent says 'Hit' or 'Miss'. Sink all enemy ships to win! Use strategic thinking to predict ship locations. Create a room to play online with friends or choose local mode for same-device play."
+  };
 
   return (
     <>
@@ -23,6 +38,8 @@ function BattleshipPage() {
         <meta name="twitter:title" content="Battleship - Online Multiplayer Game" />
         <meta name="twitter:description" content="Play Battleship online with friends! Free naval strategy game." />
       </Helmet>
+      
+      <GameDescription {...gameDescription} />
       <Battleship onBack={() => navigate("/")} initialRoomCode={roomCode} />
     </>
   );
