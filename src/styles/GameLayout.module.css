@@ -3,6 +3,7 @@
   max-width: 1400px;
   margin: 0 auto;
   min-height: 100vh;
+  background: transparent;
 }
 
 .header {
@@ -39,10 +40,11 @@
 }
 
 .content {
-  background: white;
+  background: rgba(30, 33, 46, 0.8);
+  backdrop-filter: blur(10px);
   border-radius: 16px;
   padding: 32px;
   min-height: 400px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(99, 102, 241, 0.2);
 }

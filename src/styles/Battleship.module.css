@@ -3,14 +3,14 @@
   max-width: 500px;
   margin: 0 auto;
   padding: 30px;
-  background: white;
+  background: #2d3748;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .setupDescription {
   text-align: center;
-  color: #666;
+  color: #cbd5e0;
   margin-bottom: 30px;
   font-size: 16px;
   line-height: 1.5;
@@ -23,7 +23,7 @@
 }
 
 .rulesContent {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
   padding: 20px;
   border-radius: 12px;
   margin-top: 12px;
@@ -44,7 +44,7 @@
 
 .rulesContent h4 {
   margin: 0 0 12px 0;
-  color: #333;
+  color: #f1f5f9;
   font-size: 16px;
 }
 
@@ -56,12 +56,12 @@
 
 .rulesContent li {
   margin-bottom: 8px;
-  color: #555;
+  color: #cbd5e0;
   line-height: 1.5;
 }
 
 .rulesContent strong {
-  color: #333;
+  color: #f1f5f9;
 }
 
 /* Rules Toggle in Game */
@@ -71,14 +71,14 @@
 }
 
 .rulesContentSmall {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
   padding: 12px 16px;
   border-radius: 8px;
   margin-top: 8px;
   text-align: center;
   animation: slideDown 0.3s ease-out;
   font-size: 14px;
-  color: #555;
+  color: #cbd5e0;
 }
 
 /* Placement Container */
@@ -95,7 +95,7 @@
 
 .placementTitle {
   font-size: 20px;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 12px 0;
 }
 
@@ -153,7 +153,7 @@
 .colLabel {
   text-align: center;
   font-weight: 600;
-  color: #666;
+  color: #cbd5e0;
   font-size: 12px;
 }
 
@@ -177,7 +177,7 @@
   align-items: center;
   justify-content: center;
   font-weight: 600;
-  color: #666;
+  color: #cbd5e0;
   font-size: 12px;
 }
 
@@ -185,14 +185,14 @@
   display: grid;
   grid-template-columns: repeat(8, 1fr);
   gap: 3px;
-  background: #e0e0e0;
+  background: #1a1d29;
   padding: 3px;
   border-radius: 8px;
 }
 
 .cell {
   aspect-ratio: 1;
-  background: white;
+  background: #374151;
   border-radius: 4px;
   display: flex;
   align-items: center;
@@ -264,15 +264,15 @@
 
 /* Ships to Place - Compact */
 .shipsToPlace {
-  background: white;
+  background: #2d3748;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
 }
 
 .shipsToPlaceTitle {
   font-size: 16px;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 12px 0;
   text-align: center;
 }
@@ -290,10 +290,11 @@
   align-items: center;
   gap: 8px;
   padding: 10px 14px;
-  background: #f5f5f5;
+  background: #374151;
   border-radius: 8px;
   transition: all 0.3s ease;
   font-size: 14px;
+  color: #e2e8f0;
 }
 
 .shipActive {
@@ -346,10 +347,10 @@
   display: flex;
   justify-content: space-around;
   align-items: center;
-  background: white;
+  background: #2d3748;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   margin-bottom: 16px;
 }
 
@@ -362,7 +363,7 @@
 
 .playerName {
   font-weight: 600;
-  color: #333;
+  color: #f1f5f9;
   font-size: 14px;
 }
 
@@ -398,22 +399,22 @@
 .boardTitle {
   text-align: center;
   font-size: 18px;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 12px 0;
 }
 
 /* Ships Status - Compact */
 .shipsStatus {
-  background: white;
+  background: #2d3748;
   padding: 16px;
   border-radius: 12px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
   margin-bottom: 16px;
 }
 
 .shipsStatusTitle {
   font-size: 16px;
-  color: #333;
+  color: #f1f5f9;
   margin: 0 0 12px 0;
   text-align: center;
 }
@@ -438,10 +439,10 @@
 
 /* Result Card - Compact */
 .resultCard {
-  background: white;
+  background: #2d3748;
   padding: 24px;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   text-align: center;
   animation: slideIn 0.4s ease-out;
 }
@@ -469,7 +470,7 @@
 
 .resultText {
   font-size: 16px;
-  color: #666;
+  color: #cbd5e0;
   margin: 0 0 20px 0;
 }
 

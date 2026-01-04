@@ -1,16 +1,16 @@
 /* Setup Screen */
 .setupContainer {
-  max-width: 800px;
+  max-width: 500px;
   margin: 0 auto;
   padding: 30px;
-  background: white;
+  background: #2d3748;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .setupDescription {
   text-align: center;
-  color: #666;
+  color: #cbd5e0;
   margin-bottom: 30px;
   font-size: 16px;
   line-height: 1.5;
@@ -20,7 +20,7 @@
 .difficultySection {
   width: 100%;
   padding: 15px;
-  background: #f8fafc;
+  background: #1f2937;
   border-radius: 10px;
   margin-bottom: 15px;
 }
@@ -29,7 +29,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: #f1f5f9;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -52,7 +52,7 @@
 .timeLimitSection {
   flex: 1;
   padding: 15px;
-  background: #f8fafc;
+  background: #1f2937;
   border-radius: 10px;
   display: flex;
   flex-direction: column;
@@ -62,7 +62,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: #f1f5f9;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -92,10 +92,10 @@
 }
 
 .timeLimitDisplay {
-  background: white;
+  background: #374151;
   padding: 8px 20px;
   border-radius: 8px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #4b5563;
   display: flex;
   align-items: baseline;
   gap: 4px;
@@ -119,7 +119,7 @@
 .playersSection {
   flex: 1;
   padding: 15px;
-  background: #f8fafc;
+  background: #1f2937;
   border-radius: 10px;
 }
 
@@ -127,7 +127,7 @@
   display: block;
   font-size: 14px;
   font-weight: 600;
-  color: #334155;
+  color: #f1f5f9;
   margin-bottom: 10px;
   text-align: center;
 }
@@ -140,15 +140,15 @@
 
 .playerInputRow {
   display: flex;
-  gap: 8px;
   align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
 .playerLabel {
-  min-width: 70px;
   font-weight: 600;
-  color: #475569;
-  font-size: 13px;
+  color: #f1f5f9;
+  min-width: 120px;
 }
 
 .setupButtons {
@@ -172,7 +172,7 @@
 }
 
 .rulesContent {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
   padding: 20px;
   border-radius: 12px;
   margin-top: 12px;
@@ -193,7 +193,7 @@
 
 .rulesContent h4 {
   margin: 0 0 12px 0;
-  color: #333;
+  color: #f1f5f9;
   font-size: 16px;
 }
 
@@ -205,25 +205,24 @@
 
 .rulesContent li {
   margin-bottom: 8px;
-  color: #555;
+  color: #cbd5e0;
   line-height: 1.5;
 }
 
-/* Rules Toggle in Game */
 .rulesToggle {
   text-align: center;
   margin-bottom: 16px;
 }
 
 .rulesContentSmall {
-  background: linear-gradient(135deg, #f5f7fa 0%, #e9ecef 100%);
+  background: linear-gradient(135deg, #374151 0%, #1f2937 100%);
   padding: 12px 16px;
   border-radius: 8px;
   margin-top: 8px;
   text-align: center;
   animation: slideDown 0.3s ease-out;
   font-size: 14px;
-  color: #555;
+  color: #cbd5e0;
 }
 
 /* Game Screen */
@@ -248,7 +247,14 @@
 }
 
 .scoreboard {
-  flex: 1;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  background: #2d3748;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 24px;
 }
 
 .scoreboardTitle {
@@ -277,9 +283,9 @@
 }
 
 .playerName {
-  color: white;
   font-weight: 600;
-  font-size: 13px;
+  color: #f1f5f9;
+  font-size: 16px;
 }
 
 .playerScore {
@@ -310,8 +316,8 @@
 }
 
 .timerWarning {
-  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-  animation: pulse 1s infinite;
+  background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);
+  animation: pulse 1s ease-in-out infinite;
 }
 
 @keyframes pulse {
@@ -333,6 +339,8 @@
   gap: 2px;
   text-align: center;
   min-width: 100px;
+  color: #cbd5e0;
+  font-size: 14px;
 }
 
 .drawerLabel {
@@ -363,26 +371,29 @@
 }
 
 .canvasContainer {
-  background: #f1f5f9;
-  padding: 10px;
-  border-radius: 12px;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  gap: 16px;
+  background: #2d3748;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+  margin-bottom: 20px;
 }
 
 .canvasWrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  align-items: center;
-  width: 100%;
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+  background: #374151;
 }
 
 .canvas {
   border: 3px solid #667eea;
   border-radius: 10px;
-  background: white;
+  background: #374151;
   box-shadow: 0 2px 15px rgba(102, 126, 234, 0.2);
   cursor: crosshair;
   transition: box-shadow 0.3s ease;
@@ -398,7 +409,7 @@
 
 /* Drawing Tools */
 .drawingTools {
-  background: white;
+  background: #1f2937;
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -419,7 +430,7 @@
 .toolLabel {
   font-size: 12px;
   font-weight: 600;
-  color: #475569;
+  color: #cbd5e0;
   white-space: nowrap;
 }
 
@@ -433,7 +444,7 @@
   width: 28px;
   height: 28px;
   border-radius: 6px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #4b5563;
   cursor: pointer;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -450,10 +461,35 @@
   box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
 }
 
+.colorPicker {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  padding: 12px;
+  background: #1a1d29;
+  border-radius: 8px;
+}
+
 .brushSizes {
   display: flex;
   gap: 4px;
   flex-wrap: wrap;
+}
+
+.brushSizeControl {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #1a1d29;
+  border-radius: 8px;
+}
+
+.brushSizeLabel {
+  font-weight: 600;
+  color: #cbd5e0;
+  min-width: 100px;
 }
 
 /* Right Column - Game Controls (50%) */
@@ -482,7 +518,7 @@
 }
 
 .secretWord {
-  background: white;
+  background: rgba(255, 255, 255, 0.95);
   padding: 8px 20px;
   border-radius: 8px;
   font-size: 22px;
@@ -509,7 +545,7 @@
   font-weight: 600;
   color: #78350f;
   padding: 8px;
-  background: white;
+  background: rgba(255, 255, 255, 0.9);
   border-radius: 6px;
   display: inline-block;
 }
@@ -523,7 +559,7 @@
 /* Guessers Section */
 .guessersSection {
   flex: 1;
-  background: white;
+  background: #2d3748;
   padding: 15px;
   border-radius: 12px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
@@ -532,7 +568,7 @@
 .guessersSectionTitle {
   font-size: 16px;
   font-weight: 700;
-  color: #1e293b;
+  color: #f1f5f9;
   margin: 0 0 12px 0;
   text-align: center;
 }
@@ -543,18 +579,18 @@
   gap: 6px;
   margin-bottom: 10px;
   padding: 10px;
-  background: #f8fafc;
+  background: #374151;
   border-radius: 10px;
   transition: all 0.3s ease;
 }
 
 .guessRow:hover {
-  background: #f1f5f9;
+  background: #4b5563;
 }
 
 .guesserLabel {
   font-weight: 700;
-  color: #334155;
+  color: #f1f5f9;
   font-size: 14px;
 }
 

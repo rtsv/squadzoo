@@ -1,18 +1,20 @@
 /* Input Styles */
 .input {
   padding: 12px 16px;
-  border: 2px solid #e2e8f0;
+  border: 2px solid #4a5568;
   border-radius: 8px;
   font-size: 15px;
   font-family: inherit;
   transition: all 0.3s ease;
   outline: none;
-  background: white;
+  background: #2d3748;
+  color: #f7fafc;
 }
 
 .input:focus {
   border-color: #667eea;
-  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.3);
+  background: #374151;
 }
 
 .input::placeholder {
@@ -28,16 +30,17 @@
 
 .inputLabel {
   font-weight: 600;
-  color: #2d3748;
+  color: #f7fafc;
   min-width: 100px;
   text-align: left;
 }
 
 .inputError {
   border-color: #fc8181;
+  background: #3d2a2a;
 }
 
 .inputError:focus {
   border-color: #fc8181;
-  box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.1);
+  box-shadow: 0 0 0 3px rgba(252, 129, 129, 0.3);
 }

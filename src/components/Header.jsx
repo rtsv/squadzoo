@@ -8,7 +8,7 @@ function Header() {
   return (
     <header className={styles.header}>
       <div className={styles.headerContent}>
-        <div className={styles.logo}>
+        <div className={styles.logo} onClick={() => navigate("/")} style={{ cursor: 'pointer' }}>
           <img src={logo} alt="SquadZoo - Free Multiplayer Brain Games" className={styles.logoImage} />
           <span className={styles.logoText}>
             <span className={styles.logoTextSquad}>Squad</span>

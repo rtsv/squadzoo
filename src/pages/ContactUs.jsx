@@ -29,10 +29,10 @@ function ContactUs() {
               <strong>Support:</strong>
               <p>support@squadzoo.com</p>
             </div>
-            <div className={styles.contactItem}>
+            {/* <div className={styles.contactItem}>
               <strong>Business Inquiries:</strong>
               <p>business@squadzoo.com</p>
-            </div>
+            </div> */}
           </div>
         </section>
 

@@ -15,7 +15,7 @@
 .difficultyTitle {
   font-size: 24px;
   font-weight: 700;
-  color: #2d3748;
+  color: #f1f5f9;
   margin-bottom: 16px;
   padding-bottom: 8px;
   border-bottom: 3px solid #667eea;
@@ -67,9 +67,9 @@
   display: grid;
   gap: 8px;
   padding: 20px;
-  background: linear-gradient(135deg, #e0f2fe 0%, #dbeafe 100%);
+  background: linear-gradient(135deg, #2d3748 0%, #1f2937 100%);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
 .gridRow {
@@ -135,7 +135,7 @@
 }
 
 .levelInfo {
-  background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+  background: linear-gradient(135deg, #92400e 0%, #78350f 100%);
   padding: 16px 24px;
   border-radius: 12px;
   margin-bottom: 20px;
@@ -146,30 +146,30 @@
 .levelTitle {
   font-size: 20px;
   font-weight: 700;
-  color: #78350f;
+  color: #fde68a;
 }
 
 .bridgesRemaining {
-  background: #f0f4ff;
+  background: #374151;
   padding: 12px 20px;
   border-radius: 8px;
   margin: 16px 0;
   font-weight: 600;
-  color: #4c51bf;
+  color: #a5b4fc;
   text-align: center;
 }
 
 .winBanner {
   padding: 20px;
   margin-bottom: 20px;
-  background: linear-gradient(135deg, #d4f8d4 0%, #a8e6cf 100%);
+  background: linear-gradient(135deg, #065f46 0%, #047857 100%);
   border-radius: 12px;
   text-align: center;
   font-size: 24px;
   font-weight: 700;
-  color: #22543d;
+  color: #d1fae5;
   animation: pop 0.5s ease;
-  box-shadow: 0 4px 20px rgba(72, 187, 120, 0.3);
+  box-shadow: 0 4px 20px rgba(16, 185, 129, 0.3);
 }
 
 .gameActions {

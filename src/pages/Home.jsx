@@ -44,7 +44,6 @@ function Home() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroContent}>
             <h1 className={styles.heroTitle} id="hero-title">
-              <span className={styles.heroEmoji} aria-hidden="true">🧠</span>
               Welcome to SquadZoo - Free Multiplayer Brain Games
             </h1>
             <p className={styles.heroSubtitle}>
