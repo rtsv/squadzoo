@@ -6,7 +6,7 @@ import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function WordChain({ onBack }) {
+function WordChain({ onBack, initialRoomCode }) {
   const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", "", ""]);
@@ -30,6 +30,27 @@ function WordChain({ onBack }) {
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState([]);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+
+  // Handle initial room code from URL
+  useEffect(() => {
+    if (initialRoomCode) {
+      setGameMode('online');
+      setIsOnlineMode(true);
+      setRoomCode(initialRoomCode);
+    }
+  }, [initialRoomCode]);
+
+  // Extract room code from shared text
+  const extractRoomCode = (text) => {
+    // Check if text contains "Room code:" pattern
+    const match = text.match(/Room code:\s*([A-Z0-9]{8})/i);
+    if (match) {
+      return match[1].toUpperCase();
+    }
+    // Otherwise, just clean up the text (remove spaces, take first 8 chars)
+    const cleaned = text.replace(/\s/g, '').toUpperCase();
+    return cleaned.substring(0, 8);
+  };
 
   const lastLetter =
     usedWords.length === 0
@@ -759,7 +780,7 @@ function WordChain({ onBack }) {
               <input
                 type="text"
                 value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase().trim())}
+                onChange={(e) => setRoomCode(extractRoomCode(e.target.value))}
                 placeholder="Enter 8-char code"
                 className={inputStyles.input}
                 maxLength={8}
@@ -794,6 +815,16 @@ function WordChain({ onBack }) {
       });
     };
 
+    const copyRoomUrl = () => {
+      const gameUrl = `${window.location.origin}/games/word-chain?room=${roomCode}`;
+      navigator.clipboard.writeText(gameUrl).then(() => {
+        setShowCopiedNotification(true);
+        setTimeout(() => setShowCopiedNotification(false), 2000);
+      }).catch(() => {
+        setAlertMessage("Failed to copy URL. Please copy manually: " + gameUrl);
+      });
+    };
+
     return (
       <GameLayout title="🔤 Word Chain - Waiting Room" onBack={handleBackToMenu}>
         {showCopiedNotification && (
@@ -814,9 +845,15 @@ function WordChain({ onBack }) {
               <code className={styles.roomCodeText}>{roomCode}</code>
               <button 
                 onClick={copyRoomCode}
-                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
+                className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnSmall}`}
               >
-                📋 Copy
+                📋 Copy Code
+              </button>
+              <button 
+                onClick={copyRoomUrl}
+                className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnSmall}`}
+              >
+                🔗 Copy URL
               </button>
             </div>
             <p className={styles.shareCode}>Share this code with your friends to join (2-12 players)</p>

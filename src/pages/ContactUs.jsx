@@ -1,21 +1,11 @@
+import Header from "../components/Header";
+import Footer from "../components/Footer";
 import styles from "../styles/StaticPage.module.css";
-import logo from "/public/images/squad-zoo-logo.png";
 
-function ContactUs({ onBack }) {
+function ContactUs() {
   return (
     <div className={styles.container}>
-      <header className={styles.header}>
-        <div className={styles.headerLogo}>
-          <img src={logo} alt="SquadZoo Logo" className={styles.logoImage} />
-          <span className={styles.logoText}>
-            <span className={styles.logoTextSquad}>Squad</span>
-            <span className={styles.logoTextZoo}>Zoo</span>
-          </span>
-        </div>
-        <button onClick={onBack} className={styles.backButton}>
-          ← Back to Home
-        </button>
-      </header>
+      <Header />
 
       <div className={styles.content}>
         <h1 className={styles.title}>Contact Us</h1>
@@ -114,6 +104,8 @@ function ContactUs({ onBack }) {
           </p>
         </section>
       </div>
+
+      <Footer />
     </div>
   );
 }

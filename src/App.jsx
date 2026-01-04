@@ -1,47 +1,35 @@
-import { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { HelmetProvider } from "react-helmet-async";
 import Home from "./pages/Home";
 import AboutUs from "./pages/AboutUs";
 import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import Disclaimer from "./pages/Disclaimer";
-import DrawGuess from "./games/draw-guess/DrawGuess";
-import WordChain from "./games/word-chain/WordChain";
-import TicTacToe from "./games/tic-tac-toe/TicTacToe";
-import Battleship from "./games/battleship/Battleship";
+import DrawGuessPage from "./pages/games/DrawGuessPage";
+import WordChainPage from "./pages/games/WordChainPage";
+import TicTacToePage from "./pages/games/TicTacToePage";
+import BattleshipPage from "./pages/games/BattleshipPage";
 
 function App() {
-  const [game, setGame] = useState(null);
-  const [page, setPage] = useState("home");
-
-  if (game === "draw-guess")
-    return <DrawGuess onBack={() => setGame(null)} />;
-
-  if (game === "word-chain")
-    return <WordChain onBack={() => setGame(null)} />;
-
-  if (game === "tic-tac-toe")
-    return <TicTacToe onBack={() => setGame(null)} />;
-
-  if (game === "battleship")
-    return <Battleship onBack={() => setGame(null)} />;
-
-  if (page === "about")
-    return <AboutUs onBack={() => setPage("home")} />;
-
-  if (page === "privacy")
-    return <PrivacyPolicy onBack={() => setPage("home")} />;
-
-  if (page === "terms")
-    return <TermsOfService onBack={() => setPage("home")} />;
-
-  if (page === "contact")
-    return <ContactUs onBack={() => setPage("home")} />;
-
-  if (page === "disclaimer")
-    return <Disclaimer onBack={() => setPage("home")} />;
-
-  return <Home onPlayGame={setGame} onNavigate={setPage} />;
+  return (
+    <HelmetProvider>
+      <Router>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/about" element={<AboutUs />} />
+          <Route path="/privacy" element={<PrivacyPolicy />} />
+          <Route path="/terms" element={<TermsOfService />} />
+          <Route path="/contact" element={<ContactUs />} />
+          <Route path="/disclaimer" element={<Disclaimer />} />
+          <Route path="/games/draw-and-guess" element={<DrawGuessPage />} />
+          <Route path="/games/word-chain" element={<WordChainPage />} />
+          <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
+          <Route path="/games/battleship" element={<BattleshipPage />} />
+        </Routes>
+      </Router>
+    </HelmetProvider>
+  );
 }
 
 export default App;

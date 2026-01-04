@@ -6,7 +6,7 @@ import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function TicTacToe({ onBack }) {
+function TicTacToe({ onBack, initialRoomCode }) {
   const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", ""]);
@@ -109,6 +109,16 @@ function TicTacToe({ onBack }) {
     };
   }, [isOnlineMode, isHost, isInRoom]);
 
+  // Add useEffect to handle initial room code from URL
+  useEffect(() => {
+    if (initialRoomCode && !gameMode && !isInRoom) {
+      // Auto-navigate to online join mode with room code pre-filled
+      setGameMode('online');
+      setIsOnlineMode(true);
+      setRoomCode(initialRoomCode.toUpperCase().trim());
+    }
+  }, [initialRoomCode]);
+
   function handleOpponentMove(moveData) {
     console.log('📥 Opponent move:', moveData);
     
@@ -148,6 +158,12 @@ function TicTacToe({ onBack }) {
 
     try {
       // Register callbacks BEFORE creating room
+      roomService.on('onConnected', (data) => {
+        console.log('🔗 Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
       roomService.on('onPlayerJoined', (data) => {
         console.log('🎉 Player joined callback:', data);
         const allPlayers = roomService.getConnectedPlayers();
@@ -203,8 +219,16 @@ function TicTacToe({ onBack }) {
       setIsInRoom(true);
       setMyPlayerIndex(0); // Host is always X (player 0)
       setWaitingForOpponent(true);
-      const allPlayers = roomService.getConnectedPlayers();
-      setConnectedPlayers(allPlayers);
+      
+      // Get connected players after a short delay to ensure websocket is ready
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
+      
+      // Update URL with room code
+      const newUrl = `${window.location.pathname}?room=${code}`;
+      window.history.pushState({}, '', newUrl);
     } catch (error) {
       console.error('Error creating room:', error);
       setAlertMessage('Failed to create room. Please try again.');
@@ -219,6 +243,12 @@ function TicTacToe({ onBack }) {
 
     try {
       // Register callbacks BEFORE joining room
+      roomService.on('onConnected', (data) => {
+        console.log('🔗 Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
       roomService.on('onPlayerJoined', (data) => {
         console.log('🎉 Player joined callback:', data);
         const allPlayers = roomService.getConnectedPlayers();
@@ -262,8 +292,12 @@ function TicTacToe({ onBack }) {
       setIsHost(false);
       setMyPlayerIndex(1); // Guest is always O (player 1)
       setWaitingForOpponent(true);
-      const allPlayers = roomService.getConnectedPlayers();
-      setConnectedPlayers(allPlayers);
+      
+      // Get connected players after a short delay to ensure websocket is ready
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
     } catch (error) {
       console.error('Error joining room:', error);
       setAlertMessage('Failed to join room. Check the room code and try again.');
@@ -525,6 +559,16 @@ function TicTacToe({ onBack }) {
       });
     };
 
+    const copyRoomUrl = () => {
+      const gameUrl = `${window.location.origin}/games/tic-tac-toe?room=${roomCode}`;
+      navigator.clipboard.writeText(gameUrl).then(() => {
+        setShowCopiedNotification(true);
+        setTimeout(() => setShowCopiedNotification(false), 2000);
+      }).catch(() => {
+        setAlertMessage("Failed to copy URL. Please copy manually: " + gameUrl);
+      });
+    };
+
     return (
       <GameLayout title="⭕❌ Tic-Tac-Toe - Waiting Room" onBack={handleBackToMenu}>
         {showCopiedNotification && (
@@ -545,9 +589,15 @@ function TicTacToe({ onBack }) {
               <code className={styles.roomCodeText}>{roomCode}</code>
               <button 
                 onClick={copyRoomCode}
-                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
+                className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnSmall}`}
               >
-                📋 Copy
+                📋 Copy Code
+              </button>
+              <button 
+                onClick={copyRoomUrl}
+                className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnSmall}`}
+              >
+                🔗 Copy URL
               </button>
             </div>
             <p className={styles.shareCode}>Share this code with your opponent to join</p>
@@ -559,6 +609,11 @@ function TicTacToe({ onBack }) {
                   {symbols[idx]} {player.playerName} {player.isHost && "👑"}
                 </div>
               ))}
+              {connectedPlayers.length === 1 && (
+                <div className={styles.playerItem} style={{ opacity: 0.5 }}>
+                  {symbols[1]} Waiting for opponent...
+                </div>
+              )}
             </div>
 
             {connectedPlayers.length < 2 && (

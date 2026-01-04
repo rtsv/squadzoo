@@ -98,6 +98,11 @@ class RoomService {
           }));
           console.log('📋 Initial players:', this.connectedPlayers);
         }
+        
+        // Trigger onConnected callback
+        if (this.callbacks.onConnected) {
+          this.callbacks.onConnected(data);
+        }
         break;
 
       case 'error':
