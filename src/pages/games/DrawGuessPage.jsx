@@ -39,8 +39,8 @@ function DrawGuessPage() {
         <meta name="twitter:description" content="Play Draw and Guess online with friends! Free multiplayer drawing game." />
       </Helmet>
       
-      <GameDescription {...gameDescription} />
       <DrawGuess onBack={() => navigate("/")} initialRoomCode={roomCode} />
+      <GameDescription {...gameDescription} />
     </>
   );
 }

@@ -1,12 +1,17 @@
-/* Game Description Component */
+/* Game Description Component - Matches GameLayout header/content width */
 .descriptionContainer {
-  max-width: 900px;
-  margin: 0 auto 2rem auto;
-  padding: 2rem;
-  background: linear-gradient(135deg, rgba(45, 55, 72, 0.6) 0%, rgba(30, 33, 46, 0.8) 100%);
+  max-width: 1400px;
+  margin: 0 auto;
+  margin-top: 24px;
+  padding: 24px;
+  background: transparent;
+}
+
+.descriptionInner {
+  background: #2d3748;
   border-radius: 16px;
-  border: 1px solid rgba(99, 102, 241, 0.2);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  padding: 30px;
 }
 
 .descriptionSection {
@@ -45,8 +50,8 @@
   list-style: none;
   padding: 0;
   margin: 0;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 0.75rem;
 }
 
@@ -69,8 +74,12 @@
 /* Responsive */
 @media (max-width: 768px) {
   .descriptionContainer {
+    padding: 1rem;
+    margin-top: 20px;
+  }
+
+  .descriptionInner {
     padding: 1.5rem;
-    margin-bottom: 1.5rem;
   }
 
   .descriptionTitle {
@@ -79,9 +88,5 @@
 
   .descriptionText {
     font-size: 1rem;
-  }
-
-  .featuresList {
-    grid-template-columns: 1fr;
   }
 }

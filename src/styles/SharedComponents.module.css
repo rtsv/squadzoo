@@ -205,28 +205,34 @@
 .playerInputContainer {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 12px;
+  width: 100%;
 }
 
 .playerInputRow {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 10px;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 .playerLabel {
   font-weight: 600;
   color: #f1f5f9;
-  min-width: 120px;
+  min-width: 100px;
+  flex-shrink: 0;
+  font-size: 15px;
 }
 
 .playerInput {
   flex: 1;
+  min-width: 0;
 }
 
 .addPlayerButton {
   align-self: flex-start;
+  margin-top: 8px;
 }
 
 /* Game Rules */
@@ -287,4 +293,37 @@
   margin-bottom: 8px;
   color: #cbd5e0;
   line-height: 1.5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .playerInputRow {
+    flex-wrap: wrap;
+  }
+  
+  .playerLabel {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .playerInput {
+    width: 100%;
+  }
+  
+  .roomOptions {
+    flex-direction: column;
+  }
+  
+  .roomOption {
+    min-width: auto;
+  }
+  
+  .nameInputRow {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .nameLabel {
+    min-width: auto;
+  }
 }

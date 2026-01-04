@@ -49,46 +49,6 @@ function ContactUs() {
         </section>
 
         <section className={styles.section}>
-          <h2>Frequently Asked Questions</h2>
-          
-          <div className={styles.faqItem}>
-            <h3>How do I play the games?</h3>
-            <p>
-              Simply click on any game card on the home page, enter player names, and start playing! 
-              No downloads or registrations required.
-            </p>
-          </div>
-
-          <div className={styles.faqItem}>
-            <h3>Are the games really free?</h3>
-            <p>
-              Yes! All our games are completely free to play. The service is supported by advertising.
-            </p>
-          </div>
-
-          <div className={styles.faqItem}>
-            <h3>Can I play on mobile devices?</h3>
-            <p>
-              Yes, SquadZoo works on all devices including desktops, tablets, and smartphones.
-            </p>
-          </div>
-
-          <div className={styles.faqItem}>
-            <h3>How often do you add new games?</h3>
-            <p>
-              We're constantly working on new games and features. Check back regularly for updates!
-            </p>
-          </div>
-
-          <div className={styles.faqItem}>
-            <h3>Is my data safe?</h3>
-            <p>
-              Yes! Most game data is stored locally in your browser. Please read our Privacy Policy for more details.
-            </p>
-          </div>
-        </section>
-
-        <section className={styles.section}>
           <h2>Response Time</h2>
           <p>
             We strive to respond to all inquiries within 24-48 hours during business days. For urgent matters, 

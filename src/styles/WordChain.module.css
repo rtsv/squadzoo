@@ -84,6 +84,8 @@
   margin-bottom: 16px;
   align-items: center;
   animation: slideIn 0.3s ease;
+  width: 100%;
+  flex-wrap: nowrap;
 }
 
 @keyframes slideIn {
@@ -98,10 +100,11 @@
 }
 
 .playerLabel {
-  min-width: 120px;
+  min-width: 100px;
   font-weight: 600;
   color: #f1f5f9;
   font-size: 15px;
+  flex-shrink: 0;
 }
 
 .setupButtons {
@@ -487,6 +490,19 @@
   .onlineInfo {
     flex-direction: column;
     gap: 10px;
+  }
+  
+  .playerInputRow {
+    flex-wrap: wrap;
+  }
+  
+  .playerLabel {
+    min-width: auto;
+    width: 100%;
+  }
+  
+  .setupContainer {
+    padding: 20px;
   }
 }
 

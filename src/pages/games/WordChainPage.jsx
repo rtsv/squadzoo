@@ -47,8 +47,8 @@ function WordChainPage() {
         <meta name="twitter:description" content="Play Word Chain online with friends! Free multiplayer vocabulary game." />
       </Helmet>
       
-      <GameDescription {...gameDescription} />
       <WordChain onBack={() => navigate("/")} initialRoomCode={roomCode} />
+      <GameDescription {...gameDescription} />
     </>
   );
 }

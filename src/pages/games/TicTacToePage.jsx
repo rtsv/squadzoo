@@ -39,8 +39,8 @@ function TicTacToePage() {
         <meta name="twitter:description" content="Play Tic-Tac-Toe online with friends! Free strategic game." />
       </Helmet>
       
-      <GameDescription {...gameDescription} />
       <TicTacToe onBack={() => navigate("/")} initialRoomCode={roomCode} />
+      <GameDescription {...gameDescription} />
     </>
   );
 }

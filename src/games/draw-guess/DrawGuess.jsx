@@ -205,33 +205,6 @@ function DrawGuess({ onBack }) {
 
           {/* Time Limit and Players Side by Side */}
           <div className={styles.setupMainRow}>
-            {/* Players Section */}
-            <div className={styles.playersSection}>
-              <label className={styles.playersLabel}>Players:</label>
-              <div className={styles.playersInputs}>
-                {players.map((player, index) => (
-                  <div key={index} className={styles.playerInputRow}>
-                    <span className={styles.playerLabel}>Player {index + 1}:</span>
-                    <input
-                      type="text"
-                      value={player}
-                      onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                      placeholder="Enter name"
-                      className={inputStyles.input}
-                    />
-                    {players.length > 2 && (
-                      <button
-                        onClick={() => removePlayer(index)}
-                        className={`${btnStyles.btn} ${btnStyles.btnDanger} ${btnStyles.btnSmall}`}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-
             {/* Time Limit Section */}
             <div className={styles.timeLimitSection}>
               <label className={styles.timeLimitLabel}>Time Limit:</label>
@@ -256,6 +229,33 @@ function DrawGuess({ onBack }) {
                 >
                   +
                 </button>
+              </div>
+            </div>
+
+            {/* Players Section */}
+            <div className={styles.playersSection}>
+              <label className={styles.playersLabel}>Players:</label>
+              <div className={styles.playersInputs}>
+                {players.map((player, index) => (
+                  <div key={index} className={styles.playerInputRow}>
+                    <span className={styles.playerLabel}>Player {index + 1}:</span>
+                    <input
+                      type="text"
+                      value={player}
+                      onChange={(e) => handlePlayerNameChange(index, e.target.value)}
+                      placeholder="Enter name"
+                      className={inputStyles.input}
+                    />
+                    {players.length > 2 && (
+                      <button
+                        onClick={() => removePlayer(index)}
+                        className={`${btnStyles.btn} ${btnStyles.btnDanger} ${btnStyles.btnSmall}`}
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           </div>

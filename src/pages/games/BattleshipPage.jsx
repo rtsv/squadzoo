@@ -39,8 +39,8 @@ function BattleshipPage() {
         <meta name="twitter:description" content="Play Battleship online with friends! Free naval strategy game." />
       </Helmet>
       
-      <GameDescription {...gameDescription} />
       <Battleship onBack={() => navigate("/")} initialRoomCode={roomCode} />
+      <GameDescription {...gameDescription} />
     </>
   );
 }
