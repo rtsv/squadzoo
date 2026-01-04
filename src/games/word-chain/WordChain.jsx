@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import GameModeSelector from "../../components/GameModeSelector";
+import OnlineRoomSetup from "../../components/OnlineRoomSetup";
+import OnlineRoomExample from "../../components/OnlineRoomExample";
+import PlayerNameInput from "../../components/PlayerNameInput";
+import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
 import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
@@ -30,6 +35,17 @@ function WordChain({ onBack, initialRoomCode }) {
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState([]);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+
+  const gameRules = [
+    "Each player starts with 3 lives (hearts)",
+    "Take turns saying a valid English word",
+    "Each word must start with the last letter of the previous word",
+    "Example: CAT → TABLE → EGG → GAME",
+    "You cannot reuse a word that's already been used",
+    "Words must be at least 2 letters long and contain only letters",
+    "Lose a life for: wrong starting letter, invalid word, or repeated word",
+    "Last player standing wins!"
+  ];
 
   // Handle initial room code from URL
   useEffect(() => {
@@ -701,33 +717,19 @@ function WordChain({ onBack, initialRoomCode }) {
             Choose how you want to play Word Chain
           </p>
 
-          <div className={styles.modeSelection}>
-            <button
-              onClick={() => {
-                setGameMode('local');
-                setIsOnlineMode(false);
-              }}
-              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
-            >
-              👥 Local Play
-              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
-                Play with people next to you
-              </small>
-            </button>
-
-            <button
-              onClick={() => {
-                setGameMode('online');
-                setIsOnlineMode(true);
-              }}
-              className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
-            >
-              🌐 Online Multiplayer (2-12 players)
-              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
-                Play with friends remotely
-              </small>
-            </button>
-          </div>
+          <GameModeSelector
+            onSelectLocal={() => {
+              setGameMode('local');
+              setIsOnlineMode(false);
+            }}
+            onSelectOnline={() => {
+              setGameMode('online');
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Online Multiplayer"
+            maxPlayers="2-12 players"
+          />
         </div>
       </GameLayout>
     );
@@ -748,57 +750,15 @@ function WordChain({ onBack, initialRoomCode }) {
             Create a room or join an existing one to play online (2-12 players)
           </p>
 
-          <div className={styles.playerInputRow}>
-            <span className={styles.playerLabel}>Your Name:</span>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              className={inputStyles.input}
-              style={{ flex: 1 }}
-            />
-          </div>
-
-          <div className={styles.onlineOptions}>
-            <div className={styles.onlineOption}>
-              <h3>Create Room</h3>
-              <p>Start a new game and share the 8-character room code</p>
-              <button
-                onClick={handleCreateOnlineRoom}
-                className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
-              >
-                Create Room
-              </button>
-            </div>
-
-            <div className={styles.divider}>OR</div>
-
-            <div className={styles.onlineOption}>
-              <h3>Join Room</h3>
-              <p>Enter the 8-character room code shared by your friend</p>
-              <input
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(extractRoomCode(e.target.value))}
-                placeholder="Enter 8-char code"
-                className={inputStyles.input}
-                maxLength={8}
-                style={{ 
-                  marginBottom: '10px', 
-                  fontFamily: 'monospace', 
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase'
-                }}
-              />
-              <button
-                onClick={handleJoinOnlineRoom}
-                className={`${btnStyles.btn} ${btnStyles.btnSuccess}`}
-              >
-                Join Room
-              </button>
-            </div>
-          </div>
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateOnlineRoom}
+            onJoinRoom={handleJoinOnlineRoom}
+            extractRoomCode={extractRoomCode}
+          />
         </div>
       </GameLayout>
     );
@@ -806,93 +766,23 @@ function WordChain({ onBack, initialRoomCode }) {
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForPlayers) {
-    const copyRoomCode = () => {
-      navigator.clipboard.writeText(roomCode).then(() => {
-        setShowCopiedNotification(true);
-        setTimeout(() => setShowCopiedNotification(false), 2000);
-      }).catch(() => {
-        setAlertMessage("Failed to copy. Please copy manually.");
-      });
-    };
-
-    const copyRoomUrl = () => {
-      const gameUrl = `${window.location.origin}/games/word-chain?room=${roomCode}`;
-      navigator.clipboard.writeText(gameUrl).then(() => {
-        setShowCopiedNotification(true);
-        setTimeout(() => setShowCopiedNotification(false), 2000);
-      }).catch(() => {
-        setAlertMessage("Failed to copy URL. Please copy manually: " + gameUrl);
-      });
-    };
-
     return (
       <GameLayout title="🔤 Word Chain - Waiting Room" onBack={handleBackToMenu}>
-        {showCopiedNotification && (
-          <div className={styles.copiedNotification}>
-            ✓ Copied!
-          </div>
-        )}
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 
             onClose={() => setAlertMessage(null)} 
           />
         )}
-        <div className={styles.setupContainer}>
-          <div className={styles.waitingRoom}>
-            <h2>Share Room Code</h2>
-            <div className={styles.roomCodeDisplay}>
-              <code className={styles.roomCodeText}>{roomCode}</code>
-              <button 
-                onClick={copyRoomCode}
-                className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnSmall}`}
-              >
-                📋 Copy Code
-              </button>
-              <button 
-                onClick={copyRoomUrl}
-                className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnSmall}`}
-              >
-                🔗 Copy URL
-              </button>
-            </div>
-            <p className={styles.shareCode}>Share this code with your friends to join (2-12 players)</p>
-            
-            <div className={styles.playersList}>
-              <h3>Players in Room ({connectedPlayers.length}/12):</h3>
-              <div className={styles.playersGrid}>
-                {connectedPlayers.map((player, idx) => (
-                  <div key={idx} className={styles.playerItem}>
-                    👤 {player.playerName} {player.isHost && "👑"}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {connectedPlayers.length < 2 && (
-              <div className={styles.waitingAnimation}>
-                <p>⏳ Waiting for at least 1 more player to join...</p>
-              </div>
-            )}
-
-            {isHost && connectedPlayers.length >= 2 && (
-              <div className={styles.startGameSection}>
-                <button
-                  onClick={handleStartOnlineGame}
-                  className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
-                >
-                  Start Game ({connectedPlayers.length} players)
-                </button>
-              </div>
-            )}
-
-            {!isHost && connectedPlayers.length >= 2 && (
-              <div className={styles.waitingAnimation}>
-                <p>⏳ Waiting for host to start the game...</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <OnlineRoomExample
+          roomCode={roomCode}
+          connectedPlayers={connectedPlayers}
+          maxPlayers={12}
+          isHost={isHost}
+          onStartGame={handleStartOnlineGame}
+          minPlayers={2}
+          gameUrl={`${window.location.origin}/games/word-chain?room=${roomCode}`}
+        />
       </GameLayout>
     );
   }
@@ -912,62 +802,17 @@ function WordChain({ onBack, initialRoomCode }) {
             Enter player names to begin. Each player will take turns creating a word chain!
           </p>
 
-          {/* Game Rules */}
-          <div className={styles.rulesSection}>
-            <button
-              onClick={() => setShowRules(!showRules)}
-              className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
-            >
-              📖 {showRules ? "Hide Rules" : "Show Rules"}
-            </button>
-            {showRules && (
-              <div className={styles.rulesContent}>
-                <h4>How to Play:</h4>
-                <ul>
-                  <li>Each player starts with 3 lives (hearts)</li>
-                  <li>Take turns saying a valid English word</li>
-                  <li>Each word must start with the last letter of the previous word</li>
-                  <li>Example: CAT → TABLE → EGG → GAME</li>
-                  <li>You cannot reuse a word that's already been used</li>
-                  <li>Words must be at least 2 letters long and contain only letters</li>
-                  <li>Lose a life for: wrong starting letter, invalid word, or repeated word</li>
-                  <li>Last player standing wins!</li>
-                </ul>
-              </div>
-            )}
-          </div>
+          <GameRules rules={gameRules} />
           
-          {players.map((player, index) => (
-            <div key={index} className={styles.playerInputRow}>
-              <span className={styles.playerLabel}>
-                Player {index + 1}:
-              </span>
-              <input
-                type="text"
-                value={player}
-                onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                placeholder="Enter name"
-                className={inputStyles.input}
-                style={{ flex: 1 }}
-              />
-              {players.length > 2 && (
-                <button 
-                  onClick={() => removePlayer(index)}
-                  className={`${btnStyles.btn} ${btnStyles.btnDanger} ${btnStyles.btnSmall}`}
-                >
-                  ✕
-                </button>
-              )}
-            </div>
-          ))}
+          <PlayerNameInput
+            players={players}
+            onPlayerChange={handlePlayerNameChange}
+            onAddPlayer={addPlayer}
+            onRemovePlayer={removePlayer}
+            minPlayers={2}
+          />
 
           <div className={styles.setupButtons}>
-            <button 
-              onClick={addPlayer}
-              className={`${btnStyles.btn} ${btnStyles.btnSuccess}`}
-            >
-              + Add Player
-            </button>
             <button 
               onClick={startGame}
               className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
@@ -997,21 +842,10 @@ function WordChain({ onBack, initialRoomCode }) {
             </div>
           )}
 
-          {/* Game Rules Toggle */}
-          <div className={styles.rulesToggle}>
-            <button
-              onClick={() => setShowRules(!showRules)}
-              className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
-            >
-              📖 {showRules ? "Hide" : "Rules"}
-            </button>
-            {showRules && (
-              <div className={styles.rulesContentSmall}>
-                <strong>Rules:</strong> Say a word starting with the last letter of the previous word. 
-                Don't repeat words or you'll lose a life! (3 lives total)
-              </div>
-            )}
-          </div>
+          <GameRules 
+            rules="Say a word starting with the last letter of the previous word. Don't repeat words or you'll lose a life! (3 lives total)" 
+            compact={true} 
+          />
 
           <div className={styles.gameInfo}>
             <p>

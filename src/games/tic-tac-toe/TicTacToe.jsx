@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import GameModeSelector from "../../components/GameModeSelector";
+import OnlineRoomSetup from "../../components/OnlineRoomSetup";
+import OnlineRoomExample from "../../components/OnlineRoomExample";
+import PlayerNameInput from "../../components/PlayerNameInput";
+import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
 import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
@@ -31,6 +36,14 @@ function TicTacToe({ onBack, initialRoomCode }) {
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
 
   const symbols = ["❌", "⭕"];
+
+  const gameRules = [
+    "Players take turns placing their symbol (❌ or ⭕) on the 3x3 grid",
+    "The first player to get 3 of their symbols in a row wins",
+    "Rows can be horizontal, vertical, or diagonal",
+    "If all 9 squares are filled without a winner, it's a draw",
+    "Play multiple rounds and track your scores!"
+  ];
 
   // Setup online game listeners
   useEffect(() => {
@@ -445,33 +458,18 @@ function TicTacToe({ onBack, initialRoomCode }) {
             Choose how you want to play Tic-Tac-Toe
           </p>
 
-          <div className={styles.modeSelection}>
-            <button
-              onClick={() => {
-                setGameMode('local');
-                setIsOnlineMode(false);
-              }}
-              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
-            >
-              👥 Local Play
-              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
-                Play with someone next to you
-              </small>
-            </button>
-
-            <button
-              onClick={() => {
-                setGameMode('online');
-                setIsOnlineMode(true);
-              }}
-              className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
-            >
-              🌐 Online Multiplayer
-              <small style={{ display: 'block', fontSize: '0.8em', marginTop: '5px' }}>
-                Play with someone remotely
-              </small>
-            </button>
-          </div>
+          <GameModeSelector
+            onSelectLocal={() => {
+              setGameMode('local');
+              setIsOnlineMode(false);
+            }}
+            onSelectOnline={() => {
+              setGameMode('online');
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Online Multiplayer"
+          />
         </div>
       </GameLayout>
     );
@@ -492,57 +490,14 @@ function TicTacToe({ onBack, initialRoomCode }) {
             Create a room or join an existing one to play online
           </p>
 
-          <div className={styles.playerInputRow}>
-            <span className={styles.playerLabel}>Your Name:</span>
-            <input
-              type="text"
-              value={playerName}
-              onChange={(e) => setPlayerName(e.target.value)}
-              placeholder="Enter your name"
-              className={inputStyles.input}
-              style={{ flex: 1 }}
-            />
-          </div>
-
-          <div className={styles.onlineOptions}>
-            <div className={styles.onlineOption}>
-              <h3>Create Room</h3>
-              <p>Start a new game and share the 8-character room code</p>
-              <button
-                onClick={handleCreateOnlineRoom}
-                className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
-              >
-                Create Room
-              </button>
-            </div>
-
-            <div className={styles.divider}>OR</div>
-
-            <div className={styles.onlineOption}>
-              <h3>Join Room</h3>
-              <p>Enter the 8-character room code shared by your friend</p>
-              <input
-                type="text"
-                value={roomCode}
-                onChange={(e) => setRoomCode(e.target.value.toUpperCase().trim())}
-                placeholder="Enter 8-char code"
-                className={inputStyles.input}
-                maxLength={8}
-                style={{ 
-                  marginBottom: '10px', 
-                  fontFamily: 'monospace', 
-                  letterSpacing: '2px',
-                  textTransform: 'uppercase'
-                }}
-              />
-              <button
-                onClick={handleJoinOnlineRoom}
-                className={`${btnStyles.btn} ${btnStyles.btnSuccess}`}
-              >
-                Join Room
-              </button>
-            </div>
-          </div>
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateOnlineRoom}
+            onJoinRoom={handleJoinOnlineRoom}
+          />
         </div>
       </GameLayout>
     );
@@ -550,79 +505,24 @@ function TicTacToe({ onBack, initialRoomCode }) {
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForOpponent) {
-    const copyRoomCode = () => {
-      navigator.clipboard.writeText(roomCode).then(() => {
-        setShowCopiedNotification(true);
-        setTimeout(() => setShowCopiedNotification(false), 2000);
-      }).catch(() => {
-        setAlertMessage("Failed to copy. Please copy manually.");
-      });
-    };
-
-    const copyRoomUrl = () => {
-      const gameUrl = `${window.location.origin}/games/tic-tac-toe?room=${roomCode}`;
-      navigator.clipboard.writeText(gameUrl).then(() => {
-        setShowCopiedNotification(true);
-        setTimeout(() => setShowCopiedNotification(false), 2000);
-      }).catch(() => {
-        setAlertMessage("Failed to copy URL. Please copy manually: " + gameUrl);
-      });
-    };
-
     return (
       <GameLayout title="⭕❌ Tic-Tac-Toe - Waiting Room" onBack={handleBackToMenu}>
-        {showCopiedNotification && (
-          <div className={styles.copiedNotification}>
-            ✓ Copied!
-          </div>
-        )}
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 
             onClose={() => setAlertMessage(null)} 
           />
         )}
-        <div className={styles.setupContainer}>
-          <div className={styles.waitingRoom}>
-            <h2>Share Room Code</h2>
-            <div className={styles.roomCodeDisplay}>
-              <code className={styles.roomCodeText}>{roomCode}</code>
-              <button 
-                onClick={copyRoomCode}
-                className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnSmall}`}
-              >
-                📋 Copy Code
-              </button>
-              <button 
-                onClick={copyRoomUrl}
-                className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnSmall}`}
-              >
-                🔗 Copy URL
-              </button>
-            </div>
-            <p className={styles.shareCode}>Share this code with your opponent to join</p>
-            
-            <div className={styles.playersList}>
-              <h3>Players in Room ({connectedPlayers.length}/2):</h3>
-              {connectedPlayers.map((player, idx) => (
-                <div key={idx} className={styles.playerItem}>
-                  {symbols[idx]} {player.playerName} {player.isHost && "👑"}
-                </div>
-              ))}
-              {connectedPlayers.length === 1 && (
-                <div className={styles.playerItem} style={{ opacity: 0.5 }}>
-                  {symbols[1]} Waiting for opponent...
-                </div>
-              )}
-            </div>
-
-            {connectedPlayers.length < 2 && (
-              <div className={styles.waitingAnimation}>
-                <p>⏳ Waiting for opponent to join...</p>
-              </div>
-            )}
-          </div>
-        </div>
+        <OnlineRoomExample
+          roomCode={roomCode}
+          connectedPlayers={connectedPlayers}
+          maxPlayers={2}
+          isHost={isHost}
+          onStartGame={() => {}} // Auto-starts when 2 players join
+          minPlayers={2}
+          symbols={symbols}
+          gameUrl={`${window.location.origin}/games/tic-tac-toe?room=${roomCode}`}
+        />
       </GameLayout>
     );
   }
@@ -642,43 +542,15 @@ function TicTacToe({ onBack, initialRoomCode }) {
             Enter player names to begin. Take turns placing your symbols to get three in a row!
           </p>
 
-          {/* Game Rules */}
-          <div className={styles.rulesSection}>
-            <button
-              onClick={() => setShowRules(!showRules)}
-              className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
-            >
-              📖 {showRules ? "Hide Rules" : "Show Rules"}
-            </button>
-            {showRules && (
-              <div className={styles.rulesContent}>
-                <h4>How to Play:</h4>
-                <ul>
-                  <li>Players take turns placing their symbol (❌ or ⭕) on the 3x3 grid</li>
-                  <li>The first player to get 3 of their symbols in a row wins</li>
-                  <li>Rows can be horizontal, vertical, or diagonal</li>
-                  <li>If all 9 squares are filled without a winner, it's a draw</li>
-                  <li>Play multiple rounds and track your scores!</li>
-                </ul>
-              </div>
-            )}
-          </div>
+          <GameRules rules={gameRules} />
 
-          {players.map((player, index) => (
-            <div key={index} className={styles.playerInputRow}>
-              <span className={styles.playerLabel}>
-                Player {index + 1} ({symbols[index]}):
-              </span>
-              <input
-                type="text"
-                value={player}
-                onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                placeholder="Enter name"
-                className={inputStyles.input}
-                style={{ flex: 1 }}
-              />
-            </div>
-          ))}
+          <PlayerNameInput
+            players={players}
+            onPlayerChange={handlePlayerNameChange}
+            minPlayers={2}
+            showSymbols={true}
+            symbols={symbols}
+          />
 
           <div className={styles.setupButtons}>
             <button
@@ -709,20 +581,10 @@ function TicTacToe({ onBack, initialRoomCode }) {
           </div>
         )}
 
-        {/* Game Rules Toggle */}
-        <div className={styles.rulesToggle}>
-          <button
-            onClick={() => setShowRules(!showRules)}
-            className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
-          >
-            📖 {showRules ? "Hide" : "Rules"}
-          </button>
-          {showRules && (
-            <div className={styles.rulesContentSmall}>
-              <strong>Goal:</strong> Get 3 symbols in a row (horizontal, vertical, or diagonal) to win!
-            </div>
-          )}
-        </div>
+        <GameRules 
+          rules="Goal: Get 3 symbols in a row (horizontal, vertical, or diagonal) to win!" 
+          compact={true} 
+        />
 
         {/* Scoreboard */}
         <div className={styles.scoreboard}>

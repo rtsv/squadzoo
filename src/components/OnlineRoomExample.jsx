@@ -1,177 +1,116 @@
-import { useState, useEffect } from "react";
-import roomService from "../services/roomService";
-import styles from "../styles/Button.module.css";
+import { useState } from "react";
+import btnStyles from "../styles/Button.module.css";
+import styles from "../styles/SharedComponents.module.css";
 
-function OnlineRoomExample() {
-  const [playerName, setPlayerName] = useState("");
-  const [roomCode, setRoomCode] = useState("");
-  const [isInRoom, setIsInRoom] = useState(false);
-  const [isHost, setIsHost] = useState(false);
-  const [players, setPlayers] = useState([]);
-  const [messages, setMessages] = useState([]);
+function OnlineRoomExample({ 
+  roomCode, 
+  connectedPlayers, 
+  maxPlayers,
+  isHost, 
+  onStartGame, 
+  minPlayers = 2,
+  symbols = null,
+  gameUrl = ""
+}) {
+  const [showCopiedNotification, setShowCopiedNotification] = useState(false);
 
-  useEffect(() => {
-    // Setup event listeners
-    roomService.on('onPlayerJoined', (data) => {
-      console.log('Player joined:', data);
-      setPlayers(roomService.getConnectedPlayers());
-      setMessages(prev => [...prev, `${data.playerName} joined the room`]);
+  const copyRoomCode = () => {
+    navigator.clipboard.writeText(roomCode).then(() => {
+      setShowCopiedNotification(true);
+      setTimeout(() => setShowCopiedNotification(false), 2000);
+    }).catch(() => {
+      alert("Failed to copy. Please copy manually.");
     });
-
-    roomService.on('onPlayerLeft', (data) => {
-      console.log('Player left:', data);
-      setPlayers(roomService.getConnectedPlayers());
-      setMessages(prev => [...prev, `Player left the room`]);
-    });
-
-    roomService.on('onGameAction', (data) => {
-      console.log('Game action:', data);
-      // Handle game-specific actions here
-    });
-
-    roomService.on('onChatMessage', (data) => {
-      setMessages(prev => [...prev, `${data.playerName}: ${data.message}`]);
-    });
-
-    return () => {
-      if (roomService.isConnected()) {
-        roomService.leaveRoom();
-      }
-    };
-  }, []);
-
-  const handleCreateRoom = async () => {
-    if (!playerName.trim()) {
-      alert("Please enter your name");
-      return;
-    }
-
-    try {
-      await roomService.initialize(playerName);
-      const { roomCode: code } = await roomService.createRoom();
-      setRoomCode(code);
-      setIsHost(true);
-      setIsInRoom(true);
-      setPlayers(roomService.getConnectedPlayers());
-      setMessages([`Room created! Share code: ${code}`]);
-    } catch (error) {
-      console.error('Error creating room:', error);
-      alert('Failed to create room');
-    }
   };
 
-  const handleJoinRoom = async () => {
-    if (!playerName.trim() || !roomCode.trim()) {
-      alert("Please enter your name and room code");
-      return;
-    }
-
-    try {
-      await roomService.initialize(playerName);
-      const hostPeerId = roomService.getRoomIdFromCode(roomCode);
-      await roomService.joinRoom(hostPeerId);
-      setIsInRoom(true);
-      setPlayers(roomService.getConnectedPlayers());
-      setMessages([`Joined room: ${roomCode}`]);
-    } catch (error) {
-      console.error('Error joining room:', error);
-      alert('Failed to join room. Check the room code.');
-    }
+  const copyRoomUrl = () => {
+    navigator.clipboard.writeText(gameUrl).then(() => {
+      setShowCopiedNotification(true);
+      setTimeout(() => setShowCopiedNotification(false), 2000);
+    }).catch(() => {
+      alert("Failed to copy URL. Please copy manually: " + gameUrl);
+    });
   };
 
-  const handleLeaveRoom = () => {
-    roomService.leaveRoom();
-    setIsInRoom(false);
-    setIsHost(false);
-    setRoomCode("");
-    setPlayers([]);
-    setMessages([]);
-  };
-
-  const sendTestMessage = () => {
-    roomService.sendChatMessage("Hello from " + playerName);
-  };
-
-  if (!isInRoom) {
-    return (
-      <div style={{ padding: "20px", maxWidth: "500px", margin: "0 auto" }}>
-        <h2>Online Multiplayer Room</h2>
-        
-        <div style={{ marginBottom: "20px" }}>
-          <label>Your Name:</label>
-          <input
-            type="text"
-            value={playerName}
-            onChange={(e) => setPlayerName(e.target.value)}
-            placeholder="Enter your name"
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-        </div>
-
-        <div style={{ marginBottom: "20px" }}>
-          <button onClick={handleCreateRoom} className={styles.btn}>
-            Create Room
-          </button>
-        </div>
-
-        <div style={{ borderTop: "1px solid #ccc", paddingTop: "20px" }}>
-          <label>Room Code:</label>
-          <input
-            type="text"
-            value={roomCode}
-            onChange={(e) => setRoomCode(e.target.value.toUpperCase())}
-            placeholder="Enter room code"
-            style={{ width: "100%", padding: "8px", marginTop: "5px" }}
-          />
-          <button 
-            onClick={handleJoinRoom} 
-            className={styles.btn}
-            style={{ marginTop: "10px" }}
-          >
-            Join Room
-          </button>
-        </div>
-      </div>
-    );
-  }
+  const playerCount = connectedPlayers.length;
+  const canStart = playerCount >= minPlayers && (!maxPlayers || playerCount <= maxPlayers);
 
   return (
-    <div style={{ padding: "20px" }}>
-      <div style={{ marginBottom: "20px" }}>
-        <h2>Room: {roomCode} {isHost && "(Host)"}</h2>
-        <button onClick={handleLeaveRoom} className={styles.btn}>
-          Leave Room
-        </button>
-        <button onClick={sendTestMessage} className={styles.btn}>
-          Send Test Message
-        </button>
-      </div>
-
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "20px" }}>
-        <div>
-          <h3>Players ({players.length})</h3>
-          <ul>
-            {players.map((player, idx) => (
-              <li key={idx}>
-                {player.playerName} {player.isHost && "👑"}
-              </li>
-            ))}
-          </ul>
+    <div>
+      {showCopiedNotification && (
+        <div className={styles.copiedNotification}>
+          ✓ Copied!
         </div>
+      )}
 
-        <div>
-          <h3>Messages</h3>
-          <div style={{ 
-            border: "1px solid #ccc", 
-            padding: "10px", 
-            height: "200px", 
-            overflowY: "auto" 
-          }}>
-            {messages.map((msg, idx) => (
-              <div key={idx}>{msg}</div>
+      <div className={styles.waitingRoomContainer}>
+        <h2 className={styles.waitingRoomTitle}>Share Room Code</h2>
+        
+        <div className={styles.roomCodeDisplay}>
+          <code className={styles.roomCodeText}>{roomCode}</code>
+          <button 
+            onClick={copyRoomCode}
+            className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnSmall}`}
+          >
+            📋 Copy Code
+          </button>
+          <button 
+            onClick={copyRoomUrl}
+            className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnSmall}`}
+          >
+            🔗 Copy URL
+          </button>
+        </div>
+        
+        <p className={styles.roomCodeHelp}>
+          Share this code with your friends to join {maxPlayers && `(${minPlayers}-${maxPlayers} players)`}
+        </p>
+        
+        <div className={styles.playersSection}>
+          <h3 className={styles.playersSectionTitle}>
+            Players in Room ({playerCount}{maxPlayers ? `/${maxPlayers}` : ''}):
+          </h3>
+          <div className={styles.playersList}>
+            {connectedPlayers.map((player, idx) => (
+              <div key={idx} className={styles.playerItem}>
+                {symbols && symbols[idx] && <span>{symbols[idx]}</span>}
+                👤 {player.playerName} {player.isHost && "👑"}
+              </div>
             ))}
+            {symbols && playerCount < symbols.length && (
+              <div className={`${styles.playerItem} ${styles.playerItemWaiting}`}>
+                {symbols[playerCount]} Waiting for player...
+              </div>
+            )}
           </div>
         </div>
+
+        {playerCount < minPlayers && (
+          <div className={styles.waitingMessage}>
+            <p className={styles.waitingMessageText}>
+              ⏳ Waiting for at least {minPlayers - playerCount} more player{minPlayers - playerCount > 1 ? 's' : ''} to join...
+            </p>
+          </div>
+        )}
+
+        {isHost && canStart && (
+          <div className={styles.startGameSection}>
+            <button
+              onClick={onStartGame}
+              className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
+            >
+              Start Game ({playerCount} player{playerCount > 1 ? 's' : ''})
+            </button>
+          </div>
+        )}
+
+        {!isHost && playerCount >= minPlayers && (
+          <div className={styles.waitingMessage}>
+            <p className={styles.waitingMessageText}>
+              ⏳ Waiting for host to start the game...
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );

@@ -38,7 +38,7 @@
   height: 80px;
   object-fit: contain;
   background: transparent;
-  mix-blend-mode: multiply;
+  /* mix-blend-mode: multiply; */
   filter: brightness(1.2);
 }
 
