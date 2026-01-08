@@ -1,6 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import GameModeSelector from "../../components/GameModeSelector";
+import OnlineRoomSetup from "../../components/OnlineRoomSetup";
+import OnlineRoomExample from "../../components/OnlineRoomExample";
+import roomService from "../../services/roomService";
 import styles from "../../styles/Battleship.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -12,13 +16,27 @@ const SHIPS = [
   { name: "Destroyer", size: 2, icon: "⛵" },
 ];
 
-function Battleship({ onBack }) {
+function Battleship({ onBack, initialRoomCode }) {
+  // Game mode states
+  const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gamePhase, setGamePhase] = useState("setup"); // setup, placement, battle, gameover
   const [players, setPlayers] = useState(["", ""]);
+  
+  // Online multiplayer states
+  const [isOnlineMode, setIsOnlineMode] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [roomCode, setRoomCode] = useState("");
+  const [isInRoom, setIsInRoom] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [waitingForOpponent, setWaitingForOpponent] = useState(false);
+  const [connectedPlayers, setConnectedPlayers] = useState([]);
+  const [myPlayerIndex, setMyPlayerIndex] = useState(null);
+  const [alertMessage, setAlertMessage] = useState(null);
+  
+  // Game states
   const [currentSetupPlayer, setCurrentSetupPlayer] = useState(0);
   const [currentBattlePlayer, setCurrentBattlePlayer] = useState(0);
   const [showRules, setShowRules] = useState(false);
-  const [alertMessage, setAlertMessage] = useState(null);
   
   // Player boards: null = empty, 'ship' = ship placed, 'hit' = ship hit, 'miss' = missed shot
   const [playerBoards, setPlayerBoards] = useState([
@@ -38,6 +56,75 @@ function Battleship({ onBack }) {
   const [shotsFired, setShotsFired] = useState([[], []]);
   const [winner, setWinner] = useState(null);
   const [scores, setScores] = useState({ 0: 0, 1: 0 });
+
+  // Auto-join room from URL
+  useEffect(() => {
+    if (initialRoomCode && !gameMode && !isInRoom) {
+      setGameMode('online');
+      setIsOnlineMode(true);
+      setRoomCode(initialRoomCode.toUpperCase().trim());
+    }
+  }, [initialRoomCode]);
+
+  // Setup online game listeners
+  useEffect(() => {
+    if (!isOnlineMode || !isInRoom) return;
+
+    roomService.on('onError', (errorMessage) => {
+      setAlertMessage(errorMessage);
+    });
+
+    roomService.on('onPlayerJoined', (data) => {
+      console.log('Player joined:', data);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+      
+      // Auto-start when 2 players join
+      if (allPlayers.length === 2 && isHost) {
+        handleStartOnlineGame();
+      }
+    });
+
+    roomService.on('onPlayerLeft', () => {
+      setAlertMessage("Opponent disconnected!");
+      setTimeout(() => {
+        handleBackToMenu();
+      }, 2000);
+    });
+
+    roomService.on('onGameAction', (data) => {
+      console.log('Game action received:', data);
+      
+      switch (data.action) {
+        case 'start-game':
+          const playerNames = data.payload.players;
+          setPlayers(playerNames);
+          setWaitingForOpponent(false);
+          setGamePhase('placement');
+          const myIndex = playerNames.indexOf(roomService.playerName);
+          setMyPlayerIndex(myIndex);
+          break;
+          
+        case 'ships-placed':
+          handleOpponentShipsPlaced(data.payload);
+          break;
+          
+        case 'fire':
+          handleOpponentFire(data.payload);
+          break;
+          
+        case 'play-again':
+          playAgain();
+          break;
+      }
+    });
+
+    return () => {
+      if (roomService.isConnected()) {
+        roomService.leaveRoom();
+      }
+    };
+  }, [isOnlineMode, isHost, isInRoom]);
 
   function handlePlayerNameChange(index, value) {
     const newPlayers = [...players];
@@ -215,10 +302,213 @@ function Battleship({ onBack }) {
     setGamePhase("placement");
   }
 
-  // Player Setup Screen
-  if (gamePhase === "setup") {
+  // Online multiplayer functions
+  async function handleCreateOnlineRoom() {
+    if (!playerName.trim()) {
+      setAlertMessage("Please enter your name!");
+      return;
+    }
+
+    try {
+      roomService.on('onConnected', (data) => {
+        console.log('Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerJoined', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.playerName = playerName;
+      const { roomCode: code } = await roomService.createRoom();
+      setRoomCode(code);
+      setIsHost(true);
+      setIsInRoom(true);
+      setWaitingForOpponent(true);
+      
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
+      
+      const newUrl = `${window.location.pathname}?room=${code}`;
+      window.history.pushState({}, '', newUrl);
+    } catch (error) {
+      console.error('Error creating room:', error);
+      setAlertMessage('Failed to create room. Please try again.');
+    }
+  }
+
+  async function handleJoinOnlineRoom() {
+    if (!playerName.trim() || !roomCode.trim()) {
+      setAlertMessage("Please enter your name and room code!");
+      return;
+    }
+
+    try {
+      roomService.on('onConnected', (data) => {
+        console.log('Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerJoined', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.playerName = playerName;
+      await roomService.joinRoom(roomCode);
+      setIsInRoom(true);
+      setIsHost(false);
+      setWaitingForOpponent(true);
+      
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
+    } catch (error) {
+      console.error('Error joining room:', error);
+      setAlertMessage('Failed to join room. Check the room code and try again.');
+    }
+  }
+
+  function handleStartOnlineGame() {
+    if (connectedPlayers.length !== 2) {
+      setAlertMessage("Need exactly 2 players to start!");
+      return;
+    }
+
+    const playerNames = connectedPlayers.map(p => p.playerName);
+    setPlayers(playerNames);
+    setWaitingForOpponent(false);
+    setGamePhase('placement');
+    setMyPlayerIndex(0); // Host is player 0
+    
+    // Notify all players to start
+    roomService.sendGameAction('start-game', { players: playerNames });
+  }
+
+  function handleOpponentShipsPlaced(payload) {
+    // Opponent finished placing ships, check if we can start battle
+    if (placingShip >= SHIPS.length) {
+      setGamePhase('battle');
+      setCurrentBattlePlayer(0);
+    }
+  }
+
+  function handleOpponentFire(payload) {
+    const { cellIndex, result } = payload;
+    // Update game state based on opponent's shot
+    const newBoards = [...playerBoards];
+    newBoards[myPlayerIndex][cellIndex] = result;
+    setPlayerBoards(newBoards);
+  }
+
+  function handleBackToMenu() {
+    if (roomService.isConnected()) {
+      roomService.leaveRoom();
+    }
+    setGameMode(null);
+    setGamePhase('setup');
+    setIsOnlineMode(false);
+    setIsInRoom(false);
+    setIsHost(false);
+    setWaitingForOpponent(false);
+    setRoomCode("");
+    setPlayerName("");
+    setPlayers(["", ""]);
+  }
+
+  // Mode Selection Screen
+  if (!gameMode) {
     return (
-      <GameLayout title="🚢 Battleship - Player Setup" onBack={onBack}>
+      <GameLayout title="🚢 Battleship - Select Mode" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Choose how you want to play Battleship
+          </p>
+
+          <GameModeSelector
+            onSelectLocal={() => {
+              setGameMode('local');
+              setIsOnlineMode(false);
+            }}
+            onSelectOnline={() => {
+              setGameMode('online');
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Online Multiplayer"
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Room Setup Screen
+  if (gameMode === 'online' && !isInRoom) {
+    return (
+      <GameLayout title="🚢 Battleship - Online Setup" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Create a room or join an existing one to play online
+          </p>
+
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateOnlineRoom}
+            onJoinRoom={handleJoinOnlineRoom}
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Waiting Room
+  if (isOnlineMode && isInRoom && waitingForOpponent) {
+    return (
+      <GameLayout title="🚢 Battleship - Waiting Room" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <OnlineRoomExample
+          roomCode={roomCode}
+          connectedPlayers={connectedPlayers}
+          maxPlayers={2}
+          isHost={isHost}
+          onStartGame={handleStartOnlineGame}
+          minPlayers={2}
+          gameUrl={`${window.location.origin}/games/battleship?room=${roomCode}`}
+        />
+      </GameLayout>
+    );
+  }
+
+  // Local Player Setup Screen
+  if (gameMode === 'local' && gamePhase === "setup") {
+    return (
+      <GameLayout title="🚢 Battleship - Player Setup" onBack={handleBackToMenu}>
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 

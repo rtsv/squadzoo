@@ -1,15 +1,32 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import GameModeSelector from "../../components/GameModeSelector";
+import OnlineRoomSetup from "../../components/OnlineRoomSetup";
+import OnlineRoomExample from "../../components/OnlineRoomExample";
 import DrawingCanvas from "./DrawingCanvas";
 import { wordsByDifficulty } from "./wordList";
+import roomService from "../../services/roomService";
 import styles from "../../styles/DrawGuess.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function DrawGuess({ onBack }) {
+function DrawGuess({ onBack, initialRoomCode }) {
+  // Game mode states
+  const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", "", ""]);
+  
+  // Online multiplayer states
+  const [isOnlineMode, setIsOnlineMode] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [roomCode, setRoomCode] = useState("");
+  const [isInRoom, setIsInRoom] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [waitingForPlayers, setWaitingForPlayers] = useState(false);
+  const [connectedPlayers, setConnectedPlayers] = useState([]);
+  
+  // Game states
   const [difficulty, setDifficulty] = useState("medium");
   const [timeLimit, setTimeLimit] = useState(60);
   const [drawerIndex, setDrawerIndex] = useState(0);
@@ -25,6 +42,75 @@ function DrawGuess({ onBack }) {
   const [canvasKey, setCanvasKey] = useState(0);
   const [showRules, setShowRules] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+
+  // Auto-join room from URL
+  useEffect(() => {
+    if (initialRoomCode && !gameMode && !isInRoom) {
+      setGameMode('online');
+      setIsOnlineMode(true);
+      setRoomCode(initialRoomCode.toUpperCase().trim());
+    }
+  }, [initialRoomCode]);
+
+  // Setup online game listeners
+  useEffect(() => {
+    if (!isOnlineMode || !isInRoom) return;
+
+    roomService.on('onError', (errorMessage) => {
+      setAlertMessage(errorMessage);
+    });
+
+    roomService.on('onPlayerJoined', (data) => {
+      console.log('Player joined:', data);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers(allPlayers);
+    });
+
+    roomService.on('onPlayerLeft', () => {
+      setAlertMessage("A player disconnected!");
+      setTimeout(() => {
+        handleBackToMenu();
+      }, 2000);
+    });
+
+    roomService.on('onGameAction', (data) => {
+      console.log('Game action received:', data);
+      
+      switch (data.action) {
+        case 'start-game':
+          const playerNames = data.payload.players;
+          setPlayers(playerNames);
+          setWaitingForPlayers(false);
+          setGameStarted(true);
+          const initialScores = {};
+          playerNames.forEach(player => {
+            initialScores[player] = 0;
+          });
+          setScores(initialScores);
+          startNewRound(playerNames);
+          break;
+          
+        case 'submit-guess':
+          handleRemoteGuess(data.payload);
+          break;
+          
+        case 'next-round':
+          nextRound();
+          break;
+
+        case 'use-hint':
+          setHintsUsed(data.payload.hintsUsed);
+          setShowHint(true);
+          break;
+      }
+    });
+
+    return () => {
+      if (roomService.isConnected()) {
+        roomService.leaveRoom();
+      }
+    };
+  }, [isOnlineMode, isHost, isInRoom]);
 
   // Timer effect
   useEffect(() => {
@@ -143,13 +229,215 @@ function DrawGuess({ onBack }) {
     return "";
   }
 
+  // Online multiplayer functions
+  async function handleCreateOnlineRoom() {
+    if (!playerName.trim()) {
+      setAlertMessage("Please enter your name!");
+      return;
+    }
+
+    try {
+      roomService.on('onConnected', (data) => {
+        console.log('Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerJoined', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.playerName = playerName;
+      const { roomCode: code } = await roomService.createRoom();
+      setRoomCode(code);
+      setIsHost(true);
+      setIsInRoom(true);
+      setWaitingForPlayers(true);
+      
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
+      
+      const newUrl = `${window.location.pathname}?room=${code}`;
+      window.history.pushState({}, '', newUrl);
+    } catch (error) {
+      console.error('Error creating room:', error);
+      setAlertMessage('Failed to create room. Please try again.');
+    }
+  }
+
+  async function handleJoinOnlineRoom() {
+    if (!playerName.trim() || !roomCode.trim()) {
+      setAlertMessage("Please enter your name and room code!");
+      return;
+    }
+
+    try {
+      roomService.on('onConnected', (data) => {
+        console.log('Connected to room:', data);
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.on('onPlayerJoined', (data) => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      });
+
+      roomService.playerName = playerName;
+      await roomService.joinRoom(roomCode);
+      setIsInRoom(true);
+      setIsHost(false);
+      setWaitingForPlayers(true);
+      
+      setTimeout(() => {
+        const allPlayers = roomService.getConnectedPlayers();
+        setConnectedPlayers(allPlayers);
+      }, 100);
+    } catch (error) {
+      console.error('Error joining room:', error);
+      setAlertMessage('Failed to join room. Check the room code and try again.');
+    }
+  }
+
+  function handleStartOnlineGame() {
+    if (connectedPlayers.length < 2) {
+      setAlertMessage("Need at least 2 players to start!");
+      return;
+    }
+
+    const playerNames = connectedPlayers.map(p => p.playerName);
+    setPlayers(playerNames);
+    setWaitingForPlayers(false);
+    setGameStarted(true);
+    
+    const initialScores = {};
+    playerNames.forEach(player => {
+      initialScores[player] = 0;
+    });
+    setScores(initialScores);
+    
+    // Notify all players to start
+    roomService.sendGameAction('start-game', { players: playerNames });
+    startNewRound(playerNames);
+  }
+
+  function handleRemoteGuess(payload) {
+    const { playerName, guess, isCorrect } = payload;
+    if (isCorrect) {
+      endRound(playerName);
+    }
+  }
+
+  function handleBackToMenu() {
+    if (roomService.isConnected()) {
+      roomService.leaveRoom();
+    }
+    setGameMode(null);
+    setGameStarted(false);
+    setIsOnlineMode(false);
+    setIsInRoom(false);
+    setIsHost(false);
+    setWaitingForPlayers(false);
+    setRoomCode("");
+    setPlayerName("");
+    setPlayers(["", "", ""]);
+    setScores({});
+    setRound(1);
+  }
+
   const currentDrawer = players[drawerIndex];
   const guessers = players.filter((_, i) => i !== drawerIndex);
 
-  // Player Setup Screen
-  if (!gameStarted) {
+  // Mode Selection Screen
+  if (!gameMode) {
     return (
-      <GameLayout title="🎨 Draw & Guess - Setup" onBack={onBack}>
+      <GameLayout title="🎨 Draw & Guess - Select Mode" onBack={onBack}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Choose how you want to play Draw & Guess
+          </p>
+
+          <GameModeSelector
+            onSelectLocal={() => {
+              setGameMode('local');
+              setIsOnlineMode(false);
+            }}
+            onSelectOnline={() => {
+              setGameMode('online');
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Online Multiplayer"
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Room Setup Screen
+  if (gameMode === 'online' && !isInRoom) {
+    return (
+      <GameLayout title="🎨 Draw & Guess - Online Setup" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Create a room or join an existing one to play online
+          </p>
+
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateOnlineRoom}
+            onJoinRoom={handleJoinOnlineRoom}
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // Online Waiting Room
+  if (isOnlineMode && isInRoom && waitingForPlayers) {
+    return (
+      <GameLayout title="🎨 Draw & Guess - Waiting Room" onBack={handleBackToMenu}>
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
+        <OnlineRoomExample
+          roomCode={roomCode}
+          connectedPlayers={connectedPlayers}
+          maxPlayers={12}
+          isHost={isHost}
+          onStartGame={handleStartOnlineGame}
+          minPlayers={2}
+          gameUrl={`${window.location.origin}/games/draw-guess?room=${roomCode}`}
+        />
+      </GameLayout>
+    );
+  }
+
+  // Player Setup Screen (Local mode)
+  if (gameMode === 'local' && !gameStarted) {
+    return (
+      <GameLayout title="🎨 Draw & Guess - Setup" onBack={handleBackToMenu}>
         {alertMessage && (
           <CustomAlert 
             message={alertMessage} 
@@ -282,11 +570,18 @@ function DrawGuess({ onBack }) {
   // Game Screen
   return (
     <GameLayout
-      title={`🎨 Draw & Guess - Round ${round}`}
+      title={`🎨 Draw & Guess - Round ${round}${isOnlineMode ? ' (Online)' : ''}`}
       currentPlayer={currentDrawer}
-      onBack={onBack}
+      onBack={isOnlineMode ? handleBackToMenu : onBack}
     >
       <div className={styles.gameContainer}>
+        {/* Online Room Info */}
+        {isOnlineMode && (
+          <div className={styles.onlineInfo}>
+            <span>Room: {roomCode}</span>
+          </div>
+        )}
+
         {/* Game Rules Toggle */}
         <div className={styles.rulesToggle}>
           <button

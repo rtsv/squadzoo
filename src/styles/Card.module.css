@@ -19,6 +19,12 @@
   text-align: center;
   background: linear-gradient(135deg, rgba(102, 126, 234, 0.15) 0%, rgba(118, 75, 162, 0.15) 100%);
   backdrop-filter: blur(10px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 240px;
+  height: 100%;
 }
 
 .gameCard:hover {
@@ -32,6 +38,8 @@
   display: inline-block;
   animation: float 3s ease-in-out infinite;
   filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.3));
+  flex-shrink: 0;
+  width: 100%;
 }
 
 @keyframes float {
@@ -49,6 +57,8 @@
   margin: 12px 0;
   color: #f1f5f9;
   text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+  width: 100%;
 }
 
 .cardDescription {
@@ -56,6 +66,18 @@
   font-size: 14px;
   line-height: 1.6;
   margin-bottom: 16px;
+  flex-grow: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+}
+
+/* Ensure button inside game card is centered */
+.gameCard button {
+  flex-shrink: 0;
+  align-self: center;
+  margin-top: auto;
 }
 
 .levelCard {

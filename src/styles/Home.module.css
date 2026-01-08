@@ -252,36 +252,148 @@
 
 .gamesGrid {
   display: grid;
-  grid-template-columns: 1fr;
   gap: 1.5rem;
   margin-top: 2rem;
   margin-bottom: 2rem;
+  justify-content: center;
 }
 
 /* Mobile - 1 column */
+.gamesGrid {
+  grid-template-columns: 1fr;
+}
+
+/* Small tablets - 2 columns */
 @media (min-width: 640px) {
   .gamesGrid {
     grid-template-columns: repeat(2, 1fr);
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
   }
 }
 
-/* Tablet - 2 columns */
+/* Tablets - 2 columns */
 @media (min-width: 769px) {
   .gamesGrid {
     grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
+    max-width: 700px;
   }
 }
 
-/* Desktop - 4 columns for first row, then wraps to second row */
+/* Desktop - Dynamic balanced grid */
 @media (min-width: 1200px) {
   .gamesGrid {
-    grid-template-columns: repeat(4, 1fr);
     gap: 1.5rem;
-    max-width: 1300px;
     margin-left: auto;
     margin-right: auto;
   }
+  
+  /* 4 games: all in one row */
+  .gamesGrid[data-count="4"] {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+  }
+  
+  /* 5 games: 3 + 2 layout (centered second row) */
+  .gamesGrid[data-count="5"] {
+    grid-template-columns: repeat(6, 1fr);
+    max-width: 1200px;
+  }
+  
+  .gamesGrid[data-count="5"] > div:nth-child(1),
+  .gamesGrid[data-count="5"] > div:nth-child(2),
+  .gamesGrid[data-count="5"] > div:nth-child(3) {
+    grid-column: span 2;
+  }
+  
+  .gamesGrid[data-count="5"] > div:nth-child(4) {
+    grid-column: 2 / span 2;
+  }
+  
+  .gamesGrid[data-count="5"] > div:nth-child(5) {
+    grid-column: 4 / span 2;
+  }
+  
+  /* 6 games: 3 + 3 layout */
+  .gamesGrid[data-count="6"] {
+    grid-template-columns: repeat(3, 1fr);
+    max-width: 1000px;
+  }
+  
+  /* 7 games: 4 + 3 layout (centered second row) */
+  .gamesGrid[data-count="7"] {
+    grid-template-columns: repeat(12, 1fr);
+    max-width: 1200px;
+  }
+  
+  .gamesGrid[data-count="7"] > div:nth-child(1),
+  .gamesGrid[data-count="7"] > div:nth-child(2),
+  .gamesGrid[data-count="7"] > div:nth-child(3),
+  .gamesGrid[data-count="7"] > div:nth-child(4) {
+    grid-column: span 3;
+  }
+  
+  .gamesGrid[data-count="7"] > div:nth-child(5) {
+    grid-column: 2 / span 3;
+  }
+  
+  .gamesGrid[data-count="7"] > div:nth-child(6) {
+    grid-column: 5 / span 3;
+  }
+  
+  .gamesGrid[data-count="7"] > div:nth-child(7) {
+    grid-column: 8 / span 3;
+  }
+  
+  /* 8 games: 4 + 4 layout */
+  .gamesGrid[data-count="8"] {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+  }
+  
+  /* 9 games: 5 + 4 layout (centered second row) */
+  .gamesGrid[data-count="9"] {
+    grid-template-columns: repeat(20, 1fr);
+    max-width: 1400px;
+  }
+  
+  .gamesGrid[data-count="9"] > div:nth-child(1),
+  .gamesGrid[data-count="9"] > div:nth-child(2),
+  .gamesGrid[data-count="9"] > div:nth-child(3),
+  .gamesGrid[data-count="9"] > div:nth-child(4),
+  .gamesGrid[data-count="9"] > div:nth-child(5) {
+    grid-column: span 4;
+  }
+  
+  .gamesGrid[data-count="9"] > div:nth-child(6) {
+    grid-column: 3 / span 4;
+  }
+  
+  .gamesGrid[data-count="9"] > div:nth-child(7) {
+    grid-column: 7 / span 4;
+  }
+  
+  .gamesGrid[data-count="9"] > div:nth-child(8) {
+    grid-column: 11 / span 4;
+  }
+  
+  .gamesGrid[data-count="9"] > div:nth-child(9) {
+    grid-column: 15 / span 4;
+  }
+  
+  /* Default: 4 columns for 4+ games */
+  .gamesGrid:not([data-count]) {
+    grid-template-columns: repeat(4, 1fr);
+    max-width: 1200px;
+  }
+}
+
+/* Ensure all game cards have consistent width */
+.gamesGrid > div {
+  width: 100%;
+  max-width: none;
 }
 
 /* Ad Banner Space - Reserved for vertical banner */

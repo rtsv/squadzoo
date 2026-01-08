@@ -29,12 +29,12 @@ const games = [
     //   description: "Help everyone escape the maze",
     //   icon: "🌀"
     // },
-    // {
-    //   id: "light-shadow",
-    //   title: "Light & Shadow",
-    //   description: "Use light to move safely",
-    //   icon: "💡"
-    // }
+    {
+      id: "ludo",
+      title: "Ludo",
+      description: "Classic board game - race your tokens home!",
+      icon: "🎲"
+    },
     {
       id: "word-chain",
       title: "Word Chain",

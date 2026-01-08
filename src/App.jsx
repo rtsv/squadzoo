@@ -12,6 +12,7 @@ import DrawGuessPage from "./pages/games/DrawGuessPage";
 import WordChainPage from "./pages/games/WordChainPage";
 import TicTacToePage from "./pages/games/TicTacToePage";
 import BattleshipPage from "./pages/games/BattleshipPage";
+import LudoPage from "./pages/games/LudoPage";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="/games/word-chain" element={<WordChainPage />} />
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
           <Route path="/games/battleship" element={<BattleshipPage />} />
+          <Route path="/games/ludo" element={<LudoPage />} />
         </Routes>
       </Router>
     </HelmetProvider>

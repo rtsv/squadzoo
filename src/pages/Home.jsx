@@ -16,7 +16,8 @@ function Home() {
       "draw-guess": "/games/draw-and-guess",
       "word-chain": "/games/word-chain",
       "tic-tac-toe": "/games/tic-tac-toe",
-      "battleship": "/games/battleship"
+      "battleship": "/games/battleship",
+      "ludo": "/games/ludo"
     };
     navigate(gameRoutes[gameId]);
   };
@@ -72,7 +73,7 @@ function Home() {
             <h2 className={styles.sectionTitle} id="games-title">🎯 Featured Multiplayer Games</h2>
             <p className={styles.sectionSubtitle}>Choose a puzzle or strategy game and start playing with friends online</p>
           </div>
-          <div className={styles.gamesGrid} role="list">
+          <div className={styles.gamesGrid} data-count={games.length} role="list">
             {games.map(game => (
               <div key={game.id} role="listitem">
                 <GameCard
