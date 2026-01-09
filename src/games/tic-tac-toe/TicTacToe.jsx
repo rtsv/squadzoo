@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import CustomConfirm from "../../components/CustomConfirm";
 import GameModeSelector from "../../components/GameModeSelector";
 import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
 import PlayerNameInput from "../../components/PlayerNameInput";
 import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
+import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function TicTacToe({ onBack, initialRoomCode }) {
+function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", ""]);
@@ -34,6 +36,11 @@ function TicTacToe({ onBack, initialRoomCode }) {
   const [waitingForOpponent, setWaitingForOpponent] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState([]);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+  
+  // State persistence
+  const [showContinueDialog, setShowContinueDialog] = useState(false);
+  const [savedState, setSavedState] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
   const symbols = ["❌", "⭕"];
 
@@ -77,6 +84,11 @@ function TicTacToe({ onBack, initialRoomCode }) {
         
         // Notify guest to start game
         roomService.sendGameAction('game-start', { players: playerNames });
+        
+        // Navigate to play URL for ad-free gameplay
+        if (onGameStart && !isPlayMode) {
+          onGameStart();
+        }
       }
     });
 
@@ -96,6 +108,11 @@ function TicTacToe({ onBack, initialRoomCode }) {
           setPlayers(data.payload.players);
           setWaitingForOpponent(false);
           setGameStarted(true);
+          
+          // Navigate to play URL for ad-free gameplay
+          if (onGameStart && !isPlayMode) {
+            onGameStart();
+          }
           break;
           
         case 'move':
@@ -131,6 +148,82 @@ function TicTacToe({ onBack, initialRoomCode }) {
       setRoomCode(initialRoomCode.toUpperCase().trim());
     }
   }, [initialRoomCode]);
+
+  // Check for saved game state on mount
+  useEffect(() => {
+    const gameId = isOnlineMode ? `tic-tac-toe-online-${roomCode}` : 'tic-tac-toe-offline';
+    const saved = loadGameState(gameId);
+    
+    if (saved && !gameStarted) {
+      setSavedState(saved);
+      setTimeRemaining(getTimeRemaining(gameId));
+      setShowContinueDialog(true);
+    }
+  }, []); // Run only once on mount
+
+  // Save game state whenever critical game state changes
+  useEffect(() => {
+    if (gameStarted && !winner && !isDraw) {
+      const gameId = isOnlineMode ? `tic-tac-toe-online-${roomCode}` : 'tic-tac-toe-offline';
+      const stateToSave = {
+        gameMode,
+        gameStarted,
+        players,
+        board,
+        currentPlayerIndex,
+        scores,
+        isOnlineMode,
+        playerName,
+        roomCode,
+        isInRoom,
+        isHost,
+        myPlayerIndex,
+      };
+      
+      saveGameState(gameId, stateToSave);
+    }
+  }, [gameStarted, board, currentPlayerIndex, winner, isDraw]);
+
+  // Clear saved state when game ends
+  useEffect(() => {
+    if (winner || isDraw) {
+      const gameId = isOnlineMode ? `tic-tac-toe-online-${roomCode}` : 'tic-tac-toe-offline';
+      clearGameState(gameId);
+    }
+  }, [winner, isDraw, isOnlineMode, roomCode]);
+
+  // Handlers for continue dialog
+  const handleContinueGame = () => {
+    if (savedState) {
+      // Restore all game state
+      setGameMode(savedState.gameMode);
+      setGameStarted(savedState.gameStarted);
+      setPlayers(savedState.players);
+      setBoard(savedState.board);
+      setCurrentPlayerIndex(savedState.currentPlayerIndex);
+      setScores(savedState.scores);
+      setIsOnlineMode(savedState.isOnlineMode);
+      setPlayerName(savedState.playerName);
+      setRoomCode(savedState.roomCode);
+      setIsInRoom(savedState.isInRoom);
+      setIsHost(savedState.isHost);
+      setMyPlayerIndex(savedState.myPlayerIndex);
+      
+      // Navigate to play mode if needed
+      if (onGameStart && !isPlayMode && savedState.gameStarted) {
+        onGameStart();
+      }
+    }
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
+
+  const handleStartNewGame = () => {
+    const gameId = isOnlineMode ? `tic-tac-toe-online-${roomCode}` : 'tic-tac-toe-offline';
+    clearGameState(gameId);
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
 
   function handleOpponentMove(moveData) {
     console.log('📥 Opponent move:', moveData);
@@ -352,6 +445,11 @@ function TicTacToe({ onBack, initialRoomCode }) {
     }
     setPlayers(validPlayers);
     setGameStarted(true);
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function checkWinner(board) {
@@ -497,6 +595,7 @@ function TicTacToe({ onBack, initialRoomCode }) {
             setRoomCode={setRoomCode}
             onCreateRoom={handleCreateOnlineRoom}
             onJoinRoom={handleJoinOnlineRoom}
+            hideCreateRoom={!!initialRoomCode}
           />
         </div>
       </GameLayout>
@@ -572,6 +671,18 @@ function TicTacToe({ onBack, initialRoomCode }) {
       currentPlayer={winner !== null || isDraw ? null : players[currentPlayerIndex]}
       onBack={handleBackToMenu}
     >
+      {alertMessage && (
+        <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      )}
+      
+      <CustomConfirm
+        isOpen={showContinueDialog}
+        onConfirm={handleContinueGame}
+        onCancel={handleStartNewGame}
+        message={`You have a saved game from your previous session.${isOnlineMode ? ' (Online Mode)' : ''} Would you like to continue?`}
+        timeRemaining={timeRemaining}
+      />
+      
       <div className={styles.gameContainer}>
         {/* Online Room Info */}
         {isOnlineMode && (

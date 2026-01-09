@@ -76,6 +76,7 @@ function FAQ() {
         <title>FAQ - Frequently Asked Questions | SquadZoo Games</title>
         <meta name="description" content="Get answers to common questions about SquadZoo multiplayer puzzle games. Learn how to play, invite friends, and enjoy free online games without downloads." />
         <meta name="keywords" content="squadzoo faq, how to play puzzle games, multiplayer game questions, online games help, word chain how to play, free games faq" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://www.squadzoo.games/faq" />
         <meta property="og:title" content="SquadZoo FAQ - Your Questions Answered" />
         <meta property="og:description" content="Find answers to frequently asked questions about SquadZoo free multiplayer puzzle and strategy games." />

@@ -1,12 +1,19 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import TicTacToe from "../../games/tic-tac-toe/TicTacToe";
 import GameDescription from "../../components/GameDescription";
 
-function TicTacToePage() {
+function TicTacToePage({ isPlayMode = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
+  
+  const handleGameStart = () => {
+    if (!isPlayMode) {
+      navigate('/games/tic-tac-toe/play' + location.search);
+    }
+  };
 
   const gameDescription = {
     title: "Tic-Tac-Toe",
@@ -28,6 +35,7 @@ function TicTacToePage() {
         <title>Tic-Tac-Toe - Online Multiplayer Game | SquadZoo</title>
         <meta name="description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer game with local and online modes. Challenge your strategic thinking in this timeless 3x3 grid game." />
         <meta name="keywords" content="tic tac toe, tic tac toe online, multiplayer tic tac toe, noughts and crosses, strategy game, classic game online" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
         <meta property="og:title" content="Tic-Tac-Toe - Free Online Multiplayer Game" />
         <meta property="og:description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer strategic game." />
@@ -39,8 +47,13 @@ function TicTacToePage() {
         <meta name="twitter:description" content="Play Tic-Tac-Toe online with friends! Free strategic game." />
       </Helmet>
       
-      <TicTacToe onBack={() => navigate("/")} initialRoomCode={roomCode} />
-      <GameDescription {...gameDescription} />
+      <TicTacToe 
+        onBack={() => navigate("/")} 
+        initialRoomCode={roomCode}
+        onGameStart={handleGameStart}
+        isPlayMode={isPlayMode}
+      />
+      {!isPlayMode && <GameDescription {...gameDescription} />}
     </>
   );
 }

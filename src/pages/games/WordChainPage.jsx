@@ -1,13 +1,20 @@
 import { useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import WordChain from "../../games/word-chain/WordChain";
 import GameDescription from "../../components/GameDescription";
 
-function WordChainPage() {
+function WordChainPage({ isPlayMode = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
+  
+  const handleGameStart = () => {
+    if (!isPlayMode) {
+      navigate('/games/word-chain/play' + location.search);
+    }
+  };
 
   useEffect(() => {
     // Auto-join room if room code is in URL
@@ -36,6 +43,7 @@ function WordChainPage() {
         <title>Word Chain - Online Multiplayer Word Game | SquadZoo</title>
         <meta name="description" content="Play Word Chain online with friends! Create word chains by connecting words that start with the last letter of the previous word. Free multiplayer word game for 2-12 players." />
         <meta name="keywords" content="word chain game, word chain online, multiplayer word game, vocabulary game, logic game, word game online, educational game" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://squadzoo.games/games/word-chain" />
         <meta property="og:title" content="Word Chain - Free Online Multiplayer Word Game" />
         <meta property="og:description" content="Challenge your vocabulary! Play Word Chain online with friends. Connect words that start with the last letter of the previous word." />
@@ -47,8 +55,13 @@ function WordChainPage() {
         <meta name="twitter:description" content="Play Word Chain online with friends! Free multiplayer vocabulary game." />
       </Helmet>
       
-      <WordChain onBack={() => navigate("/")} initialRoomCode={roomCode} />
-      <GameDescription {...gameDescription} />
+      <WordChain 
+        onBack={() => navigate("/")} 
+        initialRoomCode={roomCode}
+        onGameStart={handleGameStart}
+        isPlayMode={isPlayMode}
+      />
+      {!isPlayMode && <GameDescription {...gameDescription} />}
     </>
   );
 }

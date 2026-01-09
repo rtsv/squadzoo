@@ -27,11 +27,20 @@ function App() {
           <Route path="/contact" element={<ContactUs />} />
           <Route path="/disclaimer" element={<Disclaimer />} />
           <Route path="/faq" element={<FAQ />} />
+          
+          {/* Game setup/menu pages (with ads) */}
           <Route path="/games/draw-and-guess" element={<DrawGuessPage />} />
           <Route path="/games/word-chain" element={<WordChainPage />} />
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
           <Route path="/games/battleship" element={<BattleshipPage />} />
           <Route path="/games/ludo" element={<LudoPage />} />
+          
+          {/* Active gameplay pages (no ads for AdSense exclusion) */}
+          <Route path="/games/draw-and-guess/play" element={<DrawGuessPage isPlayMode={true} />} />
+          <Route path="/games/word-chain/play" element={<WordChainPage isPlayMode={true} />} />
+          <Route path="/games/tic-tac-toe/play" element={<TicTacToePage isPlayMode={true} />} />
+          <Route path="/games/battleship/play" element={<BattleshipPage isPlayMode={true} />} />
+          <Route path="/games/ludo/play" element={<LudoPage isPlayMode={true} />} />
         </Routes>
       </Router>
     </HelmetProvider>

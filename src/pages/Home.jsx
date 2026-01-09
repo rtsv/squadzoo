@@ -28,6 +28,7 @@ function Home() {
         <title>SquadZoo - Free Multiplayer Puzzle Games Online | Play with Friends</title>
         <meta name="description" content="Play free multiplayer puzzle and strategy games online at SquadZoo. Enjoy Word Chain, Tic-Tac-Toe, Battleship, and Draw & Guess with friends. No downloads or sign-ups required!" />
         <meta name="keywords" content="multiplayer games, puzzle games, logic games, online games, word chain, tic-tac-toe, battleship, draw and guess, free games, party games" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://squadzoo.games/" />
         <meta property="og:title" content="SquadZoo - Free Multiplayer Puzzle & Strategy Games Online" />
         <meta property="og:description" content="Challenge your mind with fun multiplayer games. Play with friends online - no downloads required!" />

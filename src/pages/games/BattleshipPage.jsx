@@ -1,12 +1,19 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Battleship from "../../games/battleship/Battleship";
 import GameDescription from "../../components/GameDescription";
 
-function BattleshipPage() {
+function BattleshipPage({ isPlayMode = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
+  
+  const handleGameStart = () => {
+    if (!isPlayMode) {
+      navigate('/games/battleship/play' + location.search);
+    }
+  };
 
   const gameDescription = {
     title: "Battleship",
@@ -28,6 +35,7 @@ function BattleshipPage() {
         <title>Battleship - Online Multiplayer Naval Strategy Game | SquadZoo</title>
         <meta name="description" content="Play Battleship online with friends! Classic naval strategy game where you sink your opponent's fleet. Free multiplayer game with tactical gameplay for 2 players." />
         <meta name="keywords" content="battleship game, battleship online, multiplayer battleship, naval strategy game, board game online, war game" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://squadzoo.games/games/battleship" />
         <meta property="og:title" content="Battleship - Free Online Multiplayer Naval Game" />
         <meta property="og:description" content="Sink enemy ships in this classic naval strategy game! Play Battleship online with friends." />
@@ -39,8 +47,13 @@ function BattleshipPage() {
         <meta name="twitter:description" content="Play Battleship online with friends! Free naval strategy game." />
       </Helmet>
       
-      <Battleship onBack={() => navigate("/")} initialRoomCode={roomCode} />
-      <GameDescription {...gameDescription} />
+      <Battleship 
+        onBack={() => navigate("/")} 
+        initialRoomCode={roomCode}
+        onGameStart={handleGameStart}
+        isPlayMode={isPlayMode}
+      />
+      {!isPlayMode && <GameDescription {...gameDescription} />}
     </>
   );
 }

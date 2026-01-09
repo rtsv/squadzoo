@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "../styles/StaticPage.module.css";
@@ -5,6 +6,12 @@ import styles from "../styles/StaticPage.module.css";
 function ContactUs() {
   return (
     <div className={styles.container}>
+      <Helmet>
+        <title>Contact Us - SquadZoo | Get in Touch</title>
+        <meta name="description" content="Get in touch with SquadZoo. Contact us for support, feedback, partnerships, or any questions about our multiplayer games platform." />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
+      </Helmet>
+      
       <Header />
 
       <div className={styles.content}>

@@ -10,7 +10,8 @@ function OnlineRoomSetup({
   setRoomCode, 
   onCreateRoom, 
   onJoinRoom,
-  extractRoomCode = (text) => text.toUpperCase().trim()
+  extractRoomCode = (text) => text.toUpperCase().trim(),
+  hideCreateRoom = false
 }) {
   return (
     <div className={styles.onlineSetupContainer}>
@@ -26,20 +27,24 @@ function OnlineRoomSetup({
       </div>
 
       <div className={styles.roomOptions}>
-        <div className={styles.roomOption}>
-          <h3 className={styles.roomOptionTitle}>Create Room</h3>
-          <p className={styles.roomOptionDescription}>
-            Start a new game and share the 8-character room code
-          </p>
-          <button
-            onClick={onCreateRoom}
-            className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
-          >
-            Create Room
-          </button>
-        </div>
+        {!hideCreateRoom && (
+          <>
+            <div className={styles.roomOption}>
+              <h3 className={styles.roomOptionTitle}>Create Room</h3>
+              <p className={styles.roomOptionDescription}>
+                Start a new game and share the 8-character room code
+              </p>
+              <button
+                onClick={onCreateRoom}
+                className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
+              >
+                Create Room
+              </button>
+            </div>
 
-        <div className={styles.divider}>OR</div>
+            <div className={styles.divider}>OR</div>
+          </>
+        )}
 
         <div className={styles.roomOption}>
           <h3 className={styles.roomOptionTitle}>Join Room</h3>

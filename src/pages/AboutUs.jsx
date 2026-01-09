@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "../styles/StaticPage.module.css";
@@ -5,6 +6,12 @@ import styles from "../styles/StaticPage.module.css";
 function AboutUs() {
   return (
     <div className={styles.container}>
+      <Helmet>
+        <title>About Us - SquadZoo | Free Multiplayer Games Platform</title>
+        <meta name="description" content="Learn about SquadZoo - Your destination for free multiplayer puzzle and strategy games. Play with friends online, challenge your mind, and have fun together!" />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
+      </Helmet>
+      
       <Header />
 
       <div className={styles.content}>

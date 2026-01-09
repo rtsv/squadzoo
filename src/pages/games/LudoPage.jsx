@@ -1,12 +1,19 @@
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import Ludo from "../../games/ludo/Ludo";
 import GameDescription from "../../components/GameDescription";
 
-function LudoPage() {
+function LudoPage({ isPlayMode = false }) {
   const navigate = useNavigate();
+  const location = useLocation();
   const [searchParams] = useSearchParams();
   const roomCode = searchParams.get("room");
+  
+  const handleGameStart = () => {
+    if (!isPlayMode) {
+      navigate('/games/ludo/play' + location.search);
+    }
+  };
 
   const gameDescription = {
     title: "Ludo",
@@ -67,51 +74,128 @@ function LudoPage() {
     <>
       <Helmet>
         {/* Primary Meta Tags */}
-        <title>Play Ludo Online Free - Multiplayer Board Game 2024 | SquadZoo</title>
-        <meta name="description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board in this timeless strategy game. No downloads or registration required - Start playing now!" />
-        <meta name="keywords" content="ludo online, ludo game, multiplayer ludo, board game online, classic ludo, ludo with friends, play ludo free, ludo multiplayer, online ludo game, ludo 2 player, ludo 4 player, ludo strategy game, free board games" />
-        <link rel="canonical" href="https://squadzoo.games/games/ludo" />
-        
-        {/* Open Graph / Facebook */}
-        <meta property="og:type" content="game" />
-        <meta property="og:title" content="Play Ludo Online Free - Multiplayer Board Game | SquadZoo" />
-        <meta property="og:description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board. No downloads required!" />
-        <meta property="og:url" content="https://squadzoo.games/games/ludo" />
-        <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
-        <meta property="og:image:width" content="1200" />
-        <meta property="og:image:height" content="630" />
-        <meta property="og:site_name" content="SquadZoo" />
-        <meta property="og:locale" content="en_US" />
-        
-        {/* Twitter Card */}
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Play Ludo Online Free - Multiplayer Board Game" />
-        <meta name="twitter:description" content="Play Ludo online with friends! Free strategic board game for 2-4 players. No downloads required!" />
-        <meta name="twitter:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
-        
-        {/* Additional SEO Meta Tags */}
-        <meta name="author" content="SquadZoo" />
-        <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-        <meta name="googlebot" content="index, follow" />
-        <meta name="language" content="English" />
-        <meta name="revisit-after" content="7 days" />
-        <meta name="rating" content="General" />
-        <meta name="distribution" content="global" />
-        
-        {/* Mobile App Meta Tags */}
-        <meta name="mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-        <meta name="apple-mobile-web-app-title" content="Ludo - SquadZoo" />
-        
-        {/* Structured Data (JSON-LD) */}
-        <script type="application/ld+json">
-          {JSON.stringify(structuredData)}
-        </script>
+        {isPlayMode ? (
+          <>
+            <title>Playing Ludo Online | SquadZoo</title>
+            <meta name="description" content="Active Ludo game in progress. Enjoy ad-free gameplay experience." />
+            <meta name="robots" content="noindex, nofollow" />
+            <link rel="canonical" href="https://squadzoo.games/games/ludo" />
+          </>
+        ) : (
+          <>
+            <title>Play Ludo Online Free - Multiplayer Board Game 2026 | SquadZoo</title>
+            <meta name="description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board in this timeless strategy game. No downloads or registration required - Start playing now!" />
+            <meta name="keywords" content="ludo online, ludo game, multiplayer ludo, board game online, classic ludo, ludo with friends, play ludo free, ludo multiplayer, online ludo game, ludo 2 player, ludo 4 player, ludo strategy game, free board games, ludo dice game, ludo king online, pachisi game" />
+            <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
+            <link rel="canonical" href="https://squadzoo.games/games/ludo" />
+            
+            {/* Open Graph / Facebook */}
+            <meta property="og:type" content="game" />
+            <meta property="og:title" content="Play Ludo Online Free - Multiplayer Board Game | SquadZoo" />
+            <meta property="og:description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board. No downloads required!" />
+            <meta property="og:url" content="https://squadzoo.games/games/ludo" />
+            <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
+            <meta property="og:image:width" content="1200" />
+            <meta property="og:image:height" content="630" />
+            <meta property="og:image:alt" content="Ludo Online Multiplayer Game" />
+            <meta property="og:site_name" content="SquadZoo" />
+            <meta property="og:locale" content="en_US" />
+            
+            {/* Twitter Card */}
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Play Ludo Online Free - Multiplayer Board Game" />
+            <meta name="twitter:description" content="Play Ludo online with friends! Free strategic board game for 2-4 players. No downloads required!" />
+            <meta name="twitter:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
+            <meta name="twitter:image:alt" content="Ludo Online Game" />
+            <meta name="twitter:site" content="@SquadZoo" />
+            
+            {/* Additional SEO Meta Tags */}
+            <meta name="author" content="SquadZoo" />
+            <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+            <meta name="googlebot" content="index, follow" />
+            <meta name="bingbot" content="index, follow" />
+            <meta name="language" content="English" />
+            <meta name="revisit-after" content="7 days" />
+            <meta name="rating" content="General" />
+            <meta name="distribution" content="global" />
+            <meta name="category" content="Games" />
+            <meta name="coverage" content="Worldwide" />
+            <meta name="target" content="all" />
+            
+            {/* Geo Tags */}
+            <meta name="geo.region" content="US" />
+            <meta name="geo.placename" content="United States" />
+            
+            {/* Mobile App Meta Tags */}
+            <meta name="mobile-web-app-capable" content="yes" />
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+            <meta name="apple-mobile-web-app-title" content="Ludo - SquadZoo" />
+            <meta name="application-name" content="SquadZoo Ludo" />
+            <meta name="msapplication-TileColor" content="#FFD700" />
+            <meta name="theme-color" content="#1a1a1a" />
+            
+            {/* Structured Data (JSON-LD) */}
+            <script type="application/ld+json">
+              {JSON.stringify(structuredData)}
+            </script>
+            
+            {/* Additional Breadcrumb Schema */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                  {
+                    "@type": "ListItem",
+                    "position": 1,
+                    "name": "Home",
+                    "item": "https://squadzoo.games"
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 2,
+                    "name": "Games",
+                    "item": "https://squadzoo.games/#games"
+                  },
+                  {
+                    "@type": "ListItem",
+                    "position": 3,
+                    "name": "Ludo",
+                    "item": "https://squadzoo.games/games/ludo"
+                  }
+                ]
+              })}
+            </script>
+            
+            {/* WebPage Schema */}
+            <script type="application/ld+json">
+              {JSON.stringify({
+                "@context": "https://schema.org",
+                "@type": "WebPage",
+                "name": "Play Ludo Online Free - Multiplayer Board Game",
+                "description": "Play classic Ludo online with friends! Free multiplayer board game for 2-4 players.",
+                "url": "https://squadzoo.games/games/ludo",
+                "publisher": {
+                  "@type": "Organization",
+                  "name": "SquadZoo"
+                },
+                "datePublished": "2026-01-10",
+                "dateModified": "2026-01-10",
+                "inLanguage": "en-US"
+              })}
+            </script>
+          </>
+        )}
       </Helmet>
       
-      <Ludo onBack={() => navigate("/")} initialRoomCode={roomCode} />
-      <GameDescription {...gameDescription} />
+      <Ludo 
+        onBack={() => navigate("/")} 
+        initialRoomCode={roomCode}
+        onGameStart={handleGameStart}
+        isPlayMode={isPlayMode}
+      />
+      {!isPlayMode && <GameDescription {...gameDescription} />}
     </>
   );
 }

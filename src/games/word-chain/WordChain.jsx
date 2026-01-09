@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import CustomConfirm from "../../components/CustomConfirm";
 import GameModeSelector from "../../components/GameModeSelector";
 import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
 import PlayerNameInput from "../../components/PlayerNameInput";
 import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
+import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function WordChain({ onBack, initialRoomCode }) {
+function WordChain({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
   const [players, setPlayers] = useState(["", "", ""]);
@@ -35,6 +37,11 @@ function WordChain({ onBack, initialRoomCode }) {
   const [waitingForPlayers, setWaitingForPlayers] = useState(false);
   const [connectedPlayers, setConnectedPlayers] = useState([]);
   const [showCopiedNotification, setShowCopiedNotification] = useState(false);
+  
+  // State persistence
+  const [showContinueDialog, setShowContinueDialog] = useState(false);
+  const [savedState, setSavedState] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
   const gameRules = [
     "Each player starts with 3 lives (hearts)",
@@ -55,6 +62,84 @@ function WordChain({ onBack, initialRoomCode }) {
       setRoomCode(initialRoomCode);
     }
   }, [initialRoomCode]);
+
+  // Check for saved game state on mount
+  useEffect(() => {
+    const gameId = isOnlineMode ? `word-chain-online-${roomCode}` : 'word-chain-offline';
+    const saved = loadGameState(gameId);
+    
+    if (saved && !gameStarted) {
+      setSavedState(saved);
+      setTimeRemaining(getTimeRemaining(gameId));
+      setShowContinueDialog(true);
+    }
+  }, []); // Run only once on mount
+
+  // Save game state whenever critical game state changes
+  useEffect(() => {
+    if (gameStarted && eliminated.length < players.length - 1) {
+      const gameId = isOnlineMode ? `word-chain-online-${roomCode}` : 'word-chain-offline';
+      const stateToSave = {
+        gameMode,
+        gameStarted,
+        players,
+        playerLives,
+        usedWords,
+        currentPlayer,
+        eliminated,
+        isOnlineMode,
+        playerName,
+        roomCode,
+        isInRoom,
+        isHost,
+        myPlayerIndex,
+      };
+      
+      saveGameState(gameId, stateToSave);
+    }
+  }, [gameStarted, currentPlayer, usedWords, playerLives, eliminated]);
+
+  // Clear saved state when game ends
+  useEffect(() => {
+    if (eliminated.length >= players.length - 1) {
+      const gameId = isOnlineMode ? `word-chain-online-${roomCode}` : 'word-chain-offline';
+      clearGameState(gameId);
+    }
+  }, [eliminated, players, isOnlineMode, roomCode]);
+
+  // Handlers for continue dialog
+  const handleContinueGame = () => {
+    if (savedState) {
+      // Restore all game state
+      setGameMode(savedState.gameMode);
+      setGameStarted(savedState.gameStarted);
+      setPlayers(savedState.players);
+      setPlayerLives(savedState.playerLives);
+      setUsedWords(savedState.usedWords);
+      setCurrentPlayer(savedState.currentPlayer);
+      setEliminated(savedState.eliminated);
+      setIsOnlineMode(savedState.isOnlineMode);
+      setPlayerName(savedState.playerName);
+      setRoomCode(savedState.roomCode);
+      setIsInRoom(savedState.isInRoom);
+      setIsHost(savedState.isHost);
+      setMyPlayerIndex(savedState.myPlayerIndex);
+      
+      // Navigate to play mode if needed
+      if (onGameStart && !isPlayMode && savedState.gameStarted) {
+        onGameStart();
+      }
+    }
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
+
+  const handleStartNewGame = () => {
+    const gameId = isOnlineMode ? `word-chain-online-${roomCode}` : 'word-chain-offline';
+    clearGameState(gameId);
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
 
   // Extract room code from shared text
   const extractRoomCode = (text) => {
@@ -196,6 +281,11 @@ function WordChain({ onBack, initialRoomCode }) {
     setGameStarted(true);
     setWaitingForPlayers(false);
     setCurrentPlayer(0);
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function handleRemoteWordSubmit(payload) {
@@ -382,6 +472,11 @@ function WordChain({ onBack, initialRoomCode }) {
     setWaitingForPlayers(false);
     setCurrentPlayer(0);
     setMyPlayerIndex(0); // Host is always first player
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function handleBackToMenu() {
@@ -439,6 +534,11 @@ function WordChain({ onBack, initialRoomCode }) {
     setPlayerLives(lives);
     
     setGameStarted(true);
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function resetGame() {
@@ -758,6 +858,7 @@ function WordChain({ onBack, initialRoomCode }) {
             onCreateRoom={handleCreateOnlineRoom}
             onJoinRoom={handleJoinOnlineRoom}
             extractRoomCode={extractRoomCode}
+            hideCreateRoom={!!initialRoomCode}
           />
         </div>
       </GameLayout>
@@ -832,6 +933,18 @@ function WordChain({ onBack, initialRoomCode }) {
       currentPlayer={players[currentPlayer]}
       onBack={handleBackToMenu}
     >
+      {alertMessage && (
+        <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      )}
+      
+      <CustomConfirm
+        isOpen={showContinueDialog}
+        onConfirm={handleContinueGame}
+        onCancel={handleStartNewGame}
+        message={`You have a saved game from your previous session.${isOnlineMode ? ' (Online Mode)' : ''} Would you like to continue?`}
+        timeRemaining={timeRemaining}
+      />
+      
       {activePlayers.length > 1 ? (
         <>
           {/* Online Room Info */}

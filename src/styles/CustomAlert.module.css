@@ -86,4 +86,87 @@
   padding: 0 1rem;
 }
 
+/* Alert variant for confirm dialog */
+.alert {
+  background: white;
+  border-radius: 16px;
+  padding: 2rem;
+  max-width: 450px;
+  width: 90%;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  animation: slideUp 0.3s ease-out;
+  text-align: center;
+}
+
+/* Icon */
+.icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  animation: bounce 1s ease-in-out infinite;
+}
+
+/* Time Remaining */
+.timeRemaining {
+  font-size: 0.9rem;
+  color: #718096;
+  margin-top: -0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+/* Button Group */
+.buttonGroup {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+}
+
+/* Primary Button */
+.buttonPrimary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  flex: 1;
+}
+
+.buttonPrimary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.5);
+}
+
+.buttonPrimary:active {
+  transform: translateY(0);
+}
+
+/* Secondary Button */
+.buttonSecondary {
+  background: white;
+  color: #667eea;
+  border: 2px solid #667eea;
+  padding: 0.875rem 1.75rem;
+  border-radius: 10px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  flex: 1;
+}
+
+.buttonSecondary:hover {
+  background: #f7fafc;
+  transform: translateY(-2px);
+}
+
+.buttonSecondary:active {
+  transform: translateY(0);
+}
+
 /* Button is styled using imported Button.module.css */

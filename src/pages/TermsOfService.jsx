@@ -1,3 +1,4 @@
+import { Helmet } from "react-helmet-async";
 import Header from "../components/Header";
 import Footer from "../components/Footer";
 import styles from "../styles/StaticPage.module.css";
@@ -5,6 +6,12 @@ import styles from "../styles/StaticPage.module.css";
 function TermsOfService() {
   return (
     <div className={styles.container}>
+      <Helmet>
+        <title>Terms of Service - SquadZoo</title>
+        <meta name="description" content="Read SquadZoo's Terms of Service. Understand the rules and guidelines for using our multiplayer games platform." />
+        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
+      </Helmet>
+      
       <Header />
 
       <div className={styles.content}>

@@ -1,17 +1,19 @@
 import { useState, useEffect } from "react";
 import GameLayout from "../../layout/GameLayout";
 import CustomAlert from "../../components/CustomAlert";
+import CustomConfirm from "../../components/CustomConfirm";
 import GameModeSelector from "../../components/GameModeSelector";
 import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
 import DrawingCanvas from "./DrawingCanvas";
 import { wordsByDifficulty } from "./wordList";
 import roomService from "../../services/roomService";
+import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import styles from "../../styles/DrawGuess.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
 
-function DrawGuess({ onBack, initialRoomCode }) {
+function DrawGuess({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   // Game mode states
   const [gameMode, setGameMode] = useState(null); // null, 'local', 'online'
   const [gameStarted, setGameStarted] = useState(false);
@@ -42,6 +44,11 @@ function DrawGuess({ onBack, initialRoomCode }) {
   const [canvasKey, setCanvasKey] = useState(0);
   const [showRules, setShowRules] = useState(false);
   const [alertMessage, setAlertMessage] = useState(null);
+  
+  // State persistence
+  const [showContinueDialog, setShowContinueDialog] = useState(false);
+  const [savedState, setSavedState] = useState(null);
+  const [timeRemaining, setTimeRemaining] = useState(0);
 
   // Auto-join room from URL
   useEffect(() => {
@@ -51,6 +58,92 @@ function DrawGuess({ onBack, initialRoomCode }) {
       setRoomCode(initialRoomCode.toUpperCase().trim());
     }
   }, [initialRoomCode]);
+
+  // Check for saved game state on mount
+  useEffect(() => {
+    const gameId = isOnlineMode ? `draw-guess-online-${roomCode}` : 'draw-guess-offline';
+    const saved = loadGameState(gameId);
+    
+    if (saved && !gameStarted) {
+      setSavedState(saved);
+      setTimeRemaining(getTimeRemaining(gameId));
+      setShowContinueDialog(true);
+    }
+  }, []); // Run only once on mount
+
+  // Save game state whenever critical game state changes
+  useEffect(() => {
+    if (gameStarted && !roundWinner) {
+      const gameId = isOnlineMode ? `draw-guess-online-${roomCode}` : 'draw-guess-offline';
+      const stateToSave = {
+        gameMode,
+        gameStarted,
+        players,
+        isOnlineMode,
+        playerName,
+        roomCode,
+        isInRoom,
+        isHost,
+        difficulty,
+        timeLimit,
+        drawerIndex,
+        secretWord,
+        guesses,
+        scores,
+        round,
+        timeLeft,
+        hintsUsed,
+      };
+      
+      saveGameState(gameId, stateToSave);
+    }
+  }, [gameStarted, round, drawerIndex, guesses, scores, timeLeft, roundWinner]);
+
+  // Clear saved state when all rounds complete
+  useEffect(() => {
+    if (round > players.length) {
+      const gameId = isOnlineMode ? `draw-guess-online-${roomCode}` : 'draw-guess-offline';
+      clearGameState(gameId);
+    }
+  }, [round, players, isOnlineMode, roomCode]);
+
+  // Handlers for continue dialog
+  const handleContinueGame = () => {
+    if (savedState) {
+      // Restore all game state
+      setGameMode(savedState.gameMode);
+      setGameStarted(savedState.gameStarted);
+      setPlayers(savedState.players);
+      setIsOnlineMode(savedState.isOnlineMode);
+      setPlayerName(savedState.playerName);
+      setRoomCode(savedState.roomCode);
+      setIsInRoom(savedState.isInRoom);
+      setIsHost(savedState.isHost);
+      setDifficulty(savedState.difficulty);
+      setTimeLimit(savedState.timeLimit);
+      setDrawerIndex(savedState.drawerIndex);
+      setSecretWord(savedState.secretWord);
+      setGuesses(savedState.guesses);
+      setScores(savedState.scores);
+      setRound(savedState.round);
+      setTimeLeft(savedState.timeLeft);
+      setHintsUsed(savedState.hintsUsed);
+      
+      // Navigate to play mode if needed
+      if (onGameStart && !isPlayMode && savedState.gameStarted) {
+        onGameStart();
+      }
+    }
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
+
+  const handleStartNewGame = () => {
+    const gameId = isOnlineMode ? `draw-guess-online-${roomCode}` : 'draw-guess-offline';
+    clearGameState(gameId);
+    setShowContinueDialog(false);
+    setSavedState(null);
+  };
 
   // Setup online game listeners
   useEffect(() => {
@@ -88,6 +181,11 @@ function DrawGuess({ onBack, initialRoomCode }) {
           });
           setScores(initialScores);
           startNewRound(playerNames);
+          
+          // Navigate to play URL for ad-free gameplay
+          if (onGameStart && !isPlayMode) {
+            onGameStart();
+          }
           break;
           
         case 'submit-guess':
@@ -153,6 +251,11 @@ function DrawGuess({ onBack, initialRoomCode }) {
     setScores(initialScores);
     setGameStarted(true);
     startNewRound(validPlayers);
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function startNewRound(playerList = players) {
@@ -322,6 +425,11 @@ function DrawGuess({ onBack, initialRoomCode }) {
     // Notify all players to start
     roomService.sendGameAction('start-game', { players: playerNames });
     startNewRound(playerNames);
+    
+    // Navigate to play URL for ad-free gameplay
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
   }
 
   function handleRemoteGuess(payload) {
@@ -404,6 +512,7 @@ function DrawGuess({ onBack, initialRoomCode }) {
             setRoomCode={setRoomCode}
             onCreateRoom={handleCreateOnlineRoom}
             onJoinRoom={handleJoinOnlineRoom}
+            hideCreateRoom={!!initialRoomCode}
           />
         </div>
       </GameLayout>
@@ -573,6 +682,18 @@ function DrawGuess({ onBack, initialRoomCode }) {
       currentPlayer={currentDrawer}
       onBack={isOnlineMode ? handleBackToMenu : onBack}
     >
+      {alertMessage && (
+        <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      )}
+      
+      <CustomConfirm
+        isOpen={showContinueDialog}
+        onConfirm={handleContinueGame}
+        onCancel={handleStartNewGame}
+        message={`You have a saved game from your previous session.${isOnlineMode ? ' (Online Mode)' : ''} Would you like to continue?`}
+        timeRemaining={timeRemaining}
+      />
+      
       <div className={styles.gameContainer}>
         {/* Online Room Info */}
         {isOnlineMode && (
