@@ -395,13 +395,20 @@
   /* === SETUP CONTAINER === */
   
   .setupContainer {
-    max-width: 420px;
-    width: 100%;
-    padding: 1.75rem;
-    background: rgba(0, 0, 0, 0.35);
-    border-radius: 20px;
-    border: 3px solid rgba(255, 215, 0, 0.35);
-    backdrop-filter: blur(10px);
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 30px;
+    background: #2d3748;
+    border-radius: 16px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  .setupDescription {
+    text-align: center;
+    color: #cbd5e0;
+    margin-bottom: 30px;
+    font-size: 16px;
+    line-height: 1.5;
   }
   
   .setupTitle {
@@ -419,6 +426,13 @@
     font-size: 1rem;
     margin-bottom: 1.5rem;
     opacity: 0.9;
+  }
+
+  .setupButtons {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 24px;
   }
   
   .rulesBox {

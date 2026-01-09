@@ -805,35 +805,27 @@ function Ludo({ onBack, initialRoomCode }) {
             onClose={() => setAlertMessage(null)} 
           />
         )}
-        <div className={styles.setupContainer}>
-          <h1 className={styles.setupTitle}>🎲 Ludo King</h1>
-          <p className={styles.setupSubtitle}>Classic board game for 2-4 players</p>
-          
-          <div className={styles.rulesBox}>
-            <strong>Quick Rules: </strong>
-            <span>Roll 6 to start • Land on opponents to capture • Stars are safe • Get all 4 tokens home to win!</span>
-          </div>
-
-          <div className={styles.modeSelectionSection}>
-            <h2 className={styles.sectionTitle}>Select Game Mode</h2>
-            <GameModeSelector
-              onSelectLocal={() => {
-                setGameMode("local");
-                setIsOnlineMode(false);
-              }}
-              onSelectOnline={() => {
-                setAlertMessage("🚧 Online Multiplayer is under development and will be going live soon! Stay tuned for updates. 🎮");
-              }}
-              localLabel="Local Play"
-              onlineLabel="Online Multiplayer"
-            />
-          </div>
-        </div>
+        
+        <GameModeSelector
+          onSelectLocal={() => {
+            setGameMode("local");
+            setIsOnlineMode(false);
+          }}
+          // onSelectOnline={() => {
+          //   setGameMode("online");
+          //   setIsOnlineMode(true);
+          // }}
+          onSelectOnline={() => {
+              setAlertMessage("🚧 Online Multiplayer is under development and will be going live soon! Stay tuned for updates. 🎮");
+            }}
+          localLabel="Play Locally"
+          onlineLabel="Play Online"
+        />
       </GameLayout>
     );
   }
 
-  // Online Room Setup Screen - Temporarily disabled
+  // Online Room Setup Screen
   if (gameMode === 'online' && !isInRoom) {
     return (
       <GameLayout title="🎲 Ludo King - Online Setup" onBack={handleBackToMenu}>
@@ -843,20 +835,16 @@ function Ludo({ onBack, initialRoomCode }) {
             onClose={() => setAlertMessage(null)} 
           />
         )}
-        <div className={styles.setupContainer}>
-          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-            <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>🚧 Under Development 🚧</h2>
-            <p style={{ fontSize: '1.2rem', marginBottom: '30px' }}>
-              Online Multiplayer is coming soon!
-            </p>
-            <button 
-              onClick={handleBackToMenu} 
-              className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
-            >
-              Back to Menu
-            </button>
-          </div>
-        </div>
+        
+        <OnlineRoomSetup
+          playerName={playerName}
+          setPlayerName={setPlayerName}
+          roomCode={roomCode}
+          setRoomCode={setRoomCode}
+          onCreateRoom={handleCreateOnlineRoom}
+          onJoinRoom={handleJoinOnlineRoom}
+          gameName="Ludo"
+        />
       </GameLayout>
     );
   }
@@ -888,14 +876,35 @@ function Ludo({ onBack, initialRoomCode }) {
 
   // Player Setup Screen (for local mode)
   if (gameMode === "local" && !gameStarted) {
+    // Color labels for display
+    const getColorLabel = (index) => {
+      const colors = getActiveColors();
+      const colorMap = {
+        blue: '🔵 Blue',
+        red: '🔴 Red',
+        green: '🟢 Green',
+        yellow: '🟡 Yellow'
+      };
+      return colorMap[colors[index]] || `Player ${index + 1}`;
+    };
+
+    const colorSymbols = Array.from({ length: numPlayers }).map((_, i) => getColorLabel(i));
+
     return (
       <GameLayout
-        title="🎲 Ludo King"
+        title="🎲 Ludo King - Player Setup"
         onBack={handleBackToMenu}
       >
+        {alertMessage && (
+          <CustomAlert 
+            message={alertMessage} 
+            onClose={() => setAlertMessage(null)} 
+          />
+        )}
         <div className={styles.setupContainer}>
-          <h1 className={styles.setupTitle}>🎲 Ludo King - Local Play</h1>
-          <p className={styles.setupSubtitle}>Setup your game</p>
+          <p className={styles.setupDescription}>
+            Select the number of players (2-4) and enter names to begin!
+          </p>
 
           <div className={styles.playerCountSection}>
             <label className={styles.label}>Number of Players</label>
@@ -912,45 +921,17 @@ function Ludo({ onBack, initialRoomCode }) {
             </div>
           </div>
 
-          <div className={styles.playersSection}>
-            <label className={styles.label}>Player Names</label>
-            <div className={styles.playersInputs}>
-              {Array.from({ length: numPlayers }).map((_, index) => {
-                const colors = getActiveColors();
-                const color = colors[index];
-                const colorMap = {
-                  blue: '#2196F3',
-                  red: '#F44336',
-                  yellow: '#FFEB3B',
-                  green: '#4CAF50'
-                };
-                
-                return (
-                  <div key={index} className={styles.playerInputRow}>
-                    <span 
-                      className={styles.colorDot} 
-                      style={{ backgroundColor: colorMap[color] }}
-                    />
-                    <label className={styles.playerLabel}>
-                      {color.charAt(0).toUpperCase() + color.slice(1)}:
-                    </label>
-                    <input
-                      type="text"
-                      value={playerNames[index] || ""}
-                      onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                      placeholder={`Player ${index + 1}`}
-                      className={styles.input}
-                      maxLength={12}
-                    />
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+          <PlayerNameInput
+            players={playerNames}
+            onPlayerChange={handlePlayerNameChange}
+            minPlayers={2}
+            showSymbols={true}
+            symbols={colorSymbols}
+          />
 
-          <div className={styles.startBtnWrapper}>
+          <div className={styles.setupButtons}>
             <button onClick={startGame} className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}>
-              🎮 Start Game
+              Start Game
             </button>
           </div>
         </div>
