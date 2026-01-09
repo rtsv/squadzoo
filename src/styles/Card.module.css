@@ -92,3 +92,55 @@
   background: linear-gradient(135deg, #5568d3 0%, #63408a 100%);
   transform: translateY(-4px) scale(1.05);
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .card {
+    padding: 18px;
+    border-radius: 12px;
+  }
+
+  .gameCard {
+    min-height: 200px;
+  }
+
+  .cardIcon {
+    font-size: 48px;
+    margin-bottom: 12px;
+  }
+
+  .cardTitle {
+    font-size: 18px;
+    margin: 10px 0;
+  }
+
+  .cardDescription {
+    font-size: 13px;
+    margin-bottom: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 16px;
+  }
+
+  .gameCard {
+    min-height: 180px;
+  }
+
+  .cardIcon {
+    font-size: 42px;
+    margin-bottom: 10px;
+  }
+
+  .cardTitle {
+    font-size: 16px;
+    margin: 8px 0;
+  }
+
+  .cardDescription {
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+}

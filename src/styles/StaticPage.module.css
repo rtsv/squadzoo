@@ -299,26 +299,100 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .content {
-    padding: 2rem 1.5rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
-  }
-
-  .title {
-    font-size: 2rem;
-  }
-
-  .section h2 {
-    font-size: 1.5rem;
+  .container {
+    padding: 12px;
   }
 
   .header {
-    padding: 1rem;
+    padding: 24px 16px;
+    margin-bottom: 24px;
+  }
+
+  .title {
+    font-size: 28px;
+  }
+
+  .subtitle {
+    font-size: 16px;
+  }
+
+  .logoImage {
+    width: 60px;
+    height: 60px;
+  }
+
+  .content {
+    padding: 24px;
+    border-radius: 12px;
+  }
+
+  .section h2 {
+    font-size: 24px;
+  }
+
+  .section h3 {
+    font-size: 20px;
   }
 
   .backButton {
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
+  }
+
+  .faqQuestion {
+    font-size: 1.05rem;
+  }
+
+  .ctaSection {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 8px;
+  }
+
+  .header {
+    padding: 20px 12px;
+  }
+
+  .title {
+    font-size: 24px;
+  }
+
+  .subtitle {
+    font-size: 14px;
+  }
+
+  .logoImage {
+    width: 50px;
+    height: 50px;
+  }
+
+  .content {
+    padding: 20px;
+  }
+
+  .section h2 {
+    font-size: 22px;
+  }
+
+  .section h3 {
+    font-size: 18px;
+  }
+
+  .backButton {
+    padding: 0.625rem 1.25rem;
+    font-size: 0.875rem;
+  }
+
+  .faqQuestion {
+    font-size: 1rem;
+  }
+
+  .ctaButton {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
   }
 }

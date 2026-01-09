@@ -464,6 +464,10 @@
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .setupContainer {
+    padding: 20px;
+  }
+
   .onlineOptions {
     grid-template-columns: 1fr;
     gap: 20px;
@@ -500,9 +504,34 @@
     min-width: auto;
     width: 100%;
   }
-  
+}
+
+@media (max-width: 480px) {
   .setupContainer {
-    padding: 20px;
+    padding: 16px;
+  }
+
+  .setupDescription {
+    font-size: 14px;
+  }
+
+  .roomCodeText {
+    font-size: 20px;
+    padding: 10px 16px;
+    letter-spacing: 1.5px;
+  }
+
+  .rulesContent {
+    padding: 16px;
+    font-size: 14px;
+  }
+
+  .gameContainer {
+    padding: 12px;
+  }
+
+  .playerLabel {
+    font-size: 14px;
   }
 }
 

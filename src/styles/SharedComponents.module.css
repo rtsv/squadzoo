@@ -312,10 +312,20 @@
   
   .roomOptions {
     flex-direction: column;
+    gap: 15px;
   }
   
   .roomOption {
     min-width: auto;
+    padding: 16px;
+  }
+  
+  .roomOptionTitle {
+    font-size: 16px;
+  }
+
+  .roomOptionDescription {
+    font-size: 13px;
   }
   
   .nameInputRow {
@@ -325,5 +335,54 @@
   
   .nameLabel {
     min-width: auto;
+  }
+
+  .waitingRoomTitle {
+    font-size: 20px;
+  }
+
+  .shareButton {
+    padding: 10px 18px;
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .roomOption {
+    padding: 14px;
+  }
+
+  .roomOptionTitle {
+    font-size: 15px;
+  }
+
+  .roomOptionDescription {
+    font-size: 12px;
+  }
+
+  .roomCodeDisplay {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .roomCodeText {
+    font-size: 18px;
+    padding: 10px 16px;
+  }
+
+  .shareButton {
+    padding: 8px 16px;
+    font-size: 13px;
+  }
+
+  .waitingRoomTitle {
+    font-size: 18px;
+  }
+
+  .copiedNotification {
+    top: 10px;
+    right: 10px;
+    padding: 10px 20px;
+    font-size: 14px;
   }
 }

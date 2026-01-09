@@ -482,6 +482,45 @@
 }
 
 /* Responsive Design */
+@media (max-width: 768px) {
+  .setupContainer,
+  .placementContainer,
+  .battleContainer {
+    padding: 20px;
+  }
+
+  .gridLabels,
+  .gridWithRowLabels {
+    max-width: 350px;
+  }
+
+  .rowLabel {
+    height: 38px;
+    font-size: 12px;
+  }
+
+  .colLabel {
+    font-size: 12px;
+  }
+
+  .cell {
+    font-size: 18px;
+  }
+
+  .placementTitle {
+    font-size: 19px;
+  }
+
+  .currentShipInfo {
+    font-size: 15px;
+    padding: 8px 18px;
+  }
+
+  .resultTitle {
+    font-size: 24px;
+  }
+}
+
 @media (max-width: 640px) {
   .gridLabels,
   .gridWithRowLabels {
@@ -526,5 +565,52 @@
 
   .shipsList {
     flex-direction: column;
+  }
+}
+
+@media (max-width: 480px) {
+  .gridLabels,
+  .gridWithRowLabels {
+    max-width: 280px;
+  }
+
+  .rowLabel {
+    height: 30px;
+    font-size: 10px;
+  }
+
+  .colLabel {
+    font-size: 10px;
+  }
+
+  .cell {
+    font-size: 14px;
+  }
+
+  .placementTitle {
+    font-size: 16px;
+  }
+
+  .currentShipInfo {
+    font-size: 13px;
+    padding: 5px 14px;
+  }
+
+  .shipIcon {
+    font-size: 16px;
+  }
+
+  .resultTitle {
+    font-size: 20px;
+  }
+
+  .setupContainer,
+  .placementContainer,
+  .battleContainer {
+    padding: 12px;
+  }
+
+  .setupDescription {
+    font-size: 14px;
   }
 }

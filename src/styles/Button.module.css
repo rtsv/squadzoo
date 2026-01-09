@@ -67,3 +67,33 @@
   padding: 6px 16px;
   font-size: 13px;
 }
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .btn {
+    padding: 9px 20px;
+    font-size: 14px;
+  }
+
+  .btnLarge {
+    padding: 12px 28px;
+    font-size: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .btn {
+    padding: 8px 18px;
+    font-size: 13px;
+  }
+
+  .btnLarge {
+    padding: 11px 24px;
+    font-size: 15px;
+  }
+
+  .btnSmall {
+    padding: 5px 14px;
+    font-size: 12px;
+  }
+}

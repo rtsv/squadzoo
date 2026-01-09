@@ -170,3 +170,72 @@
 }
 
 /* Button is styled using imported Button.module.css */
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .alertBox,
+  .alert {
+    padding: 1.5rem;
+    max-width: 350px;
+  }
+
+  .title {
+    font-size: 1.3rem;
+  }
+
+  .message {
+    font-size: 1rem;
+    padding: 0 0.5rem;
+  }
+
+  .icon {
+    font-size: 2.5rem;
+  }
+
+  .buttonGroup {
+    gap: 0.75rem;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    padding: 0.75rem 1.5rem;
+    font-size: 0.95rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .alertBox,
+  .alert {
+    padding: 1.25rem;
+    max-width: 320px;
+    width: 95%;
+  }
+
+  .title {
+    font-size: 1.15rem;
+  }
+
+  .message {
+    font-size: 0.95rem;
+    margin-bottom: 1.25rem;
+  }
+
+  .icon {
+    font-size: 2.25rem;
+  }
+
+  .buttonGroup {
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .buttonPrimary,
+  .buttonSecondary {
+    padding: 0.7rem 1.25rem;
+    font-size: 0.9rem;
+  }
+
+  .timeRemaining {
+    font-size: 0.85rem;
+  }
+}

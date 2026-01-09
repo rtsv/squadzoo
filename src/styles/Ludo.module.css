@@ -855,3 +855,159 @@
     box-shadow: 0 8px 25px rgba(245, 158, 11, 0.6);
   }
 }
+
+/* === MOBILE RESPONSIVE === */
+
+@media (max-width: 768px) {
+  .setupPage,
+  .gamePage {
+    padding: 0.75rem;
+  }
+
+  .gameContainer {
+    gap: 1rem;
+    padding: 0.5rem;
+  }
+
+  .boardWrapper {
+    padding: 6px;
+    border-width: 3px;
+  }
+
+  .rightPanelsContainer {
+    gap: 0.75rem;
+  }
+
+  .playerPanel {
+    min-width: 85px;
+    max-width: 120px;
+    padding: 0.4rem 0.6rem;
+  }
+
+  .panelAvatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.9rem;
+  }
+
+  .panelName {
+    font-size: 0.8rem;
+  }
+
+  .playerRow {
+    gap: 0.5rem;
+  }
+
+  .diceContainer {
+    max-width: 140px;
+    padding: 0.75rem;
+  }
+
+  .dice {
+    width: 50px;
+    height: 50px;
+    font-size: 1.75rem;
+  }
+
+  .rollButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+
+  .statusText {
+    font-size: 0.85rem;
+  }
+
+  .setupContainer {
+    padding: 1rem;
+  }
+
+  .setupTitle {
+    font-size: 1.5rem;
+  }
+
+  .setupDescription {
+    font-size: 0.9rem;
+  }
+
+  .onlineIndicator {
+    padding: 0.6rem 1.25rem;
+    font-size: 0.95rem;
+  }
+
+  .reconnectionAlert {
+    padding: 0.875rem 1.25rem;
+    font-size: 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .setupPage,
+  .gamePage {
+    padding: 0.5rem;
+  }
+
+  .gameContainer {
+    gap: 0.75rem;
+    padding: 0.25rem;
+  }
+
+  .boardWrapper {
+    padding: 4px;
+    border-width: 2px;
+  }
+
+  .playerPanel {
+    min-width: 75px;
+    max-width: 100px;
+    padding: 0.35rem 0.5rem;
+  }
+
+  .panelAvatar {
+    width: 24px;
+    height: 24px;
+    font-size: 0.8rem;
+  }
+
+  .panelName {
+    font-size: 0.75rem;
+  }
+
+  .diceContainer {
+    max-width: 120px;
+    padding: 0.6rem;
+  }
+
+  .dice {
+    width: 45px;
+    height: 45px;
+    font-size: 1.5rem;
+  }
+
+  .rollButton {
+    padding: 0.5rem 1rem;
+    font-size: 0.85rem;
+  }
+
+  .statusText {
+    font-size: 0.8rem;
+  }
+
+  .setupTitle {
+    font-size: 1.35rem;
+  }
+
+  .setupDescription {
+    font-size: 0.85rem;
+  }
+
+  .onlineIndicator {
+    padding: 0.5rem 1rem;
+    font-size: 0.875rem;
+  }
+
+  .reconnectionAlert {
+    padding: 0.75rem 1rem;
+    font-size: 0.95rem;
+  }
+}
