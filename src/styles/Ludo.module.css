@@ -310,32 +310,32 @@
   
   /* Blue - Top Left Corner */
   .diceBlue {
-    top: 0;
-    left: 0;
+    top: -5px;
+    left: -5px;
     background: linear-gradient(135deg, rgba(33, 150, 243, 0.9), rgba(21, 101, 192, 0.9));
     border-color: #2196F3;
   }
   
   /* Red - Top Right Corner */
   .diceRed {
-    top: 0;
-    right: 0;
+    top: -5px;
+    right: -5px;
     background: linear-gradient(135deg, rgba(244, 67, 54, 0.9), rgba(198, 40, 40, 0.9));
     border-color: #F44336;
   }
   
   /* Yellow - Bottom Left Corner */
   .diceYellow {
-    bottom: 0;
-    left: 0;
+    bottom: -5px;
+    left: -5px;
     background: linear-gradient(135deg, rgba(253, 216, 53, 0.9), rgba(249, 168, 37, 0.9));
     border-color: #FDD835;
   }
   
   /* Green - Bottom Right Corner */
   .diceGreen {
-    bottom: 0;
-    right: 0;
+    bottom: -5px;
+    right: -5px;
     background: linear-gradient(135deg, rgba(76, 175, 80, 0.9), rgba(46, 125, 50, 0.9));
     border-color: #4CAF50;
   }
@@ -899,14 +899,46 @@
   }
 
   .diceContainer {
-    max-width: 140px;
-    padding: 0.75rem;
+    width: 50px;
+    height: 50px;
+    padding: 0.4rem;
+  }
+
+  /* Position dice closer to corners on mobile */
+  .diceBlue {
+    top: -15px;
+    left: -15px;
+  }
+  
+  .diceRed {
+    top: -15px;
+    right: -15px;
+  }
+  
+  .diceYellow {
+    bottom: -15px;
+    left: -15px;
+  }
+  
+  .diceGreen {
+    bottom: -15px;
+    right: -15px;
   }
 
   .dice {
-    width: 50px;
-    height: 50px;
-    font-size: 1.75rem;
+    width: 34px;
+    height: 34px;
+    font-size: 1.25rem;
+  }
+  
+  .diceFace {
+    width: 26px;
+    height: 26px;
+  }
+  
+  .diceDot {
+    width: 4px;
+    height: 4px;
   }
 
   .rollButton {
@@ -974,14 +1006,46 @@
   }
 
   .diceContainer {
-    max-width: 120px;
-    padding: 0.6rem;
+    width: 46px;
+    height: 46px;
+    padding: 0.35rem;
+  }
+
+  /* Position dice even closer to corners on smaller mobile */
+  .diceBlue {
+    top: -18px;
+    left: -18px;
+  }
+  
+  .diceRed {
+    top: -18px;
+    right: -18px;
+  }
+  
+  .diceYellow {
+    bottom: -18px;
+    left: -18px;
+  }
+  
+  .diceGreen {
+    bottom: -18px;
+    right: -18px;
   }
 
   .dice {
-    width: 45px;
-    height: 45px;
-    font-size: 1.5rem;
+    width: 30px;
+    height: 30px;
+    font-size: 1.1rem;
+  }
+  
+  .diceFace {
+    width: 24px;
+    height: 24px;
+  }
+  
+  .diceDot {
+    width: 3.5px;
+    height: 3.5px;
   }
 
   .rollButton {
