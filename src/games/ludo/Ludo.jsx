@@ -790,6 +790,9 @@ function Ludo({ onBack, initialRoomCode }) {
   }
 
   // Mode Selection Screen
+  // ...existing code...
+
+  // Mode Selection Screen
   if (!gameMode) {
     return (
       <GameLayout
@@ -819,8 +822,7 @@ function Ludo({ onBack, initialRoomCode }) {
                 setIsOnlineMode(false);
               }}
               onSelectOnline={() => {
-                setGameMode("online");
-                setIsOnlineMode(true);
+                setAlertMessage("🚧 Online Multiplayer is under development and will be going live soon! Stay tuned for updates. 🎮");
               }}
               localLabel="Local Play"
               onlineLabel="Online Multiplayer"
@@ -831,7 +833,7 @@ function Ludo({ onBack, initialRoomCode }) {
     );
   }
 
-  // Online Room Setup Screen
+  // Online Room Setup Screen - Temporarily disabled
   if (gameMode === 'online' && !isInRoom) {
     return (
       <GameLayout title="🎲 Ludo King - Online Setup" onBack={handleBackToMenu}>
@@ -842,22 +844,24 @@ function Ludo({ onBack, initialRoomCode }) {
           />
         )}
         <div className={styles.setupContainer}>
-          <p className={styles.setupDescription}>
-            Create a room or join an existing one to play online
-          </p>
-
-          <OnlineRoomSetup
-            playerName={playerName}
-            setPlayerName={setPlayerName}
-            roomCode={roomCode}
-            setRoomCode={setRoomCode}
-            onCreateRoom={handleCreateOnlineRoom}
-            onJoinRoom={handleJoinOnlineRoom}
-          />
+          <div style={{ textAlign: 'center', padding: '40px 20px' }}>
+            <h2 style={{ fontSize: '2rem', marginBottom: '20px' }}>🚧 Under Development 🚧</h2>
+            <p style={{ fontSize: '1.2rem', marginBottom: '30px' }}>
+              Online Multiplayer is coming soon!
+            </p>
+            <button 
+              onClick={handleBackToMenu} 
+              className={`${btnStyles.btn} ${btnStyles.btnPrimary}`}
+            >
+              Back to Menu
+            </button>
+          </div>
         </div>
       </GameLayout>
     );
   }
+
+// ...existing code...
 
   // Online Waiting Room
   if (isOnlineMode && isInRoom && waitingForPlayers) {

@@ -443,8 +443,7 @@ function Battleship({ onBack, initialRoomCode }) {
               setIsOnlineMode(false);
             }}
             onSelectOnline={() => {
-              setGameMode('online');
-              setIsOnlineMode(true);
+              setAlertMessage("🚧 Online Multiplayer is under development and will be going live soon! Stay tuned for updates. 🎮");
             }}
             localLabel="Local Play"
             onlineLabel="Online Multiplayer"
