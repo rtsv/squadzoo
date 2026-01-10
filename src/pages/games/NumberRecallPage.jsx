@@ -1,4 +1,4 @@
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, useSearchParams } from "react-router-dom";
 import { Helmet } from "react-helmet-async";
 import NumberRecallTiles from "../../games/number-recall/NumberRecallTiles";
 import GameDescription from "../../components/GameDescription";
@@ -6,10 +6,11 @@ import GameDescription from "../../components/GameDescription";
 function NumberRecallPage({ isPlayMode = false }) {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
+  const initialRoomCode = searchParams.get('room');
   
   const handleGameStart = () => {
     if (!isPlayMode) {
-      // Get current game state from the component (will be passed via navigation)
       navigate('/games/number-recall/play' + location.search);
     }
   };
@@ -165,6 +166,7 @@ function NumberRecallPage({ isPlayMode = false }) {
         onBack={() => navigate("/")}
         onGameStart={handleGameStart}
         isPlayMode={isPlayMode}
+        initialRoomCode={initialRoomCode}
       />
       {!isPlayMode && <GameDescription {...gameDescription} />}
     </>

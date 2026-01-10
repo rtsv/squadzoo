@@ -2,8 +2,11 @@ import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import GameLayout from "../../layout/GameLayout";
 import GameModeSelector from "../../components/GameModeSelector";
+import OnlineRoomSetup from "../../components/OnlineRoomSetup";
+import OnlineRoomExample from "../../components/OnlineRoomExample";
 import PlayerNameInput from "../../components/PlayerNameInput";
 import CustomAlert from "../../components/CustomAlert";
+import roomService from "../../services/roomService";
 import btnStyles from "../../styles/Button.module.css";
 import styles from "../../styles/NumberRecallTiles.module.css";
 
@@ -11,17 +14,17 @@ import styles from "../../styles/NumberRecallTiles.module.css";
 const DIFFICULTY_SETTINGS = {
   easy: {
     label: 'Easy',
-    revealDuration: 800, // Number stays visible briefly after correct click
+    previewDuration: 5000, // Longer preview at start
     useRandomSequence: false,
   },
   medium: {
     label: 'Medium',
-    revealDuration: 0, // Number hides immediately
+    previewDuration: 3000, // Normal preview
     useRandomSequence: false,
   },
   hard: {
     label: 'Hard',
-    revealDuration: 0,
+    previewDuration: 2000, // Short preview
     useRandomSequence: true, // Random sequence order
   },
 };
@@ -36,7 +39,7 @@ const shuffleArray = (array) => {
   return shuffled;
 };
 
-function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
+function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   const location = useLocation();
   const gameState = location.state || {};
   
@@ -49,12 +52,23 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
   const [difficulty, setDifficulty] = useState(gameState.difficulty || 'medium');
   const [playerCount, setPlayerCount] = useState(gameState.playerCount || 2);
   const [playerNames, setPlayerNames] = useState(gameState.playerNames || ['', '']);
+  const [scores, setScores] = useState({});
+  
+  // Online multiplayer states
+  const [isOnlineMode, setIsOnlineMode] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [roomCode, setRoomCode] = useState("");
+  const [isInRoom, setIsInRoom] = useState(false);
+  const [isHost, setIsHost] = useState(false);
+  const [waitingForPlayers, setWaitingForPlayers] = useState(false);
+  const [connectedPlayers, setConnectedPlayers] = useState([]);
+  const [myPlayerIndex, setMyPlayerIndex] = useState(null);
   
   // Game states
-  const [tilePositions, setTilePositions] = useState([]); // Maps grid index to number
+  const [tilePositions, setTilePositions] = useState([]); // Maps grid index to number (stays same)
   const [requiredSequence, setRequiredSequence] = useState([]); // The order to click (1-9 or random)
   const [currentExpectedIndex, setCurrentExpectedIndex] = useState(0); // Index in requiredSequence
-  const [revealedTiles, setRevealedTiles] = useState([]); // Grid indices that are revealed
+  const [foundTiles, setFoundTiles] = useState([]); // Grid indices that have been correctly found
   const [wrongTile, setWrongTile] = useState(null);
   const [correctTile, setCorrectTile] = useState(null);
   const [isResetting, setIsResetting] = useState(false);
@@ -64,22 +78,103 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
   // Multiplayer states
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   
-  // Preview state (show numbers at start)
+  // Preview state (show numbers at start only)
   const [isPreview, setIsPreview] = useState(false);
   
   const settings = DIFFICULTY_SETTINGS[difficulty];
   
-  // Initialize game
-  const initializeGame = useCallback(() => {
-    // Create tile positions: shuffle numbers 1-9
-    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-    const shuffledPositions = shuffleArray(numbers);
-    setTilePositions(shuffledPositions);
+  // Sound effect functions
+  const playCorrectSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sine';
+      oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G5
+      
+      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const playWrongSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      // Create a buzzer-like sound
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.type = 'sawtooth';
+      oscillator.frequency.setValueAtTime(150, audioContext.currentTime);
+      oscillator.frequency.setValueAtTime(100, audioContext.currentTime + 0.1);
+      
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      console.log('Audio not supported');
+    }
+  };
+
+  const playWinSound = () => {
+    try {
+      const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+      
+      const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+      notes.forEach((freq, idx) => {
+        const osc = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+        
+        osc.connect(gain);
+        gain.connect(audioContext.destination);
+        
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(freq, audioContext.currentTime + idx * 0.15);
+        
+        gain.gain.setValueAtTime(0, audioContext.currentTime + idx * 0.15);
+        gain.gain.linearRampToValueAtTime(0.3, audioContext.currentTime + idx * 0.15 + 0.05);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + idx * 0.15 + 0.3);
+        
+        osc.start(audioContext.currentTime + idx * 0.15);
+        osc.stop(audioContext.currentTime + idx * 0.15 + 0.3);
+      });
+    } catch (error) {
+      console.log('Audio not supported');
+    }
+  };
+  
+  // Initialize game - tile positions stay the same for the whole game
+  const initializeGame = useCallback((forceNewPositions = true) => {
+    let positions = tilePositions;
+    
+    if (forceNewPositions || tilePositions.length === 0) {
+      // Create tile positions: shuffle numbers 1-9
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      positions = shuffleArray(numbers);
+      setTilePositions(positions);
+    }
     
     // Create required sequence based on difficulty
     let sequence;
     if (settings.useRandomSequence) {
-      sequence = shuffleArray(numbers);
+      sequence = shuffleArray([1, 2, 3, 4, 5, 6, 7, 8, 9]);
     } else {
       sequence = [1, 2, 3, 4, 5, 6, 7, 8, 9];
     }
@@ -87,28 +182,263 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
     
     // Reset states
     setCurrentExpectedIndex(0);
-    setRevealedTiles([]);
+    setFoundTiles([]);
     setWrongTile(null);
     setCorrectTile(null);
     setIsResetting(false);
     setGameOver(false);
     setWinner(null);
     
-    // Show preview briefly
+    // Initialize scores
+    const initialScores = {};
+    playerNames.forEach((name, idx) => {
+      initialScores[idx] = 0;
+    });
+    setScores(initialScores);
+    
+    // Show preview briefly at start
     setIsPreview(true);
     setTimeout(() => {
       setIsPreview(false);
-    }, 2000);
-  }, [settings.useRandomSequence]);
+    }, settings.previewDuration);
+    
+    return positions;
+  }, [tilePositions, settings.useRandomSequence, settings.previewDuration, playerNames]);
+  
+  // Auto-join room from URL
+  useEffect(() => {
+    if (initialRoomCode && !gameMode && !isInRoom) {
+      setGameMode('online');
+      setIsOnlineMode(true);
+      setRoomCode(initialRoomCode.toUpperCase().trim());
+    }
+  }, [initialRoomCode, gameMode, isInRoom]);
+
+  // Online game handlers
+  const handleRemoteGameStart = useCallback((payload) => {
+    const { players, tilePositions: positions, requiredSequence: sequence, difficulty: diff, numPlayers } = payload;
+    console.log('🎮 handleRemoteGameStart:', payload);
+    
+    setPlayerNames(players);
+    setPlayerCount(numPlayers);
+    setDifficulty(diff);
+    setTilePositions(positions);
+    setRequiredSequence(sequence);
+    setCurrentPlayerIndex(0);
+    setCurrentExpectedIndex(0);
+    setFoundTiles([]);
+    setGameOver(false);
+    setWinner(null);
+    setWaitingForPlayers(false);
+    setGameStarted(true);
+    
+    // Initialize scores
+    const initialScores = {};
+    players.forEach((_, idx) => {
+      initialScores[idx] = 0;
+    });
+    setScores(initialScores);
+    
+    // Find my player index
+    const myIndex = players.indexOf(roomService.playerName);
+    setMyPlayerIndex(myIndex);
+    
+    // Show preview
+    setIsPreview(true);
+    setTimeout(() => {
+      setIsPreview(false);
+    }, DIFFICULTY_SETTINGS[diff].previewDuration);
+    
+    if (onGameStart && !isPlayMode) {
+      onGameStart();
+    }
+  }, [onGameStart, isPlayMode]);
+
+  const handleRemoteTileClick = useCallback((payload) => {
+    const { 
+      gridIndex, 
+      isCorrect, 
+      currentExpectedIndex: newExpectedIndex,
+      foundTiles: newFoundTiles,
+      scores: newScores,
+      currentPlayerIndex: newPlayerIndex,
+      isGameOver,
+      winner: gameWinner
+    } = payload;
+    
+    if (isCorrect) {
+      setCorrectTile(gridIndex);
+      playCorrectSound();
+      setTimeout(() => setCorrectTile(null), 300);
+      setCurrentExpectedIndex(newExpectedIndex);
+      setFoundTiles(newFoundTiles);
+      setScores(newScores);
+      
+      if (isGameOver) {
+        playWinSound();
+        setWinner(gameWinner);
+        setGameOver(true);
+        setFoundTiles([0, 1, 2, 3, 4, 5, 6, 7, 8]);
+      }
+    } else {
+      setWrongTile(gridIndex);
+      playWrongSound();
+      setIsResetting(true);
+      
+      setTimeout(() => {
+        setWrongTile(null);
+        setCurrentPlayerIndex(newPlayerIndex);
+        setCurrentExpectedIndex(0);
+        setFoundTiles([]);
+        setIsResetting(false);
+      }, 1000);
+    }
+  }, []);
+
+  const handleRemoteNextTurn = useCallback((payload) => {
+    const { nextPlayerIndex } = payload;
+    setCurrentPlayerIndex(nextPlayerIndex);
+    setCurrentExpectedIndex(0);
+    setFoundTiles([]);
+  }, []);
+
+  // Setup online game listeners
+  useEffect(() => {
+    if (!isOnlineMode || !isInRoom) return;
+
+    console.log('🎮 Setting up Number Recall online listeners');
+
+    const handleError = (errorMessage) => {
+      setAlertMessage(errorMessage);
+    };
+
+    const handlePlayerJoined = (data) => {
+      console.log('👋 Player joined:', data);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers([...allPlayers]);
+    };
+
+    const handlePlayerLeft = (data) => {
+      console.log('👋 Player left:', data);
+      const allPlayers = roomService.getConnectedPlayers();
+      setConnectedPlayers([...allPlayers]);
+      
+      if (gameStarted) {
+        setAlertMessage(`${data.playerName || 'A player'} disconnected.`);
+      }
+    };
+
+    const handleGameAction = (data) => {
+      console.log('🎮 Game action received:', data.action, data.payload);
+      
+      switch (data.action) {
+        case 'game-start':
+          handleRemoteGameStart(data.payload);
+          break;
+        case 'tile-click':
+          handleRemoteTileClick(data.payload);
+          break;
+        case 'next-turn':
+          handleRemoteNextTurn(data.payload);
+          break;
+        case 'restart-game':
+          setGameStarted(false);
+          setWaitingForPlayers(true);
+          setGameOver(false);
+          setWinner(null);
+          setAlertMessage('Game restarted');
+          break;
+      }
+    };
+
+    roomService.on('onError', handleError);
+    roomService.on('onPlayerJoined', handlePlayerJoined);
+    roomService.on('onPlayerLeft', handlePlayerLeft);
+    roomService.on('onGameAction', handleGameAction);
+
+    const initialPlayers = roomService.getConnectedPlayers();
+    setConnectedPlayers([...initialPlayers]);
+
+    return () => {
+      console.log('🧹 Cleaning up online listeners');
+    };
+  }, [isOnlineMode, isInRoom, handleRemoteGameStart, handleRemoteTileClick, handleRemoteNextTurn, gameStarted]);
   
   // Initialize game when component mounts in play mode
   useEffect(() => {
-    if (isPlayMode && gameStarted && tilePositions.length === 0) {
-      initializeGame();
+    if (isPlayMode && gameStarted && tilePositions.length === 0 && !isOnlineMode) {
+      initializeGame(true);
     }
-  }, [isPlayMode, gameStarted, tilePositions.length, initializeGame]);
+  }, [isPlayMode, gameStarted, tilePositions.length, initializeGame, isOnlineMode]);
   
-  // Start the game
+  // Create room handler
+  const handleCreateRoom = async () => {
+    if (!playerName.trim()) {
+      setAlertMessage("Please enter your name!");
+      return;
+    }
+    
+    try {
+      roomService.playerName = playerName.trim();
+      const result = await roomService.createRoom();
+      setRoomCode(result.roomCode);
+      setIsHost(true);
+      setIsInRoom(true);
+      setWaitingForPlayers(true);
+      
+      const players = roomService.getConnectedPlayers();
+      setConnectedPlayers([...players]);
+    } catch (error) {
+      setAlertMessage(error.message || "Failed to create room");
+    }
+  };
+
+  const handleJoinRoom = async () => {
+    if (!playerName.trim()) {
+      setAlertMessage("Please enter your name!");
+      return;
+    }
+    if (!roomCode.trim() || roomCode.length < 6) {
+      setAlertMessage("Please enter a valid room code!");
+      return;
+    }
+    
+    try {
+      roomService.playerName = playerName.trim();
+      await roomService.joinRoom(roomCode.trim());
+      setIsHost(false);
+      setIsInRoom(true);
+      setWaitingForPlayers(true);
+      
+      const players = roomService.getConnectedPlayers();
+      setConnectedPlayers([...players]);
+    } catch (error) {
+      setAlertMessage(error.message || "Failed to join room");
+    }
+  };
+
+  // Start online game (host only)
+  const startOnlineGame = () => {
+    if (!isHost) return;
+    
+    const players = connectedPlayers.map(p => p.playerName);
+    const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    const positions = shuffleArray(numbers);
+    const sequence = settings.useRandomSequence ? shuffleArray(numbers) : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    
+    const payload = {
+      players,
+      numPlayers: players.length,
+      difficulty,
+      tilePositions: positions,
+      requiredSequence: sequence
+    };
+    
+    roomService.sendGameAction('game-start', payload);
+    handleRemoteGameStart(payload);
+  };
+  
+  // Start the local game
   const startGame = () => {
     const validNames = playerNames.map((name, i) => 
       name.trim() || `Player ${i + 1}`
@@ -116,184 +446,300 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
     setPlayerNames(validNames);
     setGameStarted(true);
     setCurrentPlayerIndex(0);
-    initializeGame();
+    initializeGame(true);
     
     // Navigate to play mode
     if (onGameStart && !isPlayMode) {
-      onGameStart({
-        gameMode,
-        difficulty,
-        playerCount,
-        playerNames: validNames
-      });
+      onGameStart();
     }
   };
   
   // Handle back navigation
   const handleBackToMenu = () => {
+    if (isOnlineMode && isInRoom) {
+      roomService.leaveRoom();
+      setIsInRoom(false);
+      setWaitingForPlayers(false);
+      setConnectedPlayers([]);
+    }
+    
     if (gameStarted) {
       setGameStarted(false);
       setGameOver(false);
     } else if (gameMode) {
       setGameMode(null);
+      setIsOnlineMode(false);
     } else if (onBack) {
       onBack();
     }
-    initializeGame();
   };
   
   // Handle tile click
   const handleTileClick = (gridIndex) => {
     if (isResetting || isPreview || gameOver) return;
     
+    // In online mode, only current player can click
+    if (isOnlineMode && myPlayerIndex !== currentPlayerIndex) {
+      return;
+    }
+    
     const clickedNumber = tilePositions[gridIndex];
     const expectedNumber = requiredSequence[currentExpectedIndex];
     
     if (clickedNumber === expectedNumber) {
       // Correct click!
+      playCorrectSound();
       setCorrectTile(gridIndex);
-      
-      // Reveal the tile based on difficulty
-      if (settings.revealDuration > 0) {
-        setRevealedTiles(prev => [...prev, gridIndex]);
-        setTimeout(() => {
-          setRevealedTiles(prev => prev.filter(i => i !== gridIndex));
-        }, settings.revealDuration);
-      }
-      
       setTimeout(() => setCorrectTile(null), 300);
       
+      const newFoundTiles = [...foundTiles, gridIndex];
+      setFoundTiles(newFoundTiles);
+      
       const nextIndex = currentExpectedIndex + 1;
+      const newScores = { ...scores };
+      newScores[currentPlayerIndex] = (newScores[currentPlayerIndex] || 0) + 1;
+      setScores(newScores);
       
       if (nextIndex >= 9) {
         // Player completed the sequence - they win!
-        setRevealedTiles([0, 1, 2, 3, 4, 5, 6, 7, 8]); // Reveal all
+        playWinSound();
+        setFoundTiles([0, 1, 2, 3, 4, 5, 6, 7, 8]); // Reveal all
         setWinner(currentPlayerIndex);
         setGameOver(true);
+        
+        if (isOnlineMode) {
+          roomService.sendGameAction('tile-click', {
+            gridIndex,
+            isCorrect: true,
+            currentExpectedIndex: nextIndex,
+            foundTiles: [0, 1, 2, 3, 4, 5, 6, 7, 8],
+            scores: newScores,
+            currentPlayerIndex,
+            isGameOver: true,
+            winner: currentPlayerIndex
+          });
+        }
       } else {
         setCurrentExpectedIndex(nextIndex);
+        
+        if (isOnlineMode) {
+          roomService.sendGameAction('tile-click', {
+            gridIndex,
+            isCorrect: true,
+            currentExpectedIndex: nextIndex,
+            foundTiles: newFoundTiles,
+            scores: newScores,
+            currentPlayerIndex,
+            isGameOver: false
+          });
+        }
       }
     } else {
       // Wrong click - end turn
+      playWrongSound();
       setWrongTile(gridIndex);
       setIsResetting(true);
       
+      const nextPlayer = (currentPlayerIndex + 1) % (isOnlineMode ? connectedPlayers.length : playerCount);
+      
+      if (isOnlineMode) {
+        roomService.sendGameAction('tile-click', {
+          gridIndex,
+          isCorrect: false,
+          currentPlayerIndex: nextPlayer
+        });
+      }
+      
       setTimeout(() => {
         setWrongTile(null);
-        
-        // Switch to next player
-        const nextPlayer = (currentPlayerIndex + 1) % playerCount;
         setCurrentPlayerIndex(nextPlayer);
-        
-        // Reset for next player's turn
-        setRevealedTiles([]);
+        // Reset progress for next player's turn (same tile positions)
+        setFoundTiles([]);
         setCurrentExpectedIndex(0);
-        
-        // Shuffle tile positions for fairness
-        const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
-        setTilePositions(shuffleArray(numbers));
-        
-        // Generate new random sequence for hard mode
-        if (settings.useRandomSequence) {
-          setRequiredSequence(shuffleArray(numbers));
-        }
-        
-        // Brief preview for new player
-        setIsPreview(true);
-        setTimeout(() => {
-          setIsPreview(false);
-          setIsResetting(false);
-        }, 2000);
-      }, 800);
+        setIsResetting(false);
+      }, 1000);
     }
   };
   
   // Restart game
   const restartGame = () => {
     setCurrentPlayerIndex(0);
-    initializeGame();
+    initializeGame(true); // New positions for new game
+    
+    if (isOnlineMode && isHost) {
+      const players = connectedPlayers.map(p => p.playerName);
+      const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const positions = shuffleArray(numbers);
+      const sequence = settings.useRandomSequence ? shuffleArray(numbers) : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      
+      roomService.sendGameAction('game-start', {
+        players,
+        numPlayers: players.length,
+        difficulty,
+        tilePositions: positions,
+        requiredSequence: sequence
+      });
+    }
   };
   
   // Go back to setup
   const goToSetup = () => {
     setGameStarted(false);
     setGameOver(false);
+    if (isOnlineMode) {
+      setWaitingForPlayers(true);
+    }
   };
   
   // Handle back navigation
   const handleBack = () => {
     if (gameStarted) {
       goToSetup();
+    } else if (isOnlineMode && isInRoom) {
+      roomService.leaveRoom();
+      setIsInRoom(false);
+      setWaitingForPlayers(false);
+      setConnectedPlayers([]);
     } else if (gameMode) {
       setGameMode(null);
+      setIsOnlineMode(false);
     } else if (onBack) {
       onBack();
     }
   };
   
   // Get current player name
-  const getCurrentPlayerName = () => playerNames[currentPlayerIndex];
+  const getCurrentPlayerName = () => {
+    if (isOnlineMode) {
+      return connectedPlayers[currentPlayerIndex]?.playerName || 'Unknown';
+    }
+    return playerNames[currentPlayerIndex];
+  };
+
+  const getGameUrl = () => {
+    return `${window.location.origin}/games/number-recall?room=${roomCode}`;
+  };
   
   // ========== RENDER: Mode Selection ==========
   if (!gameMode) {
     return (
-      <GameLayout title="🔢 Number Recall - Mode Selection" onBack={handleBackToMenu}>
+      <GameLayout title="🔢 Number Recall" onBack={handleBackToMenu}>
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>
-            Memory Tiles Challenge: Tiles hide numbers 1-9. Click them in the correct sequence order. Click wrong, and your turn ends!
+            Memory Tiles Challenge: Tiles hide numbers 1-9. Memorize their positions during preview, then click them in the correct sequence. Click wrong, and your turn ends!
           </p>
           
           <GameModeSelector
             onSelectLocal={() => setGameMode('local')}
-            onSelectOnline={() => setGameMode('online')}
-            localLabel="2 Players"
-            onlineLabel="3+ Players"
-            maxPlayers="Take turns on same device"
+            onSelectOnline={() => {
+              setGameMode('online');
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Play Online"
+            maxPlayers="Up to 4 players"
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // ========== RENDER: Online Room Setup ==========
+  if (isOnlineMode && !isInRoom) {
+    return (
+      <GameLayout title="🔢 Number Recall - Online" onBack={handleBack}>
+        {alertMessage && (
+          <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+        )}
+        <div className={styles.setupContainer}>
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateRoom}
+            onJoinRoom={handleJoinRoom}
+          />
+        </div>
+      </GameLayout>
+    );
+  }
+
+  // ========== RENDER: Online Waiting Room ==========
+  if (isOnlineMode && isInRoom && waitingForPlayers && !gameStarted) {
+    return (
+      <GameLayout title="🔢 Number Recall - Room" onBack={handleBack}>
+        {alertMessage && (
+          <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+        )}
+        <div className={styles.setupContainer}>
+          {/* Difficulty Selection (host only) */}
+          {isHost && (
+            <div className={styles.difficultySection}>
+              <label className={styles.label}>Select Difficulty</label>
+              <div className={styles.difficultyButtons}>
+                {Object.entries(DIFFICULTY_SETTINGS).map(([key, val]) => (
+                  <button
+                    key={key}
+                    className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
+                    onClick={() => setDifficulty(key)}
+                  >
+                    {val.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <OnlineRoomExample
+            roomCode={roomCode}
+            connectedPlayers={connectedPlayers}
+            maxPlayers={4}
+            minPlayers={2}
+            isHost={isHost}
+            onStartGame={startOnlineGame}
+            gameUrl={getGameUrl()}
           />
         </div>
       </GameLayout>
     );
   }
   
-  // ========== RENDER: Setup Screen ==========
-  if (!gameStarted) {
+  // ========== RENDER: Local Setup Screen ==========
+  if (!gameStarted && !isOnlineMode) {
     return (
-      <GameLayout title="🔢 Number Recall - Player Setup" onBack={handleBackToMenu}>
+      <GameLayout title="🔢 Number Recall - Setup" onBack={handleBackToMenu}>
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
         <div className={styles.setupContainer}>
-          <p className={styles.setupDescription}>
-            {gameMode === 'online' ? 'Multiplayer Mode' : '2 Player Mode'}
-          </p>
+          <p className={styles.setupDescription}>Local Multiplayer Mode</p>
           
-          {/* Player Count (for online mode) */}
-          {gameMode === 'online' && (
-            <div className={styles.playerCountSection}>
-              <label className={styles.label}>Number of Players</label>
-              <div className={styles.playerCountButtons}>
-                {[2, 3, 4].map((count) => (
-                  <button
-                    key={count}
-                    className={`${styles.countButton} ${playerCount === count ? styles.countButtonActive : ''}`}
-                    onClick={() => {
-                      setPlayerCount(count);
-                      setPlayerNames(prev => {
-                        const newNames = [...prev];
-                        while (newNames.length < count) newNames.push('');
-                        return newNames.slice(0, count);
-                      });
-                    }}
-                  >
-                    {count} Players
-                  </button>
-                ))}
-              </div>
+          {/* Player Count */}
+          <div className={styles.playerCountSection}>
+            <label className={styles.label}>Number of Players</label>
+            <div className={styles.playerCountButtons}>
+              {[2, 3, 4].map((count) => (
+                <button
+                  key={count}
+                  className={`${styles.countButton} ${playerCount === count ? styles.countButtonActive : ''}`}
+                  onClick={() => {
+                    setPlayerCount(count);
+                    setPlayerNames(prev => {
+                      const newNames = [...prev];
+                      while (newNames.length < count) newNames.push('');
+                      return newNames.slice(0, count);
+                    });
+                  }}
+                >
+                  {count} Players
+                </button>
+              ))}
             </div>
-          )}
+          </div>
           
           {/* Difficulty Selection */}
           <div className={styles.difficultySection}>
@@ -338,6 +784,10 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
   }
   
   // ========== RENDER: Game Screen ==========
+  const displayPlayerNames = isOnlineMode 
+    ? connectedPlayers.map(p => p.playerName)
+    : playerNames.slice(0, playerCount);
+
   return (
     <GameLayout title="🔢 Number Recall" onBack={goToSetup}>
       {alertMessage && (
@@ -352,12 +802,13 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
         
         {/* Player Cards */}
         <div className={styles.playerInfo}>
-          {playerNames.slice(0, playerCount).map((name, idx) => (
+          {displayPlayerNames.map((name, idx) => (
             <div 
               key={idx}
               className={`${styles.playerCard} ${currentPlayerIndex === idx ? styles.active : ''}`}
             >
               <span className={styles.playerName}>{name}</span>
+              <span className={styles.playerScore}>Score: {scores[idx] || 0}</span>
               {currentPlayerIndex === idx && (
                 <span className={styles.turnIndicator}>Playing</span>
               )}
@@ -391,7 +842,7 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
         <div className={styles.gridWrapper}>
           <div className={styles.tileGrid}>
             {tilePositions.map((number, gridIndex) => {
-              const isRevealed = revealedTiles.includes(gridIndex);
+              const isFound = foundTiles.includes(gridIndex);
               const isWrong = wrongTile === gridIndex;
               const isCorrect = correctTile === gridIndex;
               const isPreviewTile = isPreview;
@@ -401,16 +852,16 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
                   key={gridIndex}
                   className={`
                     ${styles.tile}
-                    ${isRevealed ? styles.revealed : ''}
+                    ${isFound ? styles.revealed : ''}
                     ${isWrong ? styles.wrong : ''}
                     ${isCorrect ? styles.correct : ''}
                     ${isPreviewTile ? styles.preview : ''}
                     ${isResetting || isPreview ? styles.disabled : ''}
                   `}
                   onClick={() => handleTileClick(gridIndex)}
-                  disabled={isResetting || isPreview || gameOver}
+                  disabled={isResetting || isPreview || gameOver || isFound}
                 >
-                  {(isRevealed || isWrong || isCorrect || isPreviewTile) ? number : '?'}
+                  {(isFound || isWrong || isCorrect || isPreviewTile) ? number : '?'}
                 </button>
               );
             })}
@@ -423,7 +874,11 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
         <div className={styles.winnerOverlay}>
           <div className={styles.winnerCard}>
             <div className={styles.winnerText}>🏆 Winner!</div>
-            <div className={styles.winnerName}>{playerNames[winner]}</div>
+            <div className={styles.winnerName}>
+              {isOnlineMode 
+                ? connectedPlayers[winner]?.playerName 
+                : playerNames[winner]}
+            </div>
             <div className={styles.winnerSubtext}>
               Completed the entire sequence!
             </div>
@@ -432,6 +887,7 @@ function NumberRecallTiles({ onBack, onGameStart, isPlayMode = false }) {
               <button
                 className={styles.startButton}
                 onClick={restartGame}
+                disabled={isOnlineMode && !isHost}
               >
                 🔄 Play Again
               </button>

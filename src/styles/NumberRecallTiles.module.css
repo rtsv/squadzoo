@@ -232,6 +232,12 @@
   font-size: 0.9rem;
 }
 
+.playerScore {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
 .turnIndicator {
   color: #FFD700;
   font-size: 0.7rem;
