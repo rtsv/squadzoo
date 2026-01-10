@@ -57,6 +57,12 @@
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
+  <url>
+    <loc>https://squadzoo.games/games/number-recall</loc>
+    <lastmod>2026-01-10</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
   
   <!-- Legal Pages -->
   <url>

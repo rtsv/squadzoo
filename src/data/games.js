@@ -53,6 +53,12 @@ const games = [
       description: "Sink your opponent's fleet",
       icon: "🚢"
     },
+    {
+      id: "number-recall",
+      title: "Number Recall Tiles",
+      description: "Test your memory - recall number sequences",
+      icon: "🧩"
+    },
   ];
   
   export default games;

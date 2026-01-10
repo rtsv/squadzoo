@@ -17,7 +17,8 @@ function Home() {
       "word-chain": "/games/word-chain",
       "tic-tac-toe": "/games/tic-tac-toe",
       "battleship": "/games/battleship",
-      "ludo": "/games/ludo"
+      "ludo": "/games/ludo",
+      "number-recall": "/games/number-recall"
     };
     navigate(gameRoutes[gameId]);
   };

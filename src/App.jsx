@@ -13,6 +13,7 @@ import WordChainPage from "./pages/games/WordChainPage";
 import TicTacToePage from "./pages/games/TicTacToePage";
 import BattleshipPage from "./pages/games/BattleshipPage";
 import LudoPage from "./pages/games/LudoPage";
+import NumberRecallPage from "./pages/games/NumberRecallPage";
 
 function App() {
   return (
@@ -34,6 +35,7 @@ function App() {
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
           <Route path="/games/battleship" element={<BattleshipPage />} />
           <Route path="/games/ludo" element={<LudoPage />} />
+          <Route path="/games/number-recall" element={<NumberRecallPage />} />
           
           {/* Active gameplay pages (no ads for AdSense exclusion) */}
           <Route path="/games/draw-and-guess/play" element={<DrawGuessPage isPlayMode={true} />} />
@@ -41,6 +43,7 @@ function App() {
           <Route path="/games/tic-tac-toe/play" element={<TicTacToePage isPlayMode={true} />} />
           <Route path="/games/battleship/play" element={<BattleshipPage isPlayMode={true} />} />
           <Route path="/games/ludo/play" element={<LudoPage isPlayMode={true} />} />
+          <Route path="/games/number-recall/play" element={<NumberRecallPage isPlayMode={true} />} />
         </Routes>
       </Router>
     </HelmetProvider>
