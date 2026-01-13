@@ -245,7 +245,9 @@ function LudoBoard({
   diceValue, 
   canRoll, 
   onRollDice,
-  playerNames
+  playerNames,
+  playerRankings = [],
+  gameOver = false
 }) {
   const [isRolling, setIsRolling] = useState(false);
   const [displayDice, setDisplayDice] = useState(1);
@@ -419,6 +421,59 @@ function LudoBoard({
     );
   };
 
+  // Helper: render winner crown at home base if player is ranked
+  const renderWinnerCrownAtHome = (color) => {
+    const playerIdx = getPlayerIndex(color);
+    const name = playerNames[playerIdx] || color.charAt(0).toUpperCase() + color.slice(1);
+    const rank = playerRankings.indexOf(name) + 1;
+    if (rank > 0) {
+      // Place crown at center of home base
+      let homeCenter = { x: 0, y: 0 };
+      if (color === 'blue') homeCenter = { x: 3 * CELL_SIZE, y: 3 * CELL_SIZE };
+      if (color === 'red') homeCenter = { x: 12 * CELL_SIZE, y: 3 * CELL_SIZE };
+      if (color === 'yellow') homeCenter = { x: 3 * CELL_SIZE, y: 12 * CELL_SIZE };
+      if (color === 'green') homeCenter = { x: 12 * CELL_SIZE, y: 12 * CELL_SIZE };
+      return (
+        <g key={`crown-${color}`}> 
+          <text x={homeCenter.x} y={homeCenter.y} fontSize="38" textAnchor="middle" dominantBaseline="middle" className={styles.winnerCrown}>
+            👑
+          </text>
+          <text x={homeCenter.x + 32} y={homeCenter.y + 18} fontSize="22" fill="#FFD700" fontWeight="bold" className={styles.winnerRank}>
+            #{rank}
+          </text>
+        </g>
+      );
+    }
+    return null;
+  };
+
+  // Helper: render celebration animation (balloons, crackers) at center when gameOver
+  const renderCelebration = () => {
+    if (!gameOver) return null;
+    // Balloons and crackers SVG animation (simple, not interactive)
+    return (
+      <g className={styles.celebrationGroup}>
+        {/* Balloons */}
+        <g>
+          <ellipse cx={7.5*CELL_SIZE-40} cy={7.5*CELL_SIZE-60} rx="18" ry="28" fill="#FF5252" opacity="0.8"/>
+          <ellipse cx={7.5*CELL_SIZE+40} cy={7.5*CELL_SIZE-60} rx="18" ry="28" fill="#FFD600" opacity="0.8"/>
+          <ellipse cx={7.5*CELL_SIZE} cy={7.5*CELL_SIZE-80} rx="18" ry="28" fill="#40C4FF" opacity="0.8"/>
+          <rect x={7.5*CELL_SIZE-2} y={7.5*CELL_SIZE-52} width="4" height="30" fill="#888"/>
+        </g>
+        {/* Crackers (fireworks) */}
+        <g>
+          <circle cx={7.5*CELL_SIZE-60} cy={7.5*CELL_SIZE-100} r="6" fill="#FFD600"/>
+          <circle cx={7.5*CELL_SIZE+60} cy={7.5*CELL_SIZE-100} r="6" fill="#FF5252"/>
+          <circle cx={7.5*CELL_SIZE} cy={7.5*CELL_SIZE-120} r="6" fill="#40C4FF"/>
+          {/* Firework lines */}
+          <line x1={7.5*CELL_SIZE-60} y1={7.5*CELL_SIZE-100} x2={7.5*CELL_SIZE-80} y2={7.5*CELL_SIZE-120} stroke="#FFD600" strokeWidth="3"/>
+          <line x1={7.5*CELL_SIZE+60} y1={7.5*CELL_SIZE-100} x2={7.5*CELL_SIZE+80} y2={7.5*CELL_SIZE-120} stroke="#FF5252" strokeWidth="3"/>
+          <line x1={7.5*CELL_SIZE} y1={7.5*CELL_SIZE-120} x2={7.5*CELL_SIZE} y2={7.5*CELL_SIZE-145} stroke="#40C4FF" strokeWidth="3"/>
+        </g>
+      </g>
+    );
+  };
+
   return (
     <div className={styles.gameContainer}>
       {/* Right side panels - moved to top */}
@@ -499,66 +554,11 @@ function LudoBoard({
               </radialGradient>
             </defs>
 
-            {/* Board background */}
-            <rect width={boardPixels} height={boardPixels} fill="#F5F5DC" />
+            {/* Celebration animation on win */}
+            {renderCelebration()}
 
-            {/* === HOME AREAS === */}
-            
-            {/* Blue Home - Top Left */}
-            <rect x={0} y={0} width={6*CELL_SIZE} height={6*CELL_SIZE} 
-              fill={COLOR_CONFIG.blue.home} stroke={COLOR_CONFIG.blue.dark} strokeWidth="3" />
-            <rect x={CELL_SIZE*0.7} y={CELL_SIZE*0.7} width={4.6*CELL_SIZE} height={4.6*CELL_SIZE} 
-              fill="#FAFAFA" rx="8" stroke="#E0E0E0" strokeWidth="2" />
-            {HOME_BASES.blue.map((pos, i) => (
-              <g key={`blue-base-${i}`}>
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS} 
-                  fill={COLOR_CONFIG.blue.main} stroke={COLOR_CONFIG.blue.dark} strokeWidth="2.5" />
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS * 0.6} 
-                  fill="none" stroke="#fff" strokeWidth="2" opacity="0.5" />
-              </g>
-            ))}
-            
-            {/* Red Home - Top Right */}
-            <rect x={9*CELL_SIZE} y={0} width={6*CELL_SIZE} height={6*CELL_SIZE} 
-              fill={COLOR_CONFIG.red.home} stroke={COLOR_CONFIG.red.dark} strokeWidth="3" />
-            <rect x={9.7*CELL_SIZE} y={CELL_SIZE*0.7} width={4.6*CELL_SIZE} height={4.6*CELL_SIZE} 
-              fill="#FAFAFA" rx="8" stroke="#E0E0E0" strokeWidth="2" />
-            {HOME_BASES.red.map((pos, i) => (
-              <g key={`red-base-${i}`}>
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS} 
-                  fill={COLOR_CONFIG.red.main} stroke={COLOR_CONFIG.red.dark} strokeWidth="2.5" />
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS * 0.6} 
-                  fill="none" stroke="#fff" strokeWidth="2" opacity="0.5" />
-              </g>
-            ))}
-            
-            {/* Yellow Home - Bottom Left */}
-            <rect x={0} y={9*CELL_SIZE} width={6*CELL_SIZE} height={6*CELL_SIZE} 
-              fill={COLOR_CONFIG.yellow.home} stroke={COLOR_CONFIG.yellow.dark} strokeWidth="3" />
-            <rect x={CELL_SIZE*0.7} y={9.7*CELL_SIZE} width={4.6*CELL_SIZE} height={4.6*CELL_SIZE} 
-              fill="#FAFAFA" rx="8" stroke="#E0E0E0" strokeWidth="2" />
-            {HOME_BASES.yellow.map((pos, i) => (
-              <g key={`yellow-base-${i}`}>
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS} 
-                  fill={COLOR_CONFIG.yellow.main} stroke={COLOR_CONFIG.yellow.dark} strokeWidth="2.5" />
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS * 0.6} 
-                  fill="none" stroke="#fff" strokeWidth="2" opacity="0.5" />
-              </g>
-            ))}
-            
-            {/* Green Home - Bottom Right */}
-            <rect x={9*CELL_SIZE} y={9*CELL_SIZE} width={6*CELL_SIZE} height={6*CELL_SIZE} 
-              fill={COLOR_CONFIG.green.home} stroke={COLOR_CONFIG.green.dark} strokeWidth="3" />
-            <rect x={9.7*CELL_SIZE} y={9.7*CELL_SIZE} width={4.6*CELL_SIZE} height={4.6*CELL_SIZE} 
-              fill="#FAFAFA" rx="8" stroke="#E0E0E0" strokeWidth="2" />
-            {HOME_BASES.green.map((pos, i) => (
-              <g key={`green-base-${i}`}>
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS} 
-                  fill={COLOR_CONFIG.green.main} stroke={COLOR_CONFIG.green.dark} strokeWidth="2.5" />
-                <circle cx={pos.x + CELL_SIZE/2} cy={pos.y + CELL_SIZE/2} r={HOME_CIRCLE_RADIUS * 0.6} 
-                  fill="none" stroke="#fff" strokeWidth="2" opacity="0.5" />
-              </g>
-            ))}
+            {/* Winner crowns at home bases */}
+            {['blue','red','yellow','green'].map(renderWinnerCrownAtHome)}
 
             {/* === PATH CELLS === */}
             

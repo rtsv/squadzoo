@@ -722,6 +722,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
             setRoomCode={setRoomCode}
             onCreateRoom={handleCreateRoom}
             onJoinRoom={handleJoinRoom}
+            hideCreateRoom={!!initialRoomCode}
           />
         </div>
       </GameLayout>
@@ -736,24 +737,36 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
         <div className={styles.setupContainer}>
-          {/* Difficulty Selection (host only) */}
-          {isHost && (
-            <div className={styles.difficultySection}>
-              <label className={styles.label}>Select Difficulty</label>
-              <div className={styles.difficultyButtons}>
-                {Object.entries(DIFFICULTY_SETTINGS).map(([key, val]) => (
-                  <button
-                    key={key}
-                    className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
-                    onClick={() => setDifficulty(key)}
-                  >
-                    {val.label}
-                  </button>
-                ))}
-              </div>
+          {/* Difficulty Selection (host can change, all can see) */}
+          <div className={styles.difficultySection}>
+            <label className={styles.label}>Selected Difficulty</label>
+            <div className={styles.difficultyButtons}>
+              {Object.entries(DIFFICULTY_SETTINGS).map(([key, val]) => (
+                <button
+                  key={key}
+                  className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
+                  onClick={() => {
+                    if (isHost) setDifficulty(key);
+                  }}
+                  disabled={!isHost}
+                  style={!isHost && difficulty !== key ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                  title={
+                    key === 'easy' ? 'Easy: 5s preview, numbers in order' :
+                    key === 'medium' ? 'Medium: 3s preview, numbers in order' :
+                    key === 'hard' ? 'Hard: 2s preview, random order' : ''
+                  }
+                >
+                  {val.label}
+                  {difficulty === key && ' ✓'}
+                </button>
+              ))}
             </div>
-          )}
-          
+            {!isHost && (
+              <div className={styles.difficultyNote}>
+                Only the host can change difficulty
+              </div>
+            )}
+          </div>
           <OnlineRoomExample
             roomCode={roomCode}
             connectedPlayers={connectedPlayers}
@@ -810,6 +823,11 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
                   key={key}
                   className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
                   onClick={() => setDifficulty(key)}
+                  title={
+                    key === 'easy' ? 'Easy: 5s preview, numbers in order' :
+                    key === 'medium' ? 'Medium: 3s preview, numbers in order' :
+                    key === 'hard' ? 'Hard: 2s preview, random order' : ''
+                  }
                 >
                   {val.label}
                 </button>
