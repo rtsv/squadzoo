@@ -78,18 +78,15 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
   // Multiplayer states
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   
-  // Preview state (memorization phase - tiles are hidden but player memorizes)
-  const [isPreview, setIsPreview] = useState(false);
-  
-  // Turn timer state (5 seconds per action)
-  const [turnTimer, setTurnTimer] = useState(5);
+  // Turn timer state (8 seconds per action)
+  const [turnTimer, setTurnTimer] = useState(8);
   const [timerActive, setTimerActive] = useState(false);
   
   const settings = DIFFICULTY_SETTINGS[difficulty];
   
   // Turn timer effect - handles countdown and auto-skip
   useEffect(() => {
-    if (!timerActive || isPreview || gameOver || isResetting) {
+    if (!timerActive || gameOver || isResetting) {
       return;
     }
     
@@ -99,14 +96,14 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           // Timer expired - skip to next player
           clearInterval(interval);
           handleTimerExpired();
-          return 5;
+          return 8;
         }
         return prev - 1;
       });
     }, 1000);
     
     return () => clearInterval(interval);
-  }, [timerActive, isPreview, gameOver, isResetting, currentPlayerIndex]);
+  }, [timerActive, gameOver, isResetting, currentPlayerIndex]);
   
   // Handle timer expiration - move to next player
   const handleTimerExpired = useCallback(() => {
@@ -127,23 +124,23 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
     setCurrentPlayerIndex(nextPlayer);
     setCurrentExpectedIndex(0);
     setFoundTiles([]);
-    setTurnTimer(5);
+    setTurnTimer(8);
   }, [isOnlineMode, connectedPlayers.length, playerCount, currentPlayerIndex, myPlayerIndex]);
   
   // Reset timer function - called on tile click
   const resetTurnTimer = useCallback(() => {
-    setTurnTimer(5);
+    setTurnTimer(8);
   }, []);
   
   // Start timer when game starts or turn changes
   useEffect(() => {
-    if (gameStarted && !isPreview && !gameOver) {
+    if (gameStarted && !gameOver) {
       setTimerActive(true);
-      setTurnTimer(5);
+      setTurnTimer(8);
     } else {
       setTimerActive(false);
     }
-  }, [gameStarted, isPreview, gameOver, currentPlayerIndex]);
+  }, [gameStarted, gameOver, currentPlayerIndex]);
   
   // Sound effect functions
   const playCorrectSound = () => {
@@ -258,14 +255,9 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
     });
     setScores(initialScores);
     
-    // Show preview briefly at start
-    setIsPreview(true);
-    setTimeout(() => {
-      setIsPreview(false);
-    }, settings.previewDuration);
-    
+    // No preview - tiles start hidden immediately
     return positions;
-  }, [tilePositions, settings.useRandomSequence, settings.previewDuration, playerNames]);
+  }, [tilePositions, settings.useRandomSequence, playerNames]);
   
   // Auto-join room from URL
   useEffect(() => {
@@ -305,12 +297,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
     const myIndex = players.indexOf(roomService.playerName);
     setMyPlayerIndex(myIndex);
     
-    // Show preview
-    setIsPreview(true);
-    setTimeout(() => {
-      setIsPreview(false);
-    }, DIFFICULTY_SETTINGS[diff].previewDuration);
-    
+    // No preview - game starts immediately with hidden tiles
     if (onGameStart && !isPlayMode) {
       onGameStart();
     }
@@ -409,7 +396,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           setCurrentPlayerIndex(nextPlayerIndex);
           setCurrentExpectedIndex(0);
           setFoundTiles([]);
-          setTurnTimer(5);
+          setTurnTimer(8);
           break;
         case 'restart-game':
           setGameStarted(false);
@@ -546,7 +533,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
   
   // Handle tile click
   const handleTileClick = (gridIndex) => {
-    if (isResetting || isPreview || gameOver) return;
+    if (isResetting || gameOver) return;
     
     // In online mode, only current player can click
     if (isOnlineMode && myPlayerIndex !== currentPlayerIndex) {
@@ -871,8 +858,8 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
         <div className={styles.currentPlayerDisplay}>
           <div className={styles.currentPlayerLabel}>Current Turn</div>
           <div className={styles.currentPlayerName}>{getCurrentPlayerName()}</div>
-          {!isPreview && !gameOver && (
-            <div className={`${styles.turnTimerDisplay} ${turnTimer <= 2 ? styles.timerWarning : ''}`}>
+          {!gameOver && (
+            <div className={`${styles.turnTimerDisplay} ${turnTimer <= 3 ? styles.timerWarning : ''}`}>
               ⏱️ {turnTimer}s
             </div>
           )}
@@ -906,12 +893,10 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
         
         {/* Status Bar */}
         <div className={styles.statusBar}>
-          <div className={`${styles.statusText} ${isPreview ? styles.highlight : ''}`}>
-            {isPreview 
-              ? '👀 Memorize the positions!'
-              : isResetting
-                ? 'Wrong! Switching turns...'
-                : `🎯 Find: ${requiredSequence[currentExpectedIndex]} (${currentExpectedIndex + 1}/9)`
+          <div className={styles.statusText}>
+            {isResetting
+              ? 'Wrong! Switching turns...'
+              : `🎯 Find: ${requiredSequence[currentExpectedIndex]} (${currentExpectedIndex + 1}/9)`
             }
           </div>
         </div>
@@ -923,7 +908,6 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
               const isFound = foundTiles.includes(gridIndex);
               const isWrong = wrongTile === gridIndex;
               const isCorrect = correctTile === gridIndex;
-              const isPreviewTile = isPreview;
               
               return (
                 <button
@@ -933,10 +917,10 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
                     ${isFound ? styles.revealed : ''}
                     ${isWrong ? styles.wrong : ''}
                     ${isCorrect ? styles.correct : ''}
-                    ${isResetting || isPreview ? styles.disabled : ''}
+                    ${isResetting ? styles.disabled : ''}
                   `}
                   onClick={() => handleTileClick(gridIndex)}
-                  disabled={isResetting || isPreview || gameOver || isFound}
+                  disabled={isResetting || gameOver || isFound}
                 >
                   {(isFound || isCorrect) ? number : '?'}
                 </button>
