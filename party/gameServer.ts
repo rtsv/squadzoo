@@ -49,13 +49,13 @@ export default class GameServer implements Party.Server {
       return;
     }
     
-    // Check if room is full (max 12 players for Word Chain)
-    if (currentRoom.playerCount >= 12) {
+    // Check if room is full (max 10 players for Number Recall)
+    if (currentRoom.playerCount >= 10) {
       console.log(`❌ Room ${roomId} is full, rejecting player ${conn.id}`);
       
       conn.send(JSON.stringify({
         type: 'error',
-        message: 'Room is full. Maximum 12 players allowed.'
+        message: 'Room is full. Maximum 10 players allowed.'
       }));
       
       conn.close(1000, 'Room is full');
@@ -169,7 +169,7 @@ export default class GameServer implements Party.Server {
       return new Response(JSON.stringify({
         exists: !!room && room.playerCount > 0,
         playerCount: room?.playerCount || 0,
-        isFull: room ? room.playerCount >= 12 : false
+        isFull: room ? room.playerCount >= 10 : false
       }), {
         headers: { 'Content-Type': 'application/json' }
       });

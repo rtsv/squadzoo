@@ -78,10 +78,72 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
   // Multiplayer states
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   
-  // Preview state (show numbers at start only)
+  // Preview state (memorization phase - tiles are hidden but player memorizes)
   const [isPreview, setIsPreview] = useState(false);
   
+  // Turn timer state (5 seconds per action)
+  const [turnTimer, setTurnTimer] = useState(5);
+  const [timerActive, setTimerActive] = useState(false);
+  
   const settings = DIFFICULTY_SETTINGS[difficulty];
+  
+  // Turn timer effect - handles countdown and auto-skip
+  useEffect(() => {
+    if (!timerActive || isPreview || gameOver || isResetting) {
+      return;
+    }
+    
+    const interval = setInterval(() => {
+      setTurnTimer(prev => {
+        if (prev <= 1) {
+          // Timer expired - skip to next player
+          clearInterval(interval);
+          handleTimerExpired();
+          return 5;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    
+    return () => clearInterval(interval);
+  }, [timerActive, isPreview, gameOver, isResetting, currentPlayerIndex]);
+  
+  // Handle timer expiration - move to next player
+  const handleTimerExpired = useCallback(() => {
+    const totalPlayers = isOnlineMode ? connectedPlayers.length : playerCount;
+    const nextPlayer = (currentPlayerIndex + 1) % totalPlayers;
+    
+    // Only the current player (in online mode) or always (in local mode) handles the timer expiration
+    if (isOnlineMode && myPlayerIndex !== currentPlayerIndex) {
+      return; // Only the active player sends the timeout action
+    }
+    
+    if (isOnlineMode) {
+      roomService.sendGameAction('timer-expired', {
+        nextPlayerIndex: nextPlayer
+      });
+    }
+    
+    setCurrentPlayerIndex(nextPlayer);
+    setCurrentExpectedIndex(0);
+    setFoundTiles([]);
+    setTurnTimer(5);
+  }, [isOnlineMode, connectedPlayers.length, playerCount, currentPlayerIndex, myPlayerIndex]);
+  
+  // Reset timer function - called on tile click
+  const resetTurnTimer = useCallback(() => {
+    setTurnTimer(5);
+  }, []);
+  
+  // Start timer when game starts or turn changes
+  useEffect(() => {
+    if (gameStarted && !isPreview && !gameOver) {
+      setTimerActive(true);
+      setTurnTimer(5);
+    } else {
+      setTimerActive(false);
+    }
+  }, [gameStarted, isPreview, gameOver, currentPlayerIndex]);
   
   // Sound effect functions
   const playCorrectSound = () => {
@@ -341,6 +403,14 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
         case 'next-turn':
           handleRemoteNextTurn(data.payload);
           break;
+        case 'timer-expired':
+          // Handle remote timer expiration
+          const { nextPlayerIndex } = data.payload;
+          setCurrentPlayerIndex(nextPlayerIndex);
+          setCurrentExpectedIndex(0);
+          setFoundTiles([]);
+          setTurnTimer(5);
+          break;
         case 'restart-game':
           setGameStarted(false);
           setWaitingForPlayers(true);
@@ -482,6 +552,9 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
     if (isOnlineMode && myPlayerIndex !== currentPlayerIndex) {
       return;
     }
+    
+    // Reset turn timer on any tile click
+    resetTurnTimer();
     
     const clickedNumber = tilePositions[gridIndex];
     const expectedNumber = requiredSequence[currentExpectedIndex];
@@ -640,7 +713,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
             }}
             localLabel="Local Play"
             onlineLabel="Play Online"
-            maxPlayers="Up to 4 players"
+            maxPlayers="Up to 10 players"
           />
         </div>
       </GameLayout>
@@ -697,7 +770,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           <OnlineRoomExample
             roomCode={roomCode}
             connectedPlayers={connectedPlayers}
-            maxPlayers={4}
+            maxPlayers={10}
             minPlayers={2}
             isHost={isHost}
             onStartGame={startOnlineGame}
@@ -794,10 +867,15 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
       <div className={styles.gameContainer}>
-        {/* Current Player Display */}
+        {/* Current Player Display with Timer */}
         <div className={styles.currentPlayerDisplay}>
           <div className={styles.currentPlayerLabel}>Current Turn</div>
           <div className={styles.currentPlayerName}>{getCurrentPlayerName()}</div>
+          {!isPreview && !gameOver && (
+            <div className={`${styles.turnTimerDisplay} ${turnTimer <= 2 ? styles.timerWarning : ''}`}>
+              ⏱️ {turnTimer}s
+            </div>
+          )}
         </div>
         
         {/* Player Cards */}
@@ -855,13 +933,12 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
                     ${isFound ? styles.revealed : ''}
                     ${isWrong ? styles.wrong : ''}
                     ${isCorrect ? styles.correct : ''}
-                    ${isPreviewTile ? styles.preview : ''}
                     ${isResetting || isPreview ? styles.disabled : ''}
                   `}
                   onClick={() => handleTileClick(gridIndex)}
                   disabled={isResetting || isPreview || gameOver || isFound}
                 >
-                  {(isFound || isWrong || isCorrect || isPreviewTile) ? number : '?'}
+                  {(isFound || isCorrect) ? number : '?'}
                 </button>
               );
             })}

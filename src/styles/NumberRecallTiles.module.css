@@ -158,6 +158,30 @@
   font-weight: 800;
 }
 
+/* Turn Timer Display */
+.turnTimerDisplay {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #FFD700;
+  margin-top: 0.5rem;
+  padding: 0.25rem 0.75rem;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 0.5rem;
+  border: 2px solid rgba(255, 215, 0, 0.4);
+  display: inline-block;
+}
+
+.timerWarning {
+  color: #ef4444;
+  border-color: #ef4444;
+  animation: timerPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes timerPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
 /* === SEQUENCE DISPLAY (Hard Mode) === */
 .sequenceDisplay {
   text-align: center;
