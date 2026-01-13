@@ -1,3 +1,58 @@
+/* === PLAYER CARDS FOR WINNER DISPLAY === */
+.playerCardsContainer {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  justify-content: center;
+  margin-bottom: 1rem;
+}
+.playerCard {
+  background: #fff;
+  border-radius: 8px;
+  padding: 0.5rem 1rem;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 120px;
+  position: relative;
+  font-size: 1rem;
+}
+.activePlayerCard {
+  border: 2px solid #FFD700;
+  box-shadow: 0 0 10px #FFD70044;
+}
+.playerColorDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 0.5rem;
+  border: 2px solid #eee;
+}
+.playerName {
+  font-weight: 600;
+  color: #1565C0;
+}
+.crown {
+  margin-left: 0.5rem;
+  font-size: 1.2em;
+  color: #FFD700;
+  display: flex;
+  align-items: center;
+  gap: 0.2em;
+}
+.rankNum {
+  font-size: 0.95em;
+  color: #333;
+  font-weight: 700;
+}
+.finishedText {
+  margin-left: 0.5rem;
+  font-size: 0.85em;
+  color: #43A047;
+  font-weight: 500;
+}
 /* ============================================
    LUDO KING STYLE - COMPLETE CSS
    ============================================ */

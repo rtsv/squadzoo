@@ -893,9 +893,25 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
 
   // FIXED: Single nextTurn function (removed duplicate)
   function nextTurn() {
-    const nextIdx = (currentPlayerIndex + 1) % activeColors.length;
-    
-    // FIXED: Broadcast complete turn state
+    // Find the next player who has not finished
+    let nextIdx = currentPlayerIndex;
+    let found = false;
+    for (let i = 1; i <= activeColors.length; i++) {
+      const candidateIdx = (currentPlayerIndex + i) % activeColors.length;
+      const color = activeColors[candidateIdx];
+      const playerTokens = tokens[color];
+      if (playerTokens && !playerTokens.every(t => t.isFinished)) {
+        nextIdx = candidateIdx;
+        found = true;
+        break;
+      }
+    }
+    // If all players finished, just cycle to next
+    if (!found) {
+      nextIdx = (currentPlayerIndex + 1) % activeColors.length;
+    }
+
+    // Broadcast complete turn state
     if (isOnlineMode) {
       roomService.sendGameAction('next-turn', { 
         nextPlayerIndex: nextIdx,
@@ -904,7 +920,7 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
         movableTokens: []
       });
     }
-    
+
     setCurrentPlayerIndex(nextIdx);
     setDiceValue(null);
     setCanRoll(true);
@@ -1209,6 +1225,30 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
         </div>
       )}
       
+      {/* Player cards with crown/rank */}
+      <div className={styles.playerCardsContainer}>
+        {activeColors.map((color, idx) => {
+          const name = playerNames[idx] || `Player ${idx + 1}`;
+          const tokensForPlayer = tokens[color] || [];
+          const finished = tokensForPlayer.length > 0 && tokensForPlayer.every(t => t.isFinished);
+          let rank = null;
+          if (finished && playerRankings.includes(name)) {
+            rank = playerRankings.indexOf(name) + 1;
+          }
+          return (
+            <div key={color} className={styles.playerCard + (currentPlayerIndex === idx ? ' ' + styles.activePlayerCard : '')}>
+              <span className={styles.playerColorDot} style={{ background: color }} />
+              <span className={styles.playerName}>{name}</span>
+              {rank && (
+                <span className={styles.crown}>
+                  {rank === 1 ? '👑' : '👑'} <span className={styles.rankNum}>#{rank}</span>
+                </span>
+              )}
+              {finished && <span className={styles.finishedText}>Finished</span>}
+            </div>
+          );
+        })}
+      </div>
       <LudoBoard
         tokens={tokens}
         activeColors={activeColors}
