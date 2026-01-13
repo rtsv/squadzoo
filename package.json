@@ -18,8 +18,8 @@
     "partykit": "^0.0.115",
     "partysocket": "^1.1.10",
     "pusher-js": "^8.4.0",
-    "react": "^19.2.0",
-    "react-dom": "^19.2.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-helmet-async": "^2.0.5",
     "react-router-dom": "^7.11.0"
   },
