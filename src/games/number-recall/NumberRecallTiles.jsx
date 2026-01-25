@@ -623,23 +623,32 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
   
   // Restart game
   const restartGame = () => {
-    setCurrentPlayerIndex(0);
-    initializeGame(true); // New positions for new game
-    
     if (isOnlineMode && isHost) {
+      // CRITICAL: Generate positions ONCE and use for both local and broadcast
+      // This ensures all players receive the SAME tile configuration
       const players = connectedPlayers.map(p => p.playerName);
       const numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9];
       const positions = shuffleArray(numbers);
-      const sequence = settings.useRandomSequence ? shuffleArray(numbers) : [1, 2, 3, 4, 5, 6, 7, 8, 9];
+      const sequence = settings.useRandomSequence ? shuffleArray([...numbers]) : [1, 2, 3, 4, 5, 6, 7, 8, 9];
       
-      roomService.sendGameAction('game-start', {
+      const payload = {
         players,
         numPlayers: players.length,
         difficulty,
         tilePositions: positions,
         requiredSequence: sequence
-      });
+      };
+      
+      // Broadcast to other players
+      roomService.sendGameAction('game-start', payload);
+      // Apply same state locally (this calls handleRemoteGameStart which sets tilePositions)
+      handleRemoteGameStart(payload);
+    } else if (!isOnlineMode) {
+      // Offline mode - just reinitialize locally
+      setCurrentPlayerIndex(0);
+      initializeGame(true);
     }
+    // Note: Non-host online players will receive the game-start action from broadcast
   };
   
   // Go back to setup
@@ -722,7 +731,6 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
             setRoomCode={setRoomCode}
             onCreateRoom={handleCreateRoom}
             onJoinRoom={handleJoinRoom}
-            hideCreateRoom={!!initialRoomCode}
           />
         </div>
       </GameLayout>
@@ -737,36 +745,24 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
         <div className={styles.setupContainer}>
-          {/* Difficulty Selection (host can change, all can see) */}
-          <div className={styles.difficultySection}>
-            <label className={styles.label}>Selected Difficulty</label>
-            <div className={styles.difficultyButtons}>
-              {Object.entries(DIFFICULTY_SETTINGS).map(([key, val]) => (
-                <button
-                  key={key}
-                  className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
-                  onClick={() => {
-                    if (isHost) setDifficulty(key);
-                  }}
-                  disabled={!isHost}
-                  style={!isHost && difficulty !== key ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                  title={
-                    key === 'easy' ? 'Easy: 5s preview, numbers in order' :
-                    key === 'medium' ? 'Medium: 3s preview, numbers in order' :
-                    key === 'hard' ? 'Hard: 2s preview, random order' : ''
-                  }
-                >
-                  {val.label}
-                  {difficulty === key && ' ✓'}
-                </button>
-              ))}
-            </div>
-            {!isHost && (
-              <div className={styles.difficultyNote}>
-                Only the host can change difficulty
+          {/* Difficulty Selection (host only) */}
+          {isHost && (
+            <div className={styles.difficultySection}>
+              <label className={styles.label}>Select Difficulty</label>
+              <div className={styles.difficultyButtons}>
+                {Object.entries(DIFFICULTY_SETTINGS).map(([key, val]) => (
+                  <button
+                    key={key}
+                    className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
+                    onClick={() => setDifficulty(key)}
+                  >
+                    {val.label}
+                  </button>
+                ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
+          
           <OnlineRoomExample
             roomCode={roomCode}
             connectedPlayers={connectedPlayers}
@@ -823,11 +819,6 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
                   key={key}
                   className={`${styles.difficultyButton} ${difficulty === key ? styles.difficultyButtonActive : ''}`}
                   onClick={() => setDifficulty(key)}
-                  title={
-                    key === 'easy' ? 'Easy: 5s preview, numbers in order' :
-                    key === 'medium' ? 'Medium: 3s preview, numbers in order' :
-                    key === 'hard' ? 'Hard: 2s preview, random order' : ''
-                  }
                 >
                   {val.label}
                 </button>
