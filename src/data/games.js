@@ -29,6 +29,12 @@ const games = [
       description: "Roll dice and merge opponent groups — dominate with your color on top to win!",
       icon: "🏆"
     },
+    {
+      id: "dice-blitz",
+      title: "Dice Blitz",
+      description: "Roll the dice, strike your opponent's grid, and win fast! A high-speed elimination game.",
+      icon: "🎲"
+    },
   ];
   
   export default games;

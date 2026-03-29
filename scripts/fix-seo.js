@@ -17,11 +17,13 @@ const routes = [
   'games/ludo',
   'games/number-recall',
   'games/cup-stack-battle',
+  'games/dice-blitz',
   'games/word-chain/play',
   'games/tic-tac-toe/play',
   'games/ludo/play',
   'games/number-recall/play',
-  'games/cup-stack-battle/play'
+  'games/cup-stack-battle/play',
+  'games/dice-blitz/play'
 ];
 
 const distPath = path.resolve(__dirname, '../dist');

@@ -14,6 +14,7 @@ import TicTacToePage from "./pages/games/TicTacToePage";
 import LudoPage from "./pages/games/LudoPage";
 import NumberRecallPage from "./pages/games/NumberRecallPage";
 import CupStackBattlePage from "./pages/games/CupStackBattlePage";
+import DiceBlitzPage from "./pages/games/DiceBlitzPage";
 
 function App() {
   return (
@@ -36,6 +37,7 @@ function App() {
           <Route path="/games/ludo" element={<LudoPage />} />
           <Route path="/games/number-recall" element={<NumberRecallPage />} />
           <Route path="/games/cup-stack-battle" element={<CupStackBattlePage />} />
+          <Route path="/games/dice-blitz" element={<DiceBlitzPage />} />
           
           {/* Active gameplay pages (no ads for AdSense exclusion) */}
           <Route path="/games/word-chain/play" element={<WordChainPage isPlayMode={true} />} />
@@ -44,6 +46,7 @@ function App() {
           <Route path="/games/ludo/play" element={<LudoPage isPlayMode={true} />} />
           <Route path="/games/number-recall/play" element={<NumberRecallPage isPlayMode={true} />} />
           <Route path="/games/cup-stack-battle/play" element={<CupStackBattlePage isPlayMode={true} />} />
+          <Route path="/games/dice-blitz/play" element={<DiceBlitzPage isPlayMode={true} />} />
         </Routes>
       </Router>
     </HelmetProvider>
