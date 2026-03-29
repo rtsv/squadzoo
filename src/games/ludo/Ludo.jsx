@@ -11,6 +11,7 @@ import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import VoiceChat from "../../components/VoiceChat";
 import GameRules from "../../components/GameRules";
+import MatchHistorySidebar from "../../components/MatchHistorySidebar";
 import btnStyles from "../../styles/Button.module.css";
 import styles from "../../styles/Ludo.module.css";
 import sharedStyles from "../../styles/SharedComponents.module.css";
@@ -62,6 +63,8 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   const [movableTokens, setMovableTokens] = useState([]);
   const [playerRankings, setPlayerRankings] = useState([]);
   const [gameOver, setGameOver] = useState(false);
+  const [scores, setScores] = useState({ 0: 0, 1: 0, 2: 0, 3: 0 });
+  const [matchHistory, setMatchHistory] = useState([]);
   const [consecutiveSixes, setConsecutiveSixes] = useState(0); // Track consecutive sixes
   
   // State persistence
@@ -236,6 +239,17 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
     
     setPlayerRankings(rankings);
     setGameOver(true);
+
+    if (rankings && rankings.length > 0) {
+      setPlayerNames(prevNames => {
+        const wIdx = prevNames.findIndex(n => n === rankings[0]);
+        if (wIdx !== -1) {
+          setScores(prev => ({ ...prev, [wIdx]: (prev[wIdx] || 0) + 1 }));
+          setMatchHistory(prev => [...prev, { winner: wIdx, date: Date.now() }]);
+        }
+        return prevNames;
+      });
+    }
   }, []);
 
   // Setup online game listeners
@@ -833,6 +847,15 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
     
     if (isGameOver) {
       setGameOver(true);
+
+      if (newRankings.length > 0) {
+        const winIdx = playerNames.findIndex(n => n === newRankings[0]);
+        if (winIdx !== -1) {
+          setScores(prev => ({ ...prev, [winIdx]: (prev[winIdx] || 0) + 1 }));
+          setMatchHistory(prev => [...prev, { winner: winIdx, date: Date.now() }]);
+        }
+      }
+
       if (isOnlineMode) {
         roomService.sendGameAction('game-over', { rankings: newRankings });
       }
@@ -1067,6 +1090,7 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
     setMovableTokens([]);
     setPlayerRankings([]);
     setGameOver(false);
+    // Don't reset history/scores on "Play Again", just state
     setConsecutiveSixes(0);
     setIsOnlineMode(false);
     setIsInRoom(false);
@@ -1257,45 +1281,58 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
       )}
       
       {/* Player cards with crown/rank */}
-      <div className={styles.playerCardsContainer}>
-        {activeColors.map((color, idx) => {
-          const name = playerNames[idx] || `Player ${idx + 1}`;
-          const tokensForPlayer = tokens[color] || [];
-          const finished = tokensForPlayer.length > 0 && tokensForPlayer.every(t => t.isFinished);
-          let rank = null;
-          if (finished && playerRankings.includes(name)) {
-            rank = playerRankings.indexOf(name) + 1;
-          }
-          return (
-            <div key={color} className={styles.playerCard + (currentPlayerIndex === idx ? ' ' + styles.activePlayerCard : '')}>
-              <span className={styles.playerColorDot} style={{ background: color }} />
-              <span className={styles.playerName}>{name}</span>
-              {rank && (
-                <span className={styles.crown}>
-                  {rank === 1 ? '👑' : '👑'} <span className={styles.rankNum}>#{rank}</span>
-                </span>
-              )}
-              {finished && <span className={styles.finishedText}>Finished</span>}
-            </div>
-          );
-        })}
+      <div className={styles.mainGameWrapper}>
+        <div className={styles.ludoBoardContainer}>
+          <div className={styles.playerCardsContainer}>
+            {activeColors.map((color, idx) => {
+              const name = playerNames[idx] || `Player ${idx + 1}`;
+              const tokensForPlayer = tokens[color] || [];
+              const finished = tokensForPlayer.length > 0 && tokensForPlayer.every(t => t.isFinished);
+              let rank = null;
+              if (finished && playerRankings.includes(name)) {
+                rank = playerRankings.indexOf(name) + 1;
+              }
+              return (
+                <div key={color} className={styles.playerCard + (currentPlayerIndex === idx ? ' ' + styles.activePlayerCard : '')}>
+                  <span className={styles.playerColorDot} style={{ background: color }} />
+                  <span className={styles.playerName}>{name}</span>
+                  {rank && (
+                    <span className={styles.crown}>
+                      {rank === 1 ? '👑' : '👑'} <span className={styles.rankNum}>#{rank}</span>
+                    </span>
+                  )}
+                  {finished && <span className={styles.finishedText}>Finished</span>}
+                </div>
+              );
+            })}
+          </div>
+          <LudoBoard
+            tokens={tokens}
+            activeColors={activeColors}
+            currentPlayerIndex={currentPlayerIndex}
+            currentColor={currentColor}
+            movableTokens={movableTokens}
+            onTokenClick={(tokenIndex) => {
+              if (movableTokens.includes(tokenIndex) && !winner && !gameOver) {
+                moveToken(tokenIndex);
+              }
+            }}
+            diceValue={diceValue}
+            canRoll={canRoll && (!isOnlineMode || myPlayerIndex === currentPlayerIndex)}
+            onRollDice={rollDice}
+            playerNames={playerNames}
+          />
+        </div>
+
+        <MatchHistorySidebar
+          players={activeColors.map((c, i) => ({ name: playerNames[i] || `Player ${i+1}` }))}
+          scores={scores}
+          history={matchHistory}
+          getPlayerColor={i => activeColors[i] === 'blue' ? '#3182ce' : activeColors[i] === 'red' ? '#e53e3e' : activeColors[i] === 'green' ? '#38a169' : '#d69e2e'}
+          getPlayerLightColor={i => activeColors[i] === 'blue' ? '#63b3ed' : activeColors[i] === 'red' ? '#fc8181' : activeColors[i] === 'green' ? '#68d391' : '#f6e05e'}
+          getPlayerBadge={() => '🎲'}
+        />
       </div>
-      <LudoBoard
-        tokens={tokens}
-        activeColors={activeColors}
-        currentPlayerIndex={currentPlayerIndex}
-        currentColor={currentColor}
-        movableTokens={movableTokens}
-        onTokenClick={(tokenIndex) => {
-          if (movableTokens.includes(tokenIndex) && !winner && !gameOver) {
-            moveToken(tokenIndex);
-          }
-        }}
-        diceValue={diceValue}
-        canRoll={canRoll && (!isOnlineMode || myPlayerIndex === currentPlayerIndex)}
-        onRollDice={rollDice}
-        playerNames={playerNames}
-      />
 
       {/* Winner Modal */}
       {gameOver && (

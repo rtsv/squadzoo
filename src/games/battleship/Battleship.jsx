@@ -8,6 +8,7 @@ import OnlineRoomExample from "../../components/OnlineRoomExample";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import VoiceChat from "../../components/VoiceChat";
+import MatchHistorySidebar from "../../components/MatchHistorySidebar";
 import styles from "../../styles/Battleship.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -59,6 +60,7 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
   const [shotsFired, setShotsFired] = useState([[], []]);
   const [winner, setWinner] = useState(null);
   const [scores, setScores] = useState({ 0: 0, 1: 0 });
+  const [matchHistory, setMatchHistory] = useState([]);
   
   // State persistence
   const [showContinueDialog, setShowContinueDialog] = useState(false);
@@ -349,6 +351,7 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
           ...scores,
           [currentBattlePlayer]: scores[currentBattlePlayer] + 1,
         });
+        setMatchHistory(prev => [...prev, { winner: currentBattlePlayer, date: Date.now() }]);
         return;
       }
     } else {
@@ -376,6 +379,8 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
     setHoverCells([]);
     setShotsFired([[], []]);
     setWinner(null);
+    setScores({ 0: 0, 1: 0 });
+    setMatchHistory([]);
   }
 
   function playAgain() {
@@ -799,7 +804,8 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
           timeRemaining={timeRemaining}
         />
         
-        <div className={styles.battleContainer}>
+        <div className={styles.mainGameWrapper}>
+          <div className={styles.battleContainer}>
           {/* Game Rules Toggle */}
           <div className={styles.rulesToggle}>
             <button
@@ -815,17 +821,7 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
             )}
           </div>
 
-          {/* Scoreboard */}
-          <div className={styles.scoreboard}>
-            <div className={styles.scoreItem}>
-              <span className={styles.playerName}>{players[0]}</span>
-              <span className={styles.playerScore}>{scores[0]}</span>
-            </div>
-            <div className={styles.scoreItem}>
-              <span className={styles.playerName}>{players[1]}</span>
-              <span className={styles.playerScore}>{scores[1]}</span>
-            </div>
-          </div>
+
 
           {gamePhase === "battle" && (
             <div className={styles.battleInfo}>
@@ -948,6 +944,15 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
             </div>
           )}
         </div>
+        <MatchHistorySidebar 
+          players={players.map((n, i) => ({ name: n || `Player ${i+1}` }))}
+          scores={scores}
+          history={matchHistory}
+          getPlayerColor={i => i === 0 ? '#3182ce' : '#e53e3e'}
+          getPlayerLightColor={i => i === 0 ? '#63b3ed' : '#fc8181'}
+          getPlayerBadge={i => i === 0 ? '🚢' : '⚓️'}
+        />
+      </div>
       </GameLayout>
     );
   }

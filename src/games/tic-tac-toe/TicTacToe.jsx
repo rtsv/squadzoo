@@ -10,6 +10,7 @@ import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
 import VoiceChat from "../../components/VoiceChat";
+import MatchHistorySidebar from "../../components/MatchHistorySidebar";
 import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -21,6 +22,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
   const [board, setBoard] = useState(Array(9).fill(null));
   const [currentPlayerIndex, setCurrentPlayerIndex] = useState(0);
   const [scores, setScores] = useState({ 0: 0, 1: 0, draws: 0 });
+  const [matchHistory, setMatchHistory] = useState([]);
   const [winner, setWinner] = useState(null);
   const [winningLine, setWinningLine] = useState([]);
   const [isDraw, setIsDraw] = useState(false);
@@ -240,6 +242,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
         if (result.winner === "draw") {
           setIsDraw(true);
           setScores(prev => ({ ...prev, draws: prev.draws + 1 }));
+          setMatchHistory(prev => [...prev, { winner: 'draw', date: Date.now() }]);
         } else {
           setWinner(result.winner);
           setWinningLine(result.line);
@@ -247,6 +250,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
             ...prev,
             [result.winner]: prev[result.winner] + 1,
           }));
+          setMatchHistory(prev => [...prev, { winner: result.winner, date: Date.now() }]);
         }
       } else {
         // Switch turn to current player
@@ -401,6 +405,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
       if (result.winner === "draw") {
         setIsDraw(true);
         setScores(prev => ({ ...prev, draws: prev.draws + 1 }));
+        setMatchHistory(prev => [...prev, { winner: 'draw', date: Date.now() }]);
       } else {
         setWinner(result.winner);
         setWinningLine(result.line);
@@ -408,6 +413,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
           ...prev,
           [result.winner]: prev[result.winner] + 1,
         }));
+        setMatchHistory(prev => [...prev, { winner: result.winner, date: Date.now() }]);
       }
     } else {
       setCurrentPlayerIndex(currentPlayerIndex === 0 ? 1 : 0);
@@ -433,6 +439,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     setBoard(Array(9).fill(null));
     setCurrentPlayerIndex(0);
     setScores({ 0: 0, 1: 0, draws: 0 });
+    setMatchHistory([]);
     setWinner(null);
     setWinningLine([]);
     setIsDraw(false);
@@ -586,39 +593,20 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
         timeRemaining={timeRemaining}
       />
       
-      <div className={styles.gameContainer}>
-        {/* Online Room Info */}
-        {isOnlineMode && (
-          <div className={styles.onlineInfo}>
-            <span>Room: {roomCode}</span>
-            <span>You are: {symbols[myPlayerIndex]} {players[myPlayerIndex]}</span>
-          </div>
-        )}
+      <div className={styles.mainGameWrapper}>
+        <div className={styles.gameContainer}>
+          {/* Online Room Info */}
+          {isOnlineMode && (
+            <div className={styles.onlineInfo}>
+              <span>Room: {roomCode}</span>
+              <span>You are: {symbols[myPlayerIndex]} {players[myPlayerIndex]}</span>
+            </div>
+          )}
 
-        <GameRules 
-          rules="Goal: Get 3 symbols in a row (horizontal, vertical, or diagonal) to win!" 
-          compact={true} 
-        />
-
-        {/* Scoreboard */}
-        <div className={styles.scoreboard}>
-          <div className={styles.scoreItem}>
-            <span className={styles.playerName}>
-              {symbols[0]} {players[0]}
-            </span>
-            <span className={styles.playerScore}>{scores[0]}</span>
-          </div>
-          <div className={styles.scoreItem}>
-            <span className={styles.drawLabel}>Draws</span>
-            <span className={styles.playerScore}>{scores.draws}</span>
-          </div>
-          <div className={styles.scoreItem}>
-            <span className={styles.playerName}>
-              {symbols[1]} {players[1]}
-            </span>
-            <span className={styles.playerScore}>{scores[1]}</span>
-          </div>
-        </div>
+          <GameRules 
+            rules="Goal: Get 3 symbols in a row (horizontal, vertical, or diagonal) to win!" 
+            compact={true} 
+          />
 
         {/* Current Turn Indicator */}
         {!winner && !isDraw && (
@@ -706,6 +694,16 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
             {isOnlineMode ? "Leave Room" : "New Game"}
           </button>
         </div>
+        </div>
+        
+        <MatchHistorySidebar 
+          players={players.map((n, i) => ({ name: n || `Player ${i+1}`, emoji: symbols[i] }))}
+          scores={scores}
+          history={matchHistory}
+          getPlayerColor={i => i === 0 ? '#e53e3e' : '#3182ce'}
+          getPlayerLightColor={i => i === 0 ? '#fc8181' : '#63b3ed'}
+          getPlayerBadge={i => symbols[i]}
+        />
       </div>
     </GameLayout>
   );

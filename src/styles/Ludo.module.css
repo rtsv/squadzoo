@@ -1130,3 +1130,25 @@
     font-size: 0.95rem;
   }
 }
+
+/* === MATCH HISTORY & LAYOUT === */
+.mainGameWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .mainGameWrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+  
+  .ludoBoardContainer {
+    flex: 1;
+    min-width: 0;
+  }
+}

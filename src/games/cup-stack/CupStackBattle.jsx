@@ -9,6 +9,7 @@ import GameRules from "../../components/GameRules";
 import CustomAlert from "../../components/CustomAlert";
 import VoiceChat from "../../components/VoiceChat";
 import roomService from "../../services/roomService";
+import MatchHistorySidebar from "../../components/MatchHistorySidebar";
 import btnStyles from "../../styles/Button.module.css";
 import styles from "../../styles/CupStackBattle.module.css";
 
@@ -20,8 +21,7 @@ const PLAYER_COLORS = [
   { id: "yellow", label: "Yellow", emoji: "🟡", hex: "#d69e2e", light: "#f6e05e", dark: "#b7791f", bg: "#fefcbf" },
 ];
 
-const CUPS_PER_PLAYER = 10;
-const MAX_VISIBLE_LAYERS = 5;
+const CUPS_PER_PLAYER = 18;
 
 /*
   DATA MODEL:
@@ -36,13 +36,15 @@ const MAX_VISIBLE_LAYERS = 5;
 // ====== HELPER FUNCTIONS ======
 
 function getTopColor(group) {
+  if (group.isEmpty) return null;
   return group.layers[group.layers.length - 1];
 }
 
 function checkWinCondition(groups) {
-  if (groups.length === 0) return null;
-  const top = getTopColor(groups[0]);
-  if (groups.every((g) => getTopColor(g) === top)) {
+  const activeGroups = groups.filter(g => !g.isEmpty);
+  if (activeGroups.length === 0) return null;
+  const top = getTopColor(activeGroups[0]);
+  if (activeGroups.every((g) => getTopColor(g) === top)) {
     const idx = PLAYER_COLORS.findIndex((pc) => pc.id === top);
     return idx >= 0 ? idx : null;
   }
@@ -84,15 +86,17 @@ function countGroupsByOwner(groups) {
 
 // Convert raw layers (from online sync) to group objects with fresh IDs
 function layersToGroups(rawLayersArr, idCounter) {
-  return rawLayersArr.map((layers) => ({
-    id: idCounter.current++,
-    layers: [...layers],
-  }));
+  return rawLayersArr
+    .filter((layers) => Array.isArray(layers))
+    .map((layers) => ({
+      id: idCounter.current++,
+      layers: [...layers],
+    }));
 }
 
 // Convert group objects to raw layers (for online sync payload)
 function groupsToLayers(groups) {
-  return groups.map((g) => [...g.layers]);
+  return groups.filter((g) => Array.isArray(g.layers)).map((g) => [...g.layers]);
 }
 
 // ====== COMPONENT ======
@@ -114,11 +118,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
         groups.push(createGroup([PLAYER_COLORS[p].id]));
       }
     }
-    // Fisher-Yates shuffle
-    for (let i = groups.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [groups[i], groups[j]] = [groups[j], groups[i]];
-    }
+    // Cups are natively grouped by player sequentially
     return groups;
   }
 
@@ -161,6 +161,10 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
   const [gameOver, setGameOver] = useState(false);
   const [lastAction, setLastAction] = useState(null);
   const [turnCount, setTurnCount] = useState(0);
+
+  // Match History
+  const [scores, setScores] = useState([0, 0, 0, 0]);
+  const [matchHistory, setMatchHistory] = useState([]);
 
   // Selection: indices into groups[] of opponent groups to merge
   const [selectedGroups, setSelectedGroups] = useState([]);
@@ -317,6 +321,17 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
     setCurrentPlayerIndex(nextPlayer);
     setTurnCount(tc || 0);
     setMergingGroupIds([]);
+    if (w !== null && w !== undefined) {
+      setWinner(w);
+      setGameOver(go);
+      setMatchHistory(prev => [...prev, { winner: w, date: Date.now() }]);
+      setScores(prev => {
+        const arr = [...prev];
+        if (arr[w] !== undefined) arr[w]++;
+        return arr;
+      });
+    }
+
     if (eliminatedNames && eliminatedNames.length > 0) {
       setLastAction(`❌ ${eliminatedNames.join(", ")} eliminated!`);
       setTimeout(() => setLastAction(null), 3000);
@@ -539,11 +554,11 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
       const currentGroups = groupsRef.current;
       const pIdx = currentPlayerRef.current;
       const myColor = PLAYER_COLORS[pIdx].id;
-      const opponentGroupCount = currentGroups.filter((g) => getTopColor(g) !== myColor).length;
-      const ms = Math.min(roll, opponentGroupCount);
+      const opponentGroupCount = currentGroups.filter((g) => getTopColor(g) !== myColor && !g.isEmpty).length;
+      const myGroupCount = currentGroups.filter((g) => getTopColor(g) === myColor && !g.isEmpty).length;
 
-      if (ms === 0) {
-        setLastAction("No opponent groups! Skipping turn...");
+      if (roll > opponentGroupCount) {
+        setLastAction(`Rolled ${roll} but missing available opponent cups! Skipping turn...`);
         setCanRoll(false);
         const np = numPlayersRef.current;
         const eliminatedNow = new Set(getEliminatedPlayers(currentGroups, np));
@@ -556,7 +571,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
           setSelectedGroups([]);
           setMaxSelections(0);
           setLastAction(null);
-        }, 1500);
+        }, 2000);
 
         if (isOnlineRef.current) {
           roomService.sendGameAction("dice-roll", {
@@ -566,17 +581,39 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
         return;
       }
 
+      const ms = Math.min(roll, myGroupCount);
       setMaxSelections(ms);
       setCanRoll(false);
 
-      // If roll >= opponent count, player must select ALL opponent groups — auto-select them
+      if (ms === 0) {
+        setLastAction(`You have no available cups to move! Skipping turn...`);
+        const np = numPlayersRef.current;
+        const eliminatedNow = new Set(getEliminatedPlayers(currentGroups, np));
+        const skipNextP = getNextActivePlayer(pIdx, np, eliminatedNow);
+
+        setTimeout(() => {
+          setCurrentPlayerIndex(skipNextP);
+          setDiceValue(null);
+          setCanRoll(true);
+          setSelectedGroups([]);
+          setMaxSelections(0);
+          setLastAction(null);
+        }, 2000);
+
+        if (isOnlineRef.current) {
+          roomService.sendGameAction("dice-roll", {
+            roll, playerIndex: pIdx, maxSelections: 0, skipTo: skipNextP,
+          });
+        }
+        return;
+      }
+
       const opponentIndices = currentGroups
         .map((g, i) => ({ g, i }))
-        .filter(({ g }) => getTopColor(g) !== myColor)
+        .filter(({ g }) => getTopColor(g) !== myColor && !g.isEmpty)
         .map(({ i }) => i);
 
       if (ms === opponentIndices.length) {
-        // Forced: must select all of them
         setSelectedGroups(opponentIndices);
       } else {
         setSelectedGroups([]);
@@ -599,8 +636,8 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
     const myColor = PLAYER_COLORS[currentPlayerIndex].id;
     const topColor = getTopColor(groups[idx]);
 
-    // Can only select opponent groups (top ≠ mine)
-    if (topColor === myColor) return;
+    // Can only select opponent groups (top ≠ mine) and not empty placeholders
+    if (groups[idx].isEmpty || topColor === myColor) return;
 
     // Toggle
     if (selectedGroups.includes(idx)) {
@@ -615,18 +652,11 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
 
     const newSelection = [...selectedGroups, idx];
     setSelectedGroups(newSelection);
-
-    // Auto-confirm when the player has selected exactly the required number
-    if (newSelection.length === maxSelections) {
-      // Use a micro-delay so state update settles before we snapshot
-      setTimeout(() => confirmMerge(newSelection), 0);
-    }
   }
 
   // ====== CONFIRM MERGE ======
-  // Called either manually (button) or automatically when selection is full
-  function confirmMerge(forceSelected) {
-    const sel = forceSelected ?? selectedGroups;
+  function confirmMerge() {
+    const sel = selectedGroups;
     if (sel.length === 0) {
       setAlertMessage("Select at least one opponent group!");
       return;
@@ -638,8 +668,9 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
 
     playMergeSound();
 
-    // *** SNAPSHOT everything BEFORE the animation delay ***
-    const snapshotGroups = groupsRef.current.map((g) => ({ id: g.id, layers: [...g.layers] }));
+    const snapshotGroups = groupsRef.current.map((g) =>
+      Array.isArray(g.layers) ? { id: g.id, layers: [...g.layers] } : { id: g.id, isEmpty: true }
+    );
     const snapshotSelected = [...sel];
     const snapshotPlayerIdx = currentPlayerRef.current;
     const snapshotTurnCount = turnCountRef.current;
@@ -671,34 +702,61 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
   function executeMerge(snapGroups, snapSelected, pIdx, tCount, nPlayers, pNames, online) {
     const myColor = PLAYER_COLORS[pIdx].id;
 
-    // Step 1+2: Collect all layers from selected groups (concatenate in order)
-    const selectedIndicesSet = new Set(snapSelected);
-    const mergedLayers = [];
-    for (const idx of snapSelected) {
-      mergedLayers.push(...snapGroups[idx].layers);
+    // Auto-pick player's smallest controlled groups to pair up
+    const myGroupsWithIndices = snapGroups
+      .map((g, idx) => ({ g, idx }))
+      .filter(({ g }) => getTopColor(g) === myColor)
+      .sort((a, b) => a.g.layers.length - b.g.layers.length);
+
+    const myPickedIndices = myGroupsWithIndices
+      .slice(0, snapSelected.length)
+      .map((item) => item.idx);
+
+    const targetMap = new Map();
+    const sourceSet = new Set();
+    const actualLength = Math.min(snapSelected.length, myPickedIndices.length);
+
+    for (let i = 0; i < actualLength; i++) {
+      const targetIdx = snapSelected[i];
+      const sourceIdx = myPickedIndices[i];
+      sourceSet.add(sourceIdx);
+      
+      const targetGroup = snapGroups[targetIdx]; // Opponent cup (base)
+      const sourceGroup = snapGroups[sourceIdx]; // Player cup (top)
+      const mergedLayers = [...targetGroup.layers, ...sourceGroup.layers];
+      targetMap.set(targetIdx, createGroup(mergedLayers));
     }
 
-    // Step 3: Player's cup goes on top
-    mergedLayers.push(myColor);
+    const newGroups = [];
+    let lastAnimId = null;
 
-    // Step 4: Remove ALL selected groups
-    const remaining = snapGroups.filter((_, idx) => !selectedIndicesSet.has(idx));
+    // Map in-place so merged cups stay in their original visual positions
+    for (let i = 0; i < snapGroups.length; i++) {
+      if (targetMap.has(i)) {
+        const ng = targetMap.get(i);
+        newGroups.push(ng);
+        lastAnimId = ng.id;
+      } else if (sourceSet.has(i)) {
+        // Leave a blank space to prevent flex grid rearrangement
+        newGroups.push({ id: snapGroups[i].id, isEmpty: true });
+      } else {
+        newGroups.push(snapGroups[i]);
+      }
+    }
 
-    // Step 5: Create ONE new merged group with a fresh unique ID
-    const newGroup = createGroup(mergedLayers);
-    remaining.push(newGroup);
-
-    // Show bounce animation on the new group
-    setNewGroupId(newGroup.id);
-    setTimeout(() => setNewGroupId(null), 600);
+    // Show bounce animation on the new groups
+    if (lastAnimId) {
+      setNewGroupId(lastAnimId);
+      setTimeout(() => setNewGroupId(null), 600);
+    }
 
     const newTurnCount = tCount + 1;
-    setGroups(remaining);
+    setGroups(newGroups);
     setTurnCount(newTurnCount);
 
     // Detect newly eliminated players
     const oldEliminated = new Set(getEliminatedPlayers(snapGroups, nPlayers));
-    const newEliminated = getEliminatedPlayers(remaining, nPlayers);
+    const newEliminated = getEliminatedPlayers(newGroups, nPlayers);
     const newEliminatedSet = new Set(newEliminated);
     const justEliminated = newEliminated.filter((p) => !oldEliminated.has(p));
     const elimNames = justEliminated.map((p) => pNames[p] || `Player ${p + 1}`);
@@ -708,10 +766,17 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
     }
 
     // Check win
-    const w = checkWinCondition(remaining);
+    const w = checkWinCondition(newGroups);
     if (w !== null) {
       setWinner(w);
       setGameOver(true);
+      setMatchHistory(prev => [...prev, { winner: w, date: Date.now() }]);
+      setScores(prev => {
+        const arr = [...prev];
+        if (arr[w] !== undefined) arr[w]++;
+        return arr;
+      });
+
       setSelectedGroups([]);
       setMaxSelections(0);
       playWinSound();
@@ -719,7 +784,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
       if (online) {
         const nextP = getNextActivePlayer(pIdx, nPlayers, newEliminatedSet);
         roomService.sendGameAction("merge-groups", {
-          groups: groupsToLayers(remaining),
+          groups: groupsToLayers(newGroups),
           nextPlayer: nextP, winner: w, gameOver: true,
           turnCount: newTurnCount, eliminatedNames: elimNames,
         });
@@ -732,7 +797,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
 
     if (online) {
       roomService.sendGameAction("merge-groups", {
-        groups: groupsToLayers(remaining),
+        groups: groupsToLayers(newGroups),
         nextPlayer: nextP, winner: null, gameOver: false,
         turnCount: newTurnCount, eliminatedNames: elimNames,
       });
@@ -793,21 +858,20 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
   // ====== RENDER HELPERS ======
 
   function renderGroupStack(group, groupIdx, options = {}) {
+    if (group.isEmpty) {
+      return (
+        <div key={group.id} className={styles.groupItem} style={{ visibility: "hidden" }}>
+          {/* Invisible placeholder to maintain grid layout */}
+        </div>
+      );
+    }
+
     const { selectable = false, selected = false, merging = false, isNew = false } = options;
     const topColor = getTopColor(group);
     const topInfo = getColorInfo(topColor);
 
     const totalLayers = group.layers.length;
-    let visibleLayers;
-    if (totalLayers > MAX_VISIBLE_LAYERS) {
-      visibleLayers = [
-        ...group.layers.slice(0, 2).map((c) => ({ color: c })),
-        { collapsed: true, count: totalLayers - 4 },
-        ...group.layers.slice(-2).map((c, i) => ({ color: c, isTop: i === 1 })),
-      ];
-    } else {
-      visibleLayers = group.layers.map((c, i) => ({ color: c, isTop: i === totalLayers - 1 }));
-    }
+    const visibleLayers = group.layers.map((c, i) => ({ color: c, isTop: i === totalLayers - 1 }));
 
     return (
       <div
@@ -824,13 +888,6 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
       >
         <div className={styles.groupStack}>
           {visibleLayers.map((layer, layerIdx) => {
-            if (layer.collapsed) {
-              return (
-                <div key={`c-${layerIdx}`} className={styles.collapseIndicator}>
-                  ⋮ {layer.count}
-                </div>
-              );
-            }
             const ci = getColorInfo(layer.color);
             const isTopLayer = layer.isTop;
             return (
@@ -855,16 +912,26 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
 
         <div className={styles.cupShadow} />
 
-        <div className={styles.ownerBadge} style={{ background: topInfo.hex }}>
-          {topInfo.emoji}
-        </div>
+
 
         {totalLayers > 1 && (
-          <div className={styles.stackHeight}>×{totalLayers}</div>
+          <div className={styles.stackHeightText}>×{totalLayers}</div>
         )}
-
-        {selected && <div className={styles.selectedCheck}>✓</div>}
       </div>
+    );
+  }
+
+  // ====== RENDER: MATCH HISTORY SIDEBAR ======
+  function renderSidebar() {
+    return (
+      <MatchHistorySidebar
+        players={playerNames.slice(0, numPlayers)}
+        scores={scores.slice(0, numPlayers)}
+        history={matchHistory}
+        getPlayerColor={(idx) => PLAYER_COLORS[idx]?.hex}
+        getPlayerLightColor={(idx) => PLAYER_COLORS[idx]?.light}
+        getPlayerBadge={(idx) => PLAYER_COLORS[idx]?.emoji}
+      />
     );
   }
 
@@ -972,42 +1039,46 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
   if (gameOver && winner !== null) {
     const winnerColor = PLAYER_COLORS[winner];
     const winnerName = playerNames[winner] || `Player ${winner + 1}`;
-    const totalCupsInGroups = groups.reduce((sum, g) => sum + g.layers.length, 0);
+    const totalCupsInGroups = groups.reduce((sum, g) => sum + (g.isEmpty ? 0 : g.layers.length), 0);
+    const activeGroupCount = groups.filter(g => !g.isEmpty).length;
 
     return (
       <GameLayout title="🏆 Cup Merge Battle" onBack={handleBackToMenu}>
         {alertMessage && <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />}
         <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
-        <div className={styles.gameOverContainer}>
-          <div className={styles.winnerBanner}>
-            <span className={styles.trophy}>🏆</span>
-            <h2 className={styles.winnerTitle}>{winnerColor.emoji} {winnerName} Wins!</h2>
-            <p className={styles.winnerSubtitle}>
-              All {groups.length} group{groups.length > 1 ? "s" : ""} dominated
-              ({totalCupsInGroups} total cups)
-            </p>
-            <p className={styles.winnerStats}>Game completed in {turnCount} turns</p>
-          </div>
+        <div className={styles.mainGameWrapper}>
+          <div className={styles.gameOverContainer}>
+            <div className={styles.winnerBanner}>
+              <span className={styles.trophy}>🏆</span>
+              <h2 className={styles.winnerTitle}>{winnerColor.emoji} {winnerName} Wins!</h2>
+              <p className={styles.winnerSubtitle}>
+                All {activeGroupCount} group{activeGroupCount > 1 ? "s" : ""} dominated
+                ({totalCupsInGroups} total cups)
+              </p>
+              <p className={styles.winnerStats}>Game completed in {turnCount} turns</p>
+            </div>
 
-          <div className={styles.groupsGrid}>
-            {groups.map((group, idx) => renderGroupStack(group, idx))}
-          </div>
+            <div className={styles.groupsGrid}>
+              {groups.map((group, idx) => renderGroupStack(group, idx))}
+            </div>
 
-          <div className={styles.setupButtons}>
-            <button onClick={resetGame} className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}>
-              Play Again
-            </button>
-            <button onClick={handleBackToMenu} className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnLarge}`}>
-              Back to Menu
-            </button>
+            <div className={styles.setupButtons}>
+              <button onClick={resetGame} className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}>
+                Play Again
+              </button>
+              <button onClick={handleBackToMenu} className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnLarge}`}>
+                Back to Menu
+              </button>
+            </div>
           </div>
+          {renderSidebar()}
         </div>
       </GameLayout>
     );
   }
 
   // ====== RENDER: MAIN GAME ======
-  const totalCups = groups.reduce((sum, g) => sum + g.layers.length, 0);
+  const totalCups = groups.reduce((sum, g) => sum + (g.isEmpty ? 0 : g.layers.length), 0);
 
   return (
     <GameLayout
@@ -1018,8 +1089,9 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
       {alertMessage && <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />}
       <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
 
-      <div className={styles.gameContainer}>
-        {/* Player bar */}
+      <div className={styles.mainGameWrapper}>
+        <div className={styles.gameContainer}>
+          {/* Player bar */}
         <div className={styles.playerBar}>
           {playerNames.map((name, i) => {
             const pc = PLAYER_COLORS[i];
@@ -1048,7 +1120,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
 
         {/* Board stats */}
         <div className={styles.boardStats}>
-          <span>📦 {groups.length} groups</span>
+          <span>📦 {groups.filter(g => !g.isEmpty).length} groups</span>
           <span>☕ {totalCups} cups</span>
           <span>🔄 Turn {turnCount + 1}</span>
         </div>
@@ -1105,7 +1177,9 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
           <GameRules rules={cupStackRules} compact={true} />
         </div>
       </div>
-    </GameLayout>
+      {renderSidebar()}
+    </div>
+  </GameLayout>
   );
 }
 
