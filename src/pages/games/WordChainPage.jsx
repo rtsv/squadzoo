@@ -42,12 +42,12 @@ function WordChainPage({ isPlayMode = false }) {
     "@type": "Game",
     "name": "Word Chain Online Multiplayer",
     "description": "Play Word Chain online with friends! Free multiplayer word game for 2-12 players. Build vocabulary chains where each word starts with the last letter.",
-    "url": "https://squadzoo.games/games/word-chain",
+    "url": "https://www.squadzoo.games/games/word-chain",
     "image": "https://squadzoo.games/images/squad-zoo-logo.png",
     "publisher": {
       "@type": "Organization",
       "name": "SquadZoo",
-      "url": "https://squadzoo.games"
+      "url": "https://www.squadzoo.games"
     },
     "genre": ["Word Game", "Educational Game", "Multiplayer Game"],
     "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
@@ -77,9 +77,9 @@ function WordChainPage({ isPlayMode = false }) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://squadzoo.games" },
-      { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://squadzoo.games/#games" },
-      { "@type": "ListItem", "position": 3, "name": "Word Chain", "item": "https://squadzoo.games/games/word-chain" }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.squadzoo.games" },
+      { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://www.squadzoo.games/#games" },
+      { "@type": "ListItem", "position": 3, "name": "Word Chain", "item": "https://www.squadzoo.games/games/word-chain" }
     ]
   };
 
@@ -91,7 +91,7 @@ function WordChainPage({ isPlayMode = false }) {
             <title>Playing Word Chain Online | SquadZoo</title>
             <meta name="description" content="Active Word Chain game in progress. Enjoy ad-free gameplay experience." />
             <meta name="robots" content="noindex, nofollow" />
-            <link rel="canonical" href="https://squadzoo.games/games/word-chain" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/word-chain" />
           </>
         ) : (
           <>
@@ -99,11 +99,11 @@ function WordChainPage({ isPlayMode = false }) {
             <meta name="description" content="Play Word Chain online with friends! Free multiplayer vocabulary game for 2-12 players. Build word chains where each word starts with the last letter of the previous word. No downloads required - Start playing now!" />
             <meta name="keywords" content="word chain game, word chain online, multiplayer word game, vocabulary game, logic game, word game online, educational game, word games free, vocabulary builder, english word game" />
             <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-            <link rel="canonical" href="https://squadzoo.games/games/word-chain" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/word-chain" />
             <meta property="og:type" content="game" />
             <meta property="og:title" content="Play Word Chain Online Free - Multiplayer Word Game | SquadZoo" />
             <meta property="og:description" content="Challenge your vocabulary! Play Word Chain online with friends. Connect words in a chain for 2-12 players!" />
-            <meta property="og:url" content="https://squadzoo.games/games/word-chain" />
+            <meta property="og:url" content="https://www.squadzoo.games/games/word-chain" />
             <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
             <meta property="og:site_name" content="SquadZoo" />
             <meta name="twitter:card" content="summary_large_image" />

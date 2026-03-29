@@ -34,12 +34,12 @@ function TicTacToePage({ isPlayMode = false }) {
     "@type": "Game",
     "name": "Tic-Tac-Toe Online Multiplayer",
     "description": "Play classic Tic-Tac-Toe online with friends! Free multiplayer strategy game for 2 players. No downloads or registration required.",
-    "url": "https://squadzoo.games/games/tic-tac-toe",
+    "url": "https://www.squadzoo.games/games/tic-tac-toe",
     "image": "https://squadzoo.games/images/squad-zoo-logo.png",
     "publisher": {
       "@type": "Organization",
       "name": "SquadZoo",
-      "url": "https://squadzoo.games"
+      "url": "https://www.squadzoo.games"
     },
     "genre": ["Strategy Game", "Board Game", "Multiplayer Game"],
     "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
@@ -69,9 +69,9 @@ function TicTacToePage({ isPlayMode = false }) {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     "itemListElement": [
-      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://squadzoo.games" },
-      { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://squadzoo.games/#games" },
-      { "@type": "ListItem", "position": 3, "name": "Tic-Tac-Toe", "item": "https://squadzoo.games/games/tic-tac-toe" }
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.squadzoo.games" },
+      { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://www.squadzoo.games/#games" },
+      { "@type": "ListItem", "position": 3, "name": "Tic-Tac-Toe", "item": "https://www.squadzoo.games/games/tic-tac-toe" }
     ]
   };
 
@@ -83,7 +83,7 @@ function TicTacToePage({ isPlayMode = false }) {
             <title>Playing Tic-Tac-Toe Online | SquadZoo</title>
             <meta name="description" content="Active Tic-Tac-Toe game in progress. Enjoy ad-free gameplay experience." />
             <meta name="robots" content="noindex, nofollow" />
-            <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/tic-tac-toe" />
           </>
         ) : (
           <>
@@ -91,11 +91,11 @@ function TicTacToePage({ isPlayMode = false }) {
             <meta name="description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer X's and O's game for 2 players. Local and online modes. No downloads or registration required - Start playing now!" />
             <meta name="keywords" content="tic tac toe, tic tac toe online, multiplayer tic tac toe, noughts and crosses, strategy game, classic game online, x and o game, tic tac toe free, two player games" />
             <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-            <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/tic-tac-toe" />
             <meta property="og:type" content="game" />
             <meta property="og:title" content="Play Tic-Tac-Toe Online Free - Multiplayer Game | SquadZoo" />
             <meta property="og:description" content="Classic Tic-Tac-Toe online with friends! Free multiplayer X's and O's game. No downloads required!" />
-            <meta property="og:url" content="https://squadzoo.games/games/tic-tac-toe" />
+            <meta property="og:url" content="https://www.squadzoo.games/games/tic-tac-toe" />
             <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
             <meta property="og:site_name" content="SquadZoo" />
             <meta name="twitter:card" content="summary_large_image" />

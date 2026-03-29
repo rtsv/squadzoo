@@ -37,12 +37,12 @@ function CupStackBattlePage({ isPlayMode = false }) {
     name: "Cup Merge Battle - Online Multiplayer",
     description:
       "Play Cup Merge Battle online with friends! Free multiplayer strategy game for 2-4 players. Roll dice and merge groups to dominate the board. No downloads or registration required.",
-    url: "https://squadzoo.games/games/cup-stack-battle",
+    url: "https://www.squadzoo.games/games/cup-stack-battle",
     image: "https://squadzoo.games/images/squad-zoo-logo.png",
     publisher: {
       "@type": "Organization",
       name: "SquadZoo",
-      url: "https://squadzoo.games",
+      url: "https://www.squadzoo.games",
     },
     genre: ["Strategy Game", "Party Game", "Multiplayer Game"],
     gamePlatform: ["Web Browser", "Desktop", "Mobile"],
@@ -69,7 +69,7 @@ function CupStackBattlePage({ isPlayMode = false }) {
             <title>Playing Cup Merge Battle Online | SquadZoo</title>
             <meta name="description" content="Active Cup Merge Battle game in progress. Enjoy ad-free gameplay experience." />
             <meta name="robots" content="noindex, nofollow" />
-            <link rel="canonical" href="https://squadzoo.games/games/cup-stack-battle" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/cup-stack-battle" />
           </>
         ) : (
           <>
@@ -77,12 +77,12 @@ function CupStackBattlePage({ isPlayMode = false }) {
             <meta name="description" content="Play Cup Merge Battle online with friends! Free multiplayer strategy game for 2-4 players. Roll dice and merge groups to dominate the board. No downloads required!" />
             <meta name="keywords" content="cup merge battle, cup merging game, multiplayer strategy game, online party game, dice game online, cup game with friends, free multiplayer game, merging game, board game online" />
             <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-            <link rel="canonical" href="https://squadzoo.games/games/cup-stack-battle" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/cup-stack-battle" />
 
             <meta property="og:type" content="game" />
             <meta property="og:title" content="Play Cup Merge Battle Online Free - Multiplayer Strategy Game | SquadZoo" />
             <meta property="og:description" content="Roll dice and merge groups to dominate the board! Free multiplayer game for 2-4 players." />
-            <meta property="og:url" content="https://squadzoo.games/games/cup-stack-battle" />
+            <meta property="og:url" content="https://www.squadzoo.games/games/cup-stack-battle" />
             <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
             <meta property="og:site_name" content="SquadZoo" />
 
@@ -107,9 +107,9 @@ function CupStackBattlePage({ isPlayMode = false }) {
                 "@context": "https://schema.org",
                 "@type": "BreadcrumbList",
                 itemListElement: [
-                  { "@type": "ListItem", position: 1, name: "Home", item: "https://squadzoo.games" },
-                  { "@type": "ListItem", position: 2, name: "Games", item: "https://squadzoo.games/#games" },
-                  { "@type": "ListItem", position: 3, name: "Cup Merge Battle", item: "https://squadzoo.games/games/cup-stack-battle" },
+                  { "@type": "ListItem", position: 1, name: "Home", item: "https://www.squadzoo.games" },
+                  { "@type": "ListItem", position: 2, name: "Games", item: "https://www.squadzoo.games/#games" },
+                  { "@type": "ListItem", position: 3, name: "Cup Merge Battle", item: "https://www.squadzoo.games/games/cup-stack-battle" },
                 ],
               })}
             </script>

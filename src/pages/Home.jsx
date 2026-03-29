@@ -29,7 +29,7 @@ function Home() {
         <meta name="description" content="Play free multiplayer puzzle and strategy games online at SquadZoo. Enjoy Word Chain, Tic-Tac-Toe, Ludo, and Number Recall with friends. No downloads or sign-ups required!" />
         <meta name="keywords" content="multiplayer games, puzzle games, logic games, online games, word chain, tic-tac-toe, ludo online, free games, party games, number recall, memory games, board games online" />
         <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-        <link rel="canonical" href="https://squadzoo.games/" />
+        <link rel="canonical" href="https://www.squadzoo.games/" />
         <meta property="og:title" content="SquadZoo - Free Multiplayer Puzzle & Strategy Games Online" />
         <meta property="og:description" content="Play Word Chain, Tic-Tac-Toe, Ludo, and Number Recall with friends online. No downloads or sign-ups required!" />
         <meta property="og:type" content="website" />

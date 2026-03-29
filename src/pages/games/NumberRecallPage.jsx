@@ -35,12 +35,12 @@ function NumberRecallPage({ isPlayMode = false }) {
     "@type": "Game",
     "name": "Number Recall Tiles",
     "description": "Free memory training puzzle game. Memorize number positions on a 3x3 grid and click them in sequence. Test your recall skills with multiple difficulty levels!",
-    "url": "https://squadzoo.games/games/number-recall",
+    "url": "https://www.squadzoo.games/games/number-recall",
     "image": "https://squadzoo.games/images/squad-zoo-logo.png",
     "publisher": {
       "@type": "Organization",
       "name": "SquadZoo",
-      "url": "https://squadzoo.games"
+      "url": "https://www.squadzoo.games"
     },
     "genre": ["Puzzle Game", "Memory Game", "Brain Training"],
     "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
@@ -75,7 +75,7 @@ function NumberRecallPage({ isPlayMode = false }) {
             <title>Playing Number Recall Tiles | SquadZoo</title>
             <meta name="description" content="Active Number Recall game in progress. Enjoy ad-free gameplay experience." />
             <meta name="robots" content="noindex, nofollow" />
-            <link rel="canonical" href="https://squadzoo.games/games/number-recall" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/number-recall" />
           </>
         ) : (
           <>
@@ -83,13 +83,13 @@ function NumberRecallPage({ isPlayMode = false }) {
             <meta name="description" content="Play Number Recall Tiles online free! Memory training puzzle game with 3x3 grid. Test your recall skills with numbers 1-9. Multiple difficulty levels, supports 1-4 players. No downloads required - Start brain training now!" />
             <meta name="keywords" content="number recall game, memory game, brain training, memory puzzle, number sequence game, cognitive training, memory test, recall game online, number memory game, brain workout, concentration game, memory training free, puzzle game online" />
             <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-            <link rel="canonical" href="https://squadzoo.games/games/number-recall" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/number-recall" />
             
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="game" />
             <meta property="og:title" content="Number Recall Tiles - Free Memory Training Game | SquadZoo" />
             <meta property="og:description" content="Test your memory with Number Recall Tiles! Free brain training puzzle game. Memorize positions, click in sequence. Challenge friends!" />
-            <meta property="og:url" content="https://squadzoo.games/games/number-recall" />
+            <meta property="og:url" content="https://www.squadzoo.games/games/number-recall" />
             <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
@@ -141,19 +141,19 @@ function NumberRecallPage({ isPlayMode = false }) {
                     "@type": "ListItem",
                     "position": 1,
                     "name": "Home",
-                    "item": "https://squadzoo.games"
+                    "item": "https://www.squadzoo.games"
                   },
                   {
                     "@type": "ListItem",
                     "position": 2,
                     "name": "Games",
-                    "item": "https://squadzoo.games/#games"
+                    "item": "https://www.squadzoo.games/#games"
                   },
                   {
                     "@type": "ListItem",
                     "position": 3,
                     "name": "Number Recall Tiles",
-                    "item": "https://squadzoo.games/games/number-recall"
+                    "item": "https://www.squadzoo.games/games/number-recall"
                   }
                 ]
               })}

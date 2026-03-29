@@ -79,7 +79,7 @@ function LudoPage({ isPlayMode = false }) {
             <title>Playing Ludo Online | SquadZoo</title>
             <meta name="description" content="Active Ludo game in progress. Enjoy ad-free gameplay experience." />
             <meta name="robots" content="noindex, nofollow" />
-            <link rel="canonical" href="https://squadzoo.games/games/ludo" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/ludo" />
           </>
         ) : (
           <>
@@ -87,13 +87,13 @@ function LudoPage({ isPlayMode = false }) {
             <meta name="description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board in this timeless strategy game. No downloads or registration required - Start playing now!" />
             <meta name="keywords" content="ludo online, ludo game, multiplayer ludo, board game online, classic ludo, ludo with friends, play ludo free, ludo multiplayer, online ludo game, ludo 2 player, ludo 4 player, ludo strategy game, free board games, ludo dice game, ludo king online, pachisi game" />
             <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-            <link rel="canonical" href="https://squadzoo.games/games/ludo" />
+            <link rel="canonical" href="https://www.squadzoo.games/games/ludo" />
             
             {/* Open Graph / Facebook */}
             <meta property="og:type" content="game" />
             <meta property="og:title" content="Play Ludo Online Free - Multiplayer Board Game | SquadZoo" />
             <meta property="og:description" content="Play classic Ludo online with friends! Free multiplayer board game for 2-4 players. Race your tokens around the board. No downloads required!" />
-            <meta property="og:url" content="https://squadzoo.games/games/ludo" />
+            <meta property="og:url" content="https://www.squadzoo.games/games/ludo" />
             <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
             <meta property="og:image:width" content="1200" />
             <meta property="og:image:height" content="630" />
