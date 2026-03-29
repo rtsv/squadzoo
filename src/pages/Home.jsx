@@ -13,7 +13,6 @@ function Home() {
 
   const handlePlayGame = (gameId) => {
     const gameRoutes = {
-      // "draw-guess": "/games/draw-and-guess",
       "word-chain": "/games/word-chain",
       "tic-tac-toe": "/games/tic-tac-toe",
       "ludo": "/games/ludo",
@@ -100,13 +99,6 @@ function Home() {
                 Perfect for students and word game enthusiasts. <button onClick={() => navigate("/games/word-chain")} className={styles.textLink}>Learn more about Word Chain →</button>
               </p>
             </article>
-            {/* <article className={styles.highlightCard}>
-              <h3>🎨 Draw & Guess</h3>
-              <p>
-                Like Pictionary but online! Take turns drawing while others guess. Great for parties and creative fun. 
-                <button onClick={() => navigate("/games/draw-and-guess")} className={styles.textLink}>How to play Draw & Guess →</button>
-              </p>
-            </article> */}
             <article className={styles.highlightCard}>
               <h3>⭕ Tic-Tac-Toe</h3>
               <p>
@@ -122,7 +114,7 @@ function Home() {
               </p>
             </article>
             <article className={styles.highlightCard}>
-              <h3>🏆 Cup Stack Battle</h3>
+              <h3>🏆 Cup Merge Battle</h3>
               <p>
                 Roll the dice and stack your cups on opponents! Dominate the board by covering every cup with your color. A fun party game for 2-4 players. 
                 <button onClick={() => navigate("/games/cup-stack-battle")} className={styles.textLink}>Play Cup Stack Battle →</button>

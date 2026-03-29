@@ -8,7 +8,6 @@ import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import Disclaimer from "./pages/Disclaimer";
 import FAQ from "./pages/FAQ";
-// import DrawGuessPage from "./pages/games/DrawGuessPage";
 import WordChainPage from "./pages/games/WordChainPage";
 import TicTacToePage from "./pages/games/TicTacToePage";
 
@@ -31,7 +30,6 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           
           {/* Game setup/menu pages (with ads) */}
-          {/* <Route path="/games/draw-and-guess" element={<DrawGuessPage />} /> */}
           <Route path="/games/word-chain" element={<WordChainPage />} />
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
 
@@ -40,7 +38,6 @@ function App() {
           <Route path="/games/cup-stack-battle" element={<CupStackBattlePage />} />
           
           {/* Active gameplay pages (no ads for AdSense exclusion) */}
-          {/* <Route path="/games/draw-and-guess/play" element={<DrawGuessPage isPlayMode={true} />} /> */}
           <Route path="/games/word-chain/play" element={<WordChainPage isPlayMode={true} />} />
           <Route path="/games/tic-tac-toe/play" element={<TicTacToePage isPlayMode={true} />} />
 

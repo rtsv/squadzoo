@@ -948,7 +948,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
                   onClick={() => handleTileClick(gridIndex)}
                   disabled={isResetting || gameOver || isFound}
                 >
-                  {(isFound || isCorrect) ? number : '?'}
+                  {(isFound || isCorrect || isWrong) ? number : '?'}
                 </button>
               );
             })}

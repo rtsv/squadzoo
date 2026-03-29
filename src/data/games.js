@@ -1,10 +1,4 @@
 const games = [
-    // {
-    //   id: "draw-guess",
-    //   title: "Draw & Guess",
-    //   description: "Draw pictures and guess what others create - like Pictionary online!",
-    //   icon: "🎨"
-    // },
     {
       id: "ludo",
       title: "Ludo",
@@ -23,7 +17,6 @@ const games = [
       description: "Classic two-player strategy game",
       icon: "⭕"
     },
-
     {
       id: "number-recall",
       title: "Number Recall Tiles",
