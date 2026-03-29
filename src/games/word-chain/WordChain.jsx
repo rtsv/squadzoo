@@ -9,6 +9,7 @@ import PlayerNameInput from "../../components/PlayerNameInput";
 import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
+import VoiceChat from "../../components/VoiceChat";
 import styles from "../../styles/WordChain.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -320,48 +321,6 @@ function WordChain({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     }
 
     try {
-      roomService.on('onPlayerJoined', (data) => {
-        console.log('🎉 Player joined callback:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onPlayerLeft', (data) => {
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onGameAction', (data) => {
-        console.log('Game action received:', data);
-        
-        switch (data.action) {
-          case 'game-start':
-            handleGameStart(data.payload);
-            break;
-            
-          case 'word-submit':
-            handleRemoteWordSubmit(data.payload);
-            break;
-            
-          case 'next-turn':
-            setCurrentPlayer(data.payload.nextPlayerIndex);
-            setError("");
-            break;
-
-          case 'player-eliminated':
-            handleRemoteElimination(data.payload);
-            break;
-            
-          case 'game-over':
-            handleGameOver(data.payload);
-            break;
-
-          case 'new-game':
-            resetGame();
-            break;
-        }
-      });
-
       roomService.playerName = playerName;
       const { roomCode: code } = await roomService.createRoom();
       setRoomCode(code);
@@ -383,48 +342,6 @@ function WordChain({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     }
 
     try {
-      roomService.on('onPlayerJoined', (data) => {
-        console.log('🎉 Player joined callback:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onPlayerLeft', (data) => {
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onGameAction', (data) => {
-        console.log('Game action received:', data);
-        
-        switch (data.action) {
-          case 'game-start':
-            handleGameStart(data.payload);
-            break;
-            
-          case 'word-submit':
-            handleRemoteWordSubmit(data.payload);
-            break;
-            
-          case 'next-turn':
-            setCurrentPlayer(data.payload.nextPlayerIndex);
-            setError("");
-            break;
-
-          case 'player-eliminated':
-            handleRemoteElimination(data.payload);
-            break;
-            
-          case 'game-over':
-            handleGameOver(data.payload);
-            break;
-
-          case 'new-game':
-            resetGame();
-            break;
-        }
-      });
-
       roomService.playerName = playerName;
       await roomService.joinRoom(roomCode);
       setIsInRoom(true);
@@ -936,6 +853,7 @@ function WordChain({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
       {alertMessage && (
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
+      <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
       
       <CustomConfirm
         isOpen={showContinueDialog}

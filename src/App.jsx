@@ -8,12 +8,13 @@ import TermsOfService from "./pages/TermsOfService";
 import ContactUs from "./pages/ContactUs";
 import Disclaimer from "./pages/Disclaimer";
 import FAQ from "./pages/FAQ";
-import DrawGuessPage from "./pages/games/DrawGuessPage";
+// import DrawGuessPage from "./pages/games/DrawGuessPage";
 import WordChainPage from "./pages/games/WordChainPage";
 import TicTacToePage from "./pages/games/TicTacToePage";
-import BattleshipPage from "./pages/games/BattleshipPage";
+
 import LudoPage from "./pages/games/LudoPage";
 import NumberRecallPage from "./pages/games/NumberRecallPage";
+import CupStackBattlePage from "./pages/games/CupStackBattlePage";
 
 function App() {
   return (
@@ -30,20 +31,22 @@ function App() {
           <Route path="/faq" element={<FAQ />} />
           
           {/* Game setup/menu pages (with ads) */}
-          <Route path="/games/draw-and-guess" element={<DrawGuessPage />} />
+          {/* <Route path="/games/draw-and-guess" element={<DrawGuessPage />} /> */}
           <Route path="/games/word-chain" element={<WordChainPage />} />
           <Route path="/games/tic-tac-toe" element={<TicTacToePage />} />
-          <Route path="/games/battleship" element={<BattleshipPage />} />
+
           <Route path="/games/ludo" element={<LudoPage />} />
           <Route path="/games/number-recall" element={<NumberRecallPage />} />
+          <Route path="/games/cup-stack-battle" element={<CupStackBattlePage />} />
           
           {/* Active gameplay pages (no ads for AdSense exclusion) */}
-          <Route path="/games/draw-and-guess/play" element={<DrawGuessPage isPlayMode={true} />} />
+          {/* <Route path="/games/draw-and-guess/play" element={<DrawGuessPage isPlayMode={true} />} /> */}
           <Route path="/games/word-chain/play" element={<WordChainPage isPlayMode={true} />} />
           <Route path="/games/tic-tac-toe/play" element={<TicTacToePage isPlayMode={true} />} />
-          <Route path="/games/battleship/play" element={<BattleshipPage isPlayMode={true} />} />
+
           <Route path="/games/ludo/play" element={<LudoPage isPlayMode={true} />} />
           <Route path="/games/number-recall/play" element={<NumberRecallPage isPlayMode={true} />} />
+          <Route path="/games/cup-stack-battle/play" element={<CupStackBattlePage isPlayMode={true} />} />
         </Routes>
       </Router>
     </HelmetProvider>

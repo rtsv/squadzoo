@@ -1,0 +1,670 @@
+/* ============================================
+   CUP MERGE BATTLE — GROUP STACKING + MERGE
+   Vertical stacks with 3D trapezoid cups
+   ============================================ */
+
+/* === SETUP CONTAINER === */
+.setupContainer {
+  max-width: 500px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #2d3748;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 30px;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.setupButtons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  flex-wrap: wrap;
+}
+
+.playerCountSection {
+  margin-bottom: 1.5rem;
+}
+
+.label {
+  display: block;
+  color: #ffd700;
+  font-weight: 700;
+  font-size: 1rem;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.playerCountButtons {
+  display: flex;
+  gap: 0.6rem;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.countButton {
+  padding: 0.75rem 1.5rem;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 10px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.1);
+  color: #e2e8f0;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-family: 'Space Grotesk', 'Inter', sans-serif;
+}
+
+.countButton:hover {
+  background: rgba(139, 92, 246, 0.2);
+  border-color: rgba(139, 92, 246, 0.5);
+  transform: translateY(-2px);
+}
+
+.countButtonActive {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  color: #fff;
+  border-color: #a78bfa;
+  box-shadow: 0 4px 20px rgba(139, 92, 246, 0.4);
+}
+
+
+/* === GAME CONTAINER === */
+.gameContainer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+
+/* === PLAYER BAR === */
+.playerBar {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.playerBadgeItem {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 14px;
+  background: #2d3748;
+  border-radius: 12px;
+  border: 2.5px solid #4a5568;
+  font-size: 0.92rem;
+  color: #e2e8f0;
+  transition: all 0.25s ease;
+  position: relative;
+}
+
+.activePlayer {
+  background: #1a365d;
+  border-color: #63b3ed !important;
+  box-shadow: 0 0 14px rgba(99, 179, 237, 0.35);
+  transform: scale(1.05);
+}
+
+.playerEmoji {
+  font-size: 1.15rem;
+}
+
+.playerBadgeName {
+  font-weight: 600;
+}
+
+.groupCountBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  border-radius: 11px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 5px;
+}
+
+.turnIndicator {
+  font-size: 0.8rem;
+  color: #63b3ed;
+  font-weight: 700;
+  margin-left: 2px;
+  animation: pulse 1.2s infinite;
+}
+
+/* Eliminated player */
+.playerEliminated {
+  opacity: 0.5;
+  background: #1a202c !important;
+  border-color: #4a5568 !important;
+  box-shadow: none !important;
+  transform: none !important;
+}
+
+.elimBadge {
+  font-size: 0.6rem;
+  font-weight: 800;
+  color: #fc8181;
+  background: rgba(229, 62, 62, 0.2);
+  padding: 1px 5px;
+  border-radius: 4px;
+  letter-spacing: 0.5px;
+}
+
+
+/* === BOARD STATS === */
+.boardStats {
+  display: flex;
+  justify-content: center;
+  gap: 18px;
+  color: #a0aec0;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+
+/* === DICE AREA === */
+.diceArea {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 0;
+}
+
+.dice {
+  font-size: 3.5rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #2d3748, #1a202c);
+  border-radius: 16px;
+  border: 3px solid #4a5568;
+  user-select: none;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.dice:hover {
+  transform: scale(1.08);
+  box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+  border-color: #ffd700;
+}
+
+.diceRolling {
+  animation: diceShake 0.1s infinite;
+}
+
+.diceShow {
+  animation: diceBounce 0.35s ease;
+}
+
+.diceHint {
+  color: #a0aec0;
+  font-size: 0.9rem;
+  text-align: center;
+  margin: 0;
+  max-width: 380px;
+}
+
+.lastAction {
+  color: #ffd700;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  margin: 0;
+  animation: fadeIn 0.3s ease;
+}
+
+
+/* === GROUPS GRID === */
+.groupsGrid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  padding: 18px;
+  background: #1a202c;
+  border-radius: 16px;
+  border: 2px solid #2d3748;
+  justify-content: center;
+  align-items: flex-end;
+  min-height: 120px;
+}
+
+
+/* === GROUP ITEM (each group container) === */
+.groupItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 8px 6px;
+  border-radius: 12px;
+  border: 2.5px solid transparent;
+  background: #2d3748;
+  transition: all 0.25s ease;
+  cursor: default;
+  position: relative;
+  min-width: 65px;
+}
+
+/* Selectable opponent groups glow gold */
+.groupSelectable {
+  border-color: rgba(255, 215, 0, 0.4);
+  cursor: pointer;
+  animation: groupGlow 1.5s infinite;
+}
+
+.groupSelectable:hover {
+  transform: translateY(-5px) scale(1.06);
+  border-color: #ffd700;
+  box-shadow: 0 8px 22px rgba(255, 215, 0, 0.3);
+}
+
+/* Selected group — green highlight */
+.groupSelected {
+  border-color: #48bb78 !important;
+  background: rgba(72, 187, 120, 0.1);
+  box-shadow: 0 0 16px rgba(72, 187, 120, 0.35);
+  transform: translateY(-5px) scale(1.06);
+  animation: none;
+}
+
+/* Merging animation — shrink + fade out */
+.groupMerging {
+  animation: mergeOut 0.5s ease-in forwards;
+  pointer-events: none;
+}
+
+/* New group bounce-in */
+.groupNew {
+  animation: groupBounceIn 0.5s ease;
+}
+
+
+/* === GROUP STACK (vertical layers bottom → top) === */
+.groupStack {
+  display: flex;
+  flex-direction: column-reverse;
+  gap: 1px;
+  width: 100%;
+  align-items: center;
+  position: relative;
+}
+
+
+/* === CUP LAYER — 3D trapezoid cup === */
+.cupLayer {
+  position: relative;
+  width: 44px;
+  height: 14px;
+  transition: all 0.3s ease;
+  opacity: 0.7;
+}
+
+/* Top layer — larger, fully opaque, owner cup */
+.cupLayerTop {
+  opacity: 1;
+  width: 50px;
+  height: 18px;
+}
+
+.cupLayerTop .cupBody {
+  box-shadow:
+    0 2px 10px rgba(0, 0, 0, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.15);
+}
+
+/* 3D cup body — trapezoid via clip-path + gradient */
+.cupBody {
+  width: 100%;
+  height: 100%;
+  border-radius: 3px 3px 5px 5px;
+  background: linear-gradient(
+    180deg,
+    var(--cup-light) 0%,
+    var(--cup-color) 40%,
+    var(--cup-dark) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+  overflow: hidden;
+  clip-path: polygon(6% 0%, 94% 0%, 100% 100%, 0% 100%);
+}
+
+/* Specular highlight on cup */
+.cupShine {
+  position: absolute;
+  top: 1px;
+  left: 15%;
+  width: 40%;
+  height: 5px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.35),
+    transparent
+  );
+  border-radius: 50%;
+}
+
+/* Shadow under stack */
+.cupShadow {
+  width: 36px;
+  height: 4px;
+  background: radial-gradient(ellipse, rgba(0, 0, 0, 0.35) 0%, transparent 70%);
+  margin-top: 2px;
+  border-radius: 50%;
+}
+
+/* Collapse indicator for tall stacks */
+.collapseIndicator {
+  color: #718096;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-align: center;
+  padding: 2px 0;
+}
+
+/* Owner badge — small emoji under stack */
+.ownerBadge {
+  margin-top: 4px;
+  font-size: 0.65rem;
+  padding: 1px 5px;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.3;
+}
+
+/* Stack height badge */
+.stackHeight {
+  font-size: 0.65rem;
+  color: #a0aec0;
+  font-weight: 600;
+  margin-top: 2px;
+  text-align: center;
+}
+
+
+/* === SELECTED CHECK BADGE === */
+.selectedCheck {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 22px;
+  height: 22px;
+  background: #48bb78;
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+  animation: checkPop 0.25s ease;
+  z-index: 2;
+}
+
+
+/* === CONFIRM AREA === */
+.confirmArea {
+  display: flex;
+  justify-content: center;
+  padding: 8px 0;
+}
+
+.confirmButton {
+  animation: confirmPulse 1.5s infinite;
+}
+
+.confirmDisabled {
+  opacity: 0.55;
+  cursor: not-allowed !important;
+  animation: none !important;
+  background: #4a5568 !important;
+  border-color: #4a5568 !important;
+  box-shadow: none !important;
+}
+
+
+/* === RULES AREA === */
+.rulesArea {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0;
+}
+
+
+/* === GAME OVER === */
+.gameOverContainer {
+  max-width: 650px;
+  margin: 0 auto;
+  padding: 30px;
+  text-align: center;
+}
+
+.winnerBanner {
+  background: linear-gradient(135deg, #2d3748, #1a365d);
+  border-radius: 20px;
+  padding: 32px 24px;
+  margin-bottom: 24px;
+  border: 2px solid #ffd700;
+  box-shadow: 0 0 30px rgba(255, 215, 0, 0.2);
+}
+
+.trophy {
+  font-size: 4rem;
+  display: block;
+  margin-bottom: 12px;
+  animation: trophyBounce 1s ease infinite;
+}
+
+.winnerTitle {
+  color: #ffd700;
+  font-size: 1.8rem;
+  font-weight: 800;
+  margin: 0 0 8px;
+}
+
+.winnerSubtitle {
+  color: #e2e8f0;
+  font-size: 1rem;
+  margin: 0 0 4px;
+  opacity: 0.9;
+}
+
+.winnerStats {
+  color: #a0aec0;
+  font-size: 0.85rem;
+  margin: 0;
+  opacity: 0.8;
+}
+
+
+/* === ANIMATIONS === */
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes diceShake {
+  0% { transform: rotate(0deg) scale(1.05); }
+  25% { transform: rotate(8deg) scale(1.1); }
+  50% { transform: rotate(-8deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1.05); }
+}
+
+@keyframes diceBounce {
+  0% { transform: scale(1.3) rotate(10deg); }
+  50% { transform: scale(0.95) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@keyframes groupGlow {
+  0%, 100% { box-shadow: 0 0 4px rgba(255, 215, 0, 0.1); }
+  50% { box-shadow: 0 0 16px rgba(255, 215, 0, 0.4); }
+}
+
+@keyframes checkPop {
+  0% { transform: scale(0); }
+  70% { transform: scale(1.2); }
+  100% { transform: scale(1); }
+}
+
+@keyframes confirmPulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(99, 102, 241, 0.4); }
+  50% { box-shadow: 0 0 0 10px rgba(99, 102, 241, 0); }
+}
+
+@keyframes trophyBounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Merge-out animation: selected groups shrink + fade before removal */
+@keyframes mergeOut {
+  0% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(0.7) translateY(-12px);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(0.2) translateY(-24px);
+  }
+}
+
+/* Bounce-in for newly created merged group */
+@keyframes groupBounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(20px);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.12) translateY(-4px);
+  }
+  100% {
+    transform: scale(1) translateY(0);
+  }
+}
+
+
+/* === RESPONSIVE === */
+@media (max-width: 480px) {
+  .setupContainer {
+    padding: 20px 16px;
+    margin: 0 8px;
+  }
+
+  .gameContainer {
+    padding: 8px;
+    gap: 10px;
+  }
+
+  .playerBar {
+    gap: 6px;
+  }
+
+  .playerBadgeItem {
+    padding: 6px 10px;
+    font-size: 0.82rem;
+  }
+
+  .dice {
+    font-size: 2.8rem;
+    width: 66px;
+    height: 66px;
+  }
+
+  .groupsGrid {
+    gap: 8px;
+    padding: 12px;
+  }
+
+  .groupItem {
+    min-width: 55px;
+    padding: 6px 6px 4px;
+  }
+
+  .cupLayer {
+    width: 36px;
+    height: 12px;
+  }
+
+  .cupLayerTop {
+    width: 42px;
+    height: 15px;
+  }
+
+  .cupShadow {
+    width: 28px;
+  }
+
+  .winnerTitle {
+    font-size: 1.4rem;
+  }
+
+  .trophy {
+    font-size: 3rem;
+  }
+
+  .gameOverContainer {
+    padding: 20px 12px;
+  }
+
+  .boardStats {
+    font-size: 0.78rem;
+    gap: 12px;
+  }
+}
+
+@media (max-width: 360px) {
+  .groupsGrid {
+    gap: 6px;
+    padding: 10px;
+  }
+
+  .groupItem {
+    min-width: 48px;
+    padding: 5px 4px 4px;
+  }
+
+  .cupLayer {
+    width: 30px;
+    height: 10px;
+  }
+
+  .cupLayerTop {
+    width: 36px;
+    height: 13px;
+  }
+}

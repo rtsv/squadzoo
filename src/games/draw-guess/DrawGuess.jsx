@@ -5,10 +5,13 @@ import CustomConfirm from "../../components/CustomConfirm";
 import GameModeSelector from "../../components/GameModeSelector";
 import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
+import PlayerNameInput from "../../components/PlayerNameInput";
+import GameRules from "../../components/GameRules";
 import DrawingCanvas from "./DrawingCanvas";
 import { wordsByDifficulty } from "./wordList";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
+import VoiceChat from "../../components/VoiceChat";
 import styles from "../../styles/DrawGuess.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -144,6 +147,16 @@ function DrawGuess({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     setShowContinueDialog(false);
     setSavedState(null);
   };
+
+  const gameRules = [
+    "One player draws a secret word while others guess",
+    "The drawer cannot use letters, numbers, or symbols - only drawings!",
+    "Guessers type their answers and submit",
+    "First to guess correctly wins points!",
+    "Points: Base 30 + Time bonus - Hint penalty",
+    "Use hints (💡) to reveal word length or first letter (-5 pts each)",
+    "Players take turns being the drawer each round"
+  ];
 
   // Setup online game listeners
   useEffect(() => {
@@ -557,31 +570,9 @@ function DrawGuess({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
             Enter player names and choose difficulty. One player draws while others guess!
           </p>
 
-          {/* Game Rules */}
-          <div className={styles.rulesSection}>
-            <button
-              onClick={() => setShowRules(!showRules)}
-              className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${btnStyles.btnSmall}`}
-            >
-              📖 {showRules ? "Hide Rules" : "Show Rules"}
-            </button>
-            {showRules && (
-              <div className={styles.rulesContent}>
-                <h4>How to Play:</h4>
-                <ul>
-                  <li>One player draws a secret word while others guess</li>
-                  <li>The drawer sees the word and must draw it (no letters/numbers!)</li>
-                  <li>Guessers type their answers and submit</li>
-                  <li>First to guess correctly wins points!</li>
-                  <li>Points: Base 30 + Time bonus - Hint penalty</li>
-                  <li>Use hints (💡) to reveal word length or first letter (-5 pts each)</li>
-                  <li>Players take turns being the drawer each round</li>
-                </ul>
-              </div>
-            )}
-          </div>
+          <GameRules rules={gameRules} />
 
-          {/* Difficulty Section - Full Width */}
+          {/* Difficulty Section */}
           <div className={styles.difficultySection}>
             <label className={styles.difficultyLabel}>Difficulty:</label>
             <div className={styles.difficultyButtons}>
@@ -599,70 +590,43 @@ function DrawGuess({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
             </div>
           </div>
 
-          {/* Time Limit and Players Side by Side */}
-          <div className={styles.setupMainRow}>
-            {/* Time Limit Section */}
-            <div className={styles.timeLimitSection}>
-              <label className={styles.timeLimitLabel}>Time Limit:</label>
-              <div className={styles.timeLimitControls}>
-                <button
-                  onClick={() => setTimeLimit(Math.max(30, timeLimit - 30))}
-                  disabled={timeLimit <= 30}
-                  className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${styles.timeLimitBtn}`}
-                  title="Decrease time"
-                >
-                  −
-                </button>
-                <div className={styles.timeLimitDisplay}>
-                  <span className={styles.timeLimitValue}>{timeLimit}</span>
-                  <span className={styles.timeLimitUnit}>sec</span>
-                </div>
-                <button
-                  onClick={() => setTimeLimit(Math.min(180, timeLimit + 30))}
-                  disabled={timeLimit >= 180}
-                  className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${styles.timeLimitBtn}`}
-                  title="Increase time"
-                >
-                  +
-                </button>
+          {/* Time Limit Section */}
+          <div className={styles.timeLimitSection}>
+            <label className={styles.timeLimitLabel}>Time Limit:</label>
+            <div className={styles.timeLimitControls}>
+              <button
+                onClick={() => setTimeLimit(Math.max(30, timeLimit - 30))}
+                disabled={timeLimit <= 30}
+                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${styles.timeLimitBtn}`}
+                title="Decrease time"
+              >
+                −
+              </button>
+              <div className={styles.timeLimitDisplay}>
+                <span className={styles.timeLimitValue}>{timeLimit}</span>
+                <span className={styles.timeLimitUnit}>sec</span>
               </div>
-            </div>
-
-            {/* Players Section */}
-            <div className={styles.playersSection}>
-              <label className={styles.playersLabel}>Players:</label>
-              <div className={styles.playersInputs}>
-                {players.map((player, index) => (
-                  <div key={index} className={styles.playerInputRow}>
-                    <span className={styles.playerLabel}>Player {index + 1}:</span>
-                    <input
-                      type="text"
-                      value={player}
-                      onChange={(e) => handlePlayerNameChange(index, e.target.value)}
-                      placeholder="Enter name"
-                      className={inputStyles.input}
-                    />
-                    {players.length > 2 && (
-                      <button
-                        onClick={() => removePlayer(index)}
-                        className={`${btnStyles.btn} ${btnStyles.btnDanger} ${btnStyles.btnSmall}`}
-                      >
-                        ✕
-                      </button>
-                    )}
-                  </div>
-                ))}
-              </div>
+              <button
+                onClick={() => setTimeLimit(Math.min(180, timeLimit + 30))}
+                disabled={timeLimit >= 180}
+                className={`${btnStyles.btn} ${btnStyles.btnSecondary} ${styles.timeLimitBtn}`}
+                title="Increase time"
+              >
+                +
+              </button>
             </div>
           </div>
 
+          {/* Player Names */}
+          <PlayerNameInput
+            players={players}
+            onPlayerChange={handlePlayerNameChange}
+            onAddPlayer={addPlayer}
+            onRemovePlayer={removePlayer}
+            minPlayers={2}
+          />
+
           <div className={styles.setupButtons}>
-            <button
-              onClick={addPlayer}
-              className={`${btnStyles.btn} ${btnStyles.btnSuccess}`}
-            >
-              + Add Player
-            </button>
             <button
               onClick={startGame}
               className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
@@ -685,6 +649,7 @@ function DrawGuess({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
       {alertMessage && (
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
+      <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
       
       <CustomConfirm
         isOpen={showContinueDialog}

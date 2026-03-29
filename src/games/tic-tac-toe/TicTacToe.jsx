@@ -9,6 +9,7 @@ import PlayerNameInput from "../../components/PlayerNameInput";
 import GameRules from "../../components/GameRules";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
+import VoiceChat from "../../components/VoiceChat";
 import styles from "../../styles/TicTacToe.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -263,61 +264,6 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     }
 
     try {
-      // Register callbacks BEFORE creating room
-      roomService.on('onConnected', (data) => {
-        console.log('🔗 Connected to room:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onPlayerJoined', (data) => {
-        console.log('🎉 Player joined callback:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-        
-        if (allPlayers.length === 2) {
-          // Both players connected, start game
-          const playerNames = allPlayers.map(p => p.playerName);
-          setPlayers(playerNames);
-          setWaitingForOpponent(false);
-          setGameStarted(true);
-          
-          // Notify guest to start game
-          roomService.sendGameAction('game-start', { players: playerNames });
-        }
-      });
-
-      roomService.on('onPlayerLeft', () => {
-        setAlertMessage("Opponent disconnected!");
-        setTimeout(() => {
-          handleBackToMenu();
-        }, 2000);
-      });
-
-      roomService.on('onGameAction', (data) => {
-        console.log('Game action received:', data);
-        
-        switch (data.action) {
-          case 'game-start':
-            setPlayers(data.payload.players);
-            setWaitingForOpponent(false);
-            setGameStarted(true);
-            break;
-            
-          case 'move':
-            handleOpponentMove(data.payload);
-            break;
-            
-          case 'reset-board':
-            resetBoard();
-            break;
-            
-          case 'new-game':
-            resetGame();
-            break;
-        }
-      });
-
       roomService.playerName = playerName;
       const { roomCode: code } = await roomService.createRoom();
       setRoomCode(code);
@@ -348,50 +294,6 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     }
 
     try {
-      // Register callbacks BEFORE joining room
-      roomService.on('onConnected', (data) => {
-        console.log('🔗 Connected to room:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onPlayerJoined', (data) => {
-        console.log('🎉 Player joined callback:', data);
-        const allPlayers = roomService.getConnectedPlayers();
-        setConnectedPlayers(allPlayers);
-      });
-
-      roomService.on('onPlayerLeft', () => {
-        setAlertMessage("Opponent disconnected!");
-        setTimeout(() => {
-          handleBackToMenu();
-        }, 2000);
-      });
-
-      roomService.on('onGameAction', (data) => {
-        console.log('Game action received:', data);
-        
-        switch (data.action) {
-          case 'game-start':
-            setPlayers(data.payload.players);
-            setWaitingForOpponent(false);
-            setGameStarted(true);
-            break;
-            
-          case 'move':
-            handleOpponentMove(data.payload);
-            break;
-            
-          case 'reset-board':
-            resetBoard();
-            break;
-            
-          case 'new-game':
-            resetGame();
-            break;
-        }
-      });
-
       roomService.playerName = playerName;
       await roomService.joinRoom(roomCode);
       setIsInRoom(true);
@@ -674,6 +576,7 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
       {alertMessage && (
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
+      <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
       
       <CustomConfirm
         isOpen={showContinueDialog}

@@ -14,3 +14,12 @@ The React Compiler is not enabled on this template because of its impact on dev 
 ## Expanding the ESLint configuration
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+
+
+
+in number recall game do some changes
+
+1. do not change number behind tiles on each turn keep it same for one game
+2. do not show the number behind tiles any time, only player have to gues it right if it guess then it move for next target number
+3. Add sound effects for correct/wrong tile clicks in Number Recall
+4. add to play online for upto 4 player using room and follow same structure which are using in ludo using roomservice

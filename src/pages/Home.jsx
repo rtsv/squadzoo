@@ -13,12 +13,12 @@ function Home() {
 
   const handlePlayGame = (gameId) => {
     const gameRoutes = {
-      "draw-guess": "/games/draw-and-guess",
+      // "draw-guess": "/games/draw-and-guess",
       "word-chain": "/games/word-chain",
       "tic-tac-toe": "/games/tic-tac-toe",
-      "battleship": "/games/battleship",
       "ludo": "/games/ludo",
-      "number-recall": "/games/number-recall"
+      "number-recall": "/games/number-recall",
+      "cup-stack-battle": "/games/cup-stack-battle"
     };
     navigate(gameRoutes[gameId]);
   };
@@ -26,13 +26,13 @@ function Home() {
   return (
     <>
       <Helmet>
-        <title>SquadZoo - Free Multiplayer Puzzle Games Online | Play with Friends</title>
-        <meta name="description" content="Play free multiplayer puzzle and strategy games online at SquadZoo. Enjoy Word Chain, Tic-Tac-Toe, Battleship, and Draw & Guess with friends. No downloads or sign-ups required!" />
-        <meta name="keywords" content="multiplayer games, puzzle games, logic games, online games, word chain, tic-tac-toe, battleship, draw and guess, free games, party games" />
+        <title>{`SquadZoo - Free Multiplayer Puzzle Games Online | Play with Friends ${currentYear}`}</title>
+        <meta name="description" content="Play free multiplayer puzzle and strategy games online at SquadZoo. Enjoy Word Chain, Tic-Tac-Toe, Ludo, and Number Recall with friends. No downloads or sign-ups required!" />
+        <meta name="keywords" content="multiplayer games, puzzle games, logic games, online games, word chain, tic-tac-toe, ludo online, free games, party games, number recall, memory games, board games online" />
         <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
         <link rel="canonical" href="https://squadzoo.games/" />
         <meta property="og:title" content="SquadZoo - Free Multiplayer Puzzle & Strategy Games Online" />
-        <meta property="og:description" content="Challenge your mind with fun multiplayer games. Play with friends online - no downloads required!" />
+        <meta property="og:description" content="Play Word Chain, Tic-Tac-Toe, Ludo, and Number Recall with friends online. No downloads or sign-ups required!" />
         <meta property="og:type" content="website" />
         <meta property="og:url" content="https://squadzoo.games/" />
         <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
@@ -47,10 +47,10 @@ function Home() {
         <section className={styles.hero} aria-labelledby="hero-title">
           <div className={styles.heroContent}>
             <h1 className={styles.heroTitle} id="hero-title">
-              Welcome to SquadZoo - Free Multiplayer Puzzle & Strategy Games
+              Free Multiplayer Games Online - Play with Friends
             </h1>
             <p className={styles.heroSubtitle}>
-              Challenge your mind with fun, interactive multiplayer games. Play Word Chain, Tic-Tac-Toe, Battleship, and Draw & Guess with friends online. No downloads, no sign-ups required!
+              Challenge your mind with fun, interactive multiplayer puzzle and strategy games. Play Ludo, Word Chain, Tic-Tac-Toe, and Number Recall with friends online. No downloads, no sign-ups required!
             </p>
             <div className={styles.heroFeatures}>
               <div className={styles.feature}>
@@ -100,13 +100,13 @@ function Home() {
                 Perfect for students and word game enthusiasts. <button onClick={() => navigate("/games/word-chain")} className={styles.textLink}>Learn more about Word Chain →</button>
               </p>
             </article>
-            <article className={styles.highlightCard}>
+            {/* <article className={styles.highlightCard}>
               <h3>🎨 Draw & Guess</h3>
               <p>
                 Like Pictionary but online! Take turns drawing while others guess. Great for parties and creative fun. 
                 <button onClick={() => navigate("/games/draw-and-guess")} className={styles.textLink}>How to play Draw & Guess →</button>
               </p>
-            </article>
+            </article> */}
             <article className={styles.highlightCard}>
               <h3>⭕ Tic-Tac-Toe</h3>
               <p>
@@ -115,10 +115,17 @@ function Home() {
               </p>
             </article>
             <article className={styles.highlightCard}>
-              <h3>🚢 Battleship</h3>
+              <h3>🎲 Ludo</h3>
               <p>
-                Naval warfare strategy at its best! Sink your opponent's fleet in this tactical multiplayer game. 
-                <button onClick={() => navigate("/games/battleship")} className={styles.textLink}>Explore Battleship →</button>
+                Classic board game for 2-4 players! Roll dice, race your tokens home, and capture opponents in this beloved strategy game. 
+                <button onClick={() => navigate("/games/ludo")} className={styles.textLink}>Play Ludo online →</button>
+              </p>
+            </article>
+            <article className={styles.highlightCard}>
+              <h3>🏆 Cup Stack Battle</h3>
+              <p>
+                Roll the dice and stack your cups on opponents! Dominate the board by covering every cup with your color. A fun party game for 2-4 players. 
+                <button onClick={() => navigate("/games/cup-stack-battle")} className={styles.textLink}>Play Cup Stack Battle →</button>
               </p>
             </article>
           </div>

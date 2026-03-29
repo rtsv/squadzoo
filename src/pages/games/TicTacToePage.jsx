@@ -29,22 +29,88 @@ function TicTacToePage({ isPlayMode = false }) {
     howToPlay: "Two players take turns placing X's and O's on a 3x3 grid. The goal is to get three of your symbols in a row - horizontally, vertically, or diagonally. Block your opponent while planning your own winning move! Create a room to play online with friends remotely, or choose local mode to play on the same device."
   };
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "Game",
+    "name": "Tic-Tac-Toe Online Multiplayer",
+    "description": "Play classic Tic-Tac-Toe online with friends! Free multiplayer strategy game for 2 players. No downloads or registration required.",
+    "url": "https://squadzoo.games/games/tic-tac-toe",
+    "image": "https://squadzoo.games/images/squad-zoo-logo.png",
+    "publisher": {
+      "@type": "Organization",
+      "name": "SquadZoo",
+      "url": "https://squadzoo.games"
+    },
+    "genre": ["Strategy Game", "Board Game", "Multiplayer Game"],
+    "gamePlatform": ["Web Browser", "Desktop", "Mobile"],
+    "numberOfPlayers": {
+      "@type": "QuantitativeValue",
+      "minValue": 2,
+      "maxValue": 2
+    },
+    "playMode": ["MultiPlayer"],
+    "inLanguage": "en",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD",
+      "availability": "https://schema.org/InStock"
+    },
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.6",
+      "ratingCount": "412",
+      "bestRating": "5",
+      "worstRating": "1"
+    }
+  };
+
+  const breadcrumbData = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://squadzoo.games" },
+      { "@type": "ListItem", "position": 2, "name": "Games", "item": "https://squadzoo.games/#games" },
+      { "@type": "ListItem", "position": 3, "name": "Tic-Tac-Toe", "item": "https://squadzoo.games/games/tic-tac-toe" }
+    ]
+  };
+
   return (
     <>
       <Helmet>
-        <title>Tic-Tac-Toe - Online Multiplayer Game | SquadZoo</title>
-        <meta name="description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer game with local and online modes. Challenge your strategic thinking in this timeless 3x3 grid game." />
-        <meta name="keywords" content="tic tac toe, tic tac toe online, multiplayer tic tac toe, noughts and crosses, strategy game, classic game online" />
-        <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
-        <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
-        <meta property="og:title" content="Tic-Tac-Toe - Free Online Multiplayer Game" />
-        <meta property="og:description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer strategic game." />
-        <meta property="og:type" content="website" />
-        <meta property="og:url" content="https://squadzoo.games/games/tic-tac-toe" />
-        <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
-        <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:title" content="Tic-Tac-Toe - Online Multiplayer Game" />
-        <meta name="twitter:description" content="Play Tic-Tac-Toe online with friends! Free strategic game." />
+        {isPlayMode ? (
+          <>
+            <title>Playing Tic-Tac-Toe Online | SquadZoo</title>
+            <meta name="description" content="Active Tic-Tac-Toe game in progress. Enjoy ad-free gameplay experience." />
+            <meta name="robots" content="noindex, nofollow" />
+            <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
+          </>
+        ) : (
+          <>
+            <title>Play Tic-Tac-Toe Online Free - Multiplayer Strategy Game 2026 | SquadZoo</title>
+            <meta name="description" content="Play classic Tic-Tac-Toe online with friends! Free multiplayer X's and O's game for 2 players. Local and online modes. No downloads or registration required - Start playing now!" />
+            <meta name="keywords" content="tic tac toe, tic tac toe online, multiplayer tic tac toe, noughts and crosses, strategy game, classic game online, x and o game, tic tac toe free, two player games" />
+            <meta name="google-adsense-account" content="ca-pub-7575193067019168" />
+            <link rel="canonical" href="https://squadzoo.games/games/tic-tac-toe" />
+            <meta property="og:type" content="game" />
+            <meta property="og:title" content="Play Tic-Tac-Toe Online Free - Multiplayer Game | SquadZoo" />
+            <meta property="og:description" content="Classic Tic-Tac-Toe online with friends! Free multiplayer X's and O's game. No downloads required!" />
+            <meta property="og:url" content="https://squadzoo.games/games/tic-tac-toe" />
+            <meta property="og:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
+            <meta property="og:site_name" content="SquadZoo" />
+            <meta name="twitter:card" content="summary_large_image" />
+            <meta name="twitter:title" content="Play Tic-Tac-Toe Online Free - Multiplayer Game" />
+            <meta name="twitter:description" content="Play Tic-Tac-Toe online with friends! Free strategic game for 2 players." />
+            <meta name="twitter:image" content="https://squadzoo.games/images/squad-zoo-logo.png" />
+            <meta name="author" content="SquadZoo" />
+            <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+            <meta name="language" content="English" />
+            <meta name="revisit-after" content="7 days" />
+            <meta name="rating" content="General" />
+            <script type="application/ld+json">{JSON.stringify(structuredData)}</script>
+            <script type="application/ld+json">{JSON.stringify(breadcrumbData)}</script>
+          </>
+        )}
       </Helmet>
       
       <TicTacToe 

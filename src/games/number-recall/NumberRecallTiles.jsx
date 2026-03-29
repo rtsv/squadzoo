@@ -5,8 +5,10 @@ import GameModeSelector from "../../components/GameModeSelector";
 import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
 import PlayerNameInput from "../../components/PlayerNameInput";
+import GameRules from "../../components/GameRules";
 import CustomAlert from "../../components/CustomAlert";
 import roomService from "../../services/roomService";
+import VoiceChat from "../../components/VoiceChat";
 import btnStyles from "../../styles/Button.module.css";
 import styles from "../../styles/NumberRecallTiles.module.css";
 
@@ -42,6 +44,14 @@ const shuffleArray = (array) => {
 function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
   const location = useLocation();
   const gameState = location.state || {};
+
+  const numberRecallRules = [
+    "Memorize the positions of numbered tiles on the grid",
+    "Tiles will be hidden after a brief preview period",
+    "Click tiles in ascending order (1, 2, 3...)",
+    "Wrong clicks cost you a life — lose all lives and you're out",
+    "The player with the most correct sequences wins!"
+  ];
   
   // Game flow states
   const [gameMode, setGameMode] = useState(isPlayMode ? (gameState.gameMode || 'local') : null);
@@ -719,11 +729,15 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
   // ========== RENDER: Online Room Setup ==========
   if (isOnlineMode && !isInRoom) {
     return (
-      <GameLayout title="🔢 Number Recall - Online" onBack={handleBack}>
+      <GameLayout title="\ud83d\udd22 Number Recall - Online Setup" onBack={handleBack}>
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
         <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Create a room or join an existing one to play online
+          </p>
+
           <OnlineRoomSetup
             playerName={playerName}
             setPlayerName={setPlayerName}
@@ -786,6 +800,8 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
         )}
         <div className={styles.setupContainer}>
           <p className={styles.setupDescription}>Local Multiplayer Mode</p>
+
+          <GameRules rules={numberRecallRules} />
           
           {/* Player Count */}
           <div className={styles.playerCountSection}>
@@ -841,7 +857,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
           {/* Start Button */}
           <div className={styles.setupButtons}>
             <button
-              className={styles.startButton}
+              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
               onClick={startGame}
             >
               Start Game
@@ -862,6 +878,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
       {alertMessage && (
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
+      <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
       <div className={styles.gameContainer}>
         {/* Current Player Display with Timer */}
         <div className={styles.currentPlayerDisplay}>
@@ -955,7 +972,7 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
             
             <div className={styles.setupButtons}>
               <button
-                className={styles.startButton}
+                className={`${btnStyles.btn} ${btnStyles.btnSuccess} ${btnStyles.btnLarge}`}
                 onClick={restartGame}
                 disabled={isOnlineMode && !isHost}
               >

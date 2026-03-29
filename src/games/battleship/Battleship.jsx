@@ -7,6 +7,7 @@ import OnlineRoomSetup from "../../components/OnlineRoomSetup";
 import OnlineRoomExample from "../../components/OnlineRoomExample";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
+import VoiceChat from "../../components/VoiceChat";
 import styles from "../../styles/Battleship.module.css";
 import btnStyles from "../../styles/Button.module.css";
 import inputStyles from "../../styles/Input.module.css";
@@ -788,6 +789,7 @@ function Battleship({ onBack, initialRoomCode, onGameStart, isPlayMode = false }
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
+        <VoiceChat enabled={isOnlineMode} myId={roomService.playerId} roomCode={roomCode} />
         
         <CustomConfirm
           isOpen={showContinueDialog}

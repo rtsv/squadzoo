@@ -9,8 +9,11 @@ import CustomConfirm from "../../components/CustomConfirm";
 import PlayerNameInput from "../../components/PlayerNameInput";
 import roomService from "../../services/roomService";
 import { saveGameState, loadGameState, clearGameState, getTimeRemaining } from "../../services/gameStateService";
+import VoiceChat from "../../components/VoiceChat";
+import GameRules from "../../components/GameRules";
 import btnStyles from "../../styles/Button.module.css";
 import styles from "../../styles/Ludo.module.css";
+import sharedStyles from "../../styles/SharedComponents.module.css";
 
 // Safe positions on the board (star positions) - absolute positions
 const SAFE_POSITIONS = [0, 8, 13, 21, 26, 34, 39, 47];
@@ -1074,25 +1077,41 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
     setConnectedPlayers([]);
   }
 
+  const ludoRules = [
+    "Roll a 6 to move a token out of home base",
+    "Move your tokens around the board based on dice rolls",
+    "Land on opponents to send them back home (unless on safe spots ⭐)",
+    "Rolling a 6 gives you an extra turn",
+    "Three consecutive 6s skip your turn",
+    "First player to get all 4 tokens to the finish wins!"
+  ];
+
   // Mode Selection Screen
   if (!gameMode) {
     return (
-      <GameLayout title="🎲 Ludo King" onBack={onBack || handleBackToMenu}>
+      <GameLayout title="🎲 Ludo King - Select Mode" onBack={onBack || handleBackToMenu}>
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
-        <GameModeSelector
-          onSelectLocal={() => {
-            setGameMode("local");
-            setIsOnlineMode(false);
-          }}
-          onSelectOnline={() => {
-            setGameMode("online");
-            setIsOnlineMode(true);
-          }}
-          localLabel="Play Locally"
-          onlineLabel="Play Online"
-        />
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Choose how you want to play Ludo
+          </p>
+
+          <GameModeSelector
+            onSelectLocal={() => {
+              setGameMode("local");
+              setIsOnlineMode(false);
+            }}
+            onSelectOnline={() => {
+              setGameMode("online");
+              setIsOnlineMode(true);
+            }}
+            localLabel="Local Play"
+            onlineLabel="Online Multiplayer"
+            maxPlayers="2-4 players"
+          />
+        </div>
       </GameLayout>
     );
   }
@@ -1104,16 +1123,22 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
         {alertMessage && (
           <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
         )}
-        <OnlineRoomSetup
-          playerName={playerName}
-          setPlayerName={setPlayerName}
-          roomCode={roomCode}
-          setRoomCode={setRoomCode}
-          onCreateRoom={handleCreateOnlineRoom}
-          onJoinRoom={handleJoinOnlineRoom}
-          gameName="Ludo"
-          hideCreateRoom={!!initialRoomCode}
-        />
+        <div className={styles.setupContainer}>
+          <p className={styles.setupDescription}>
+            Create a room or join an existing one to play online
+          </p>
+
+          <OnlineRoomSetup
+            playerName={playerName}
+            setPlayerName={setPlayerName}
+            roomCode={roomCode}
+            setRoomCode={setRoomCode}
+            onCreateRoom={handleCreateOnlineRoom}
+            onJoinRoom={handleJoinOnlineRoom}
+            gameName="Ludo"
+            hideCreateRoom={!!initialRoomCode}
+          />
+        </div>
       </GameLayout>
     );
   }
@@ -1163,6 +1188,8 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
             Select the number of players (2-4) and enter names to begin!
           </p>
 
+          <GameRules rules={ludoRules} />
+
           <div className={styles.playerCountSection}>
             <label className={styles.label}>Number of Players</label>
             <div className={styles.playerCountButtons}>
@@ -1187,7 +1214,10 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
           />
 
           <div className={styles.setupButtons}>
-            <button onClick={startGame} className={styles.startButton}>
+            <button
+              onClick={startGame}
+              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
+            >
               Start Game
             </button>
           </div>
@@ -1202,6 +1232,7 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
       {alertMessage && (
         <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
       )}
+      <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
       
       <CustomConfirm
         isOpen={showContinueDialog}

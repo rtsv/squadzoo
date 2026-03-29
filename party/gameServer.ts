@@ -93,11 +93,21 @@ export default class GameServer implements Party.Server {
   }
 
   onMessage(message: string, sender: Party.Connection) {
-    // Broadcast all game messages to other players in the room
     const data = JSON.parse(message);
     console.log(`Message from ${sender.id}:`, data.type);
 
-    // Broadcast to all players except sender
+    // Targeted delivery: voice signaling messages have a `to` field with a specific connection ID
+    if (data.to) {
+      const target = this.room.getConnection(data.to);
+      if (target) {
+        target.send(message);
+      } else {
+        console.warn(`⚠️ Target connection ${data.to} not found for message type: ${data.type}`);
+      }
+      return;
+    }
+
+    // Broadcast all other messages to every player except sender
     this.room.broadcast(message, [sender.id]);
   }
 
