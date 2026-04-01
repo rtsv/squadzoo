@@ -1,0 +1,374 @@
+.setupContainer {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 30px);
+  background: #2d3748;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: clamp(12px, 3vw, 20px);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.playerCountButtons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.countBtn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.12);
+  color: #e2e8f0;
+  cursor: pointer;
+  min-height: 44px;
+}
+
+.countBtnActive {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-color: #a78bfa;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  color: #cbd5e0;
+  font-size: 0.95rem;
+}
+
+.toggleRow input {
+  width: 18px;
+  height: 18px;
+}
+
+.setupButtons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.playRoot {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mainGameWrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2vw, 16px);
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 900px) {
+  .mainGameWrapper {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.gameContainer {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2vw, 12px);
+  padding: clamp(10px, 2vw, 16px);
+  background: linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+}
+
+.hud {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.15);
+}
+
+.timer {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  color: #f6e05e;
+}
+
+.timerUrgent {
+  color: #fc8181;
+  animation: pulse 1s ease infinite;
+}
+
+@keyframes pulse {
+  50% { opacity: 0.85; }
+}
+
+.hudHint {
+  color: #a0aec0;
+  font-size: clamp(0.75rem, 2vw, 0.9rem);
+}
+
+.playerBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+}
+
+.playerBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 2px solid #4a5568;
+  background: #2d3748;
+  cursor: default;
+  font-size: 0.9rem;
+}
+
+.playerBadgeClickable {
+  cursor: pointer;
+}
+
+.playerBadgeActive {
+  border-color: #63b3ed;
+  box-shadow: 0 0 12px rgba(99, 179, 237, 0.35);
+}
+
+.scoreChip {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+
+.wordPreview {
+  text-align: center;
+  min-height: 2rem;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: #e2e8f0;
+}
+
+.wordPreviewEmpty {
+  color: #64748b;
+  font-weight: 500;
+  letter-spacing: normal;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.gridWrap {
+  width: 100%;
+  max-width: min(100%, 420px);
+  margin: 0 auto;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 3px;
+  width: 100%;
+  height: 100%;
+  user-select: none;
+  touch-action: none;
+  -webkit-user-select: none;
+}
+
+.cell {
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: clamp(0.65rem, 2.8vw, 0.95rem);
+  background: rgba(30, 41, 59, 0.9);
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 6px;
+  cursor: grab;
+  touch-action: none;
+  transition: background 0.12s ease, border-color 0.12s ease, transform 0.1s ease;
+}
+
+.cell:active {
+  cursor: grabbing;
+}
+
+.cell:hover:not(.cellDisabled) {
+  background: rgba(51, 65, 85, 0.95);
+}
+
+.cellSelected {
+  background: rgba(99, 102, 241, 0.35);
+  border-color: #a5b4fc;
+  color: #fff;
+}
+
+/* Found words: tint often set inline from PLAYER_COLORS; keeps letter readable */
+.cellFound {
+  color: #fff;
+}
+
+.cellInPath {
+  background: rgba(139, 92, 246, 0.25);
+  border-color: rgba(167, 139, 250, 0.6);
+}
+
+.cellDisabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.resultCard {
+  text-align: center;
+  padding: 12px;
+}
+
+.resultTitle {
+  margin: 0 0 12px;
+  color: #f6e05e;
+  font-size: clamp(1.1rem, 3vw, 1.4rem);
+}
+
+.sidebarSlot {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarSlot > * {
+  flex: 1;
+  min-height: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (min-width: 900px) {
+  .sidebarSlot {
+    flex: 0 0 min(300px, 30vw);
+    max-height: none;
+  }
+}
+
+.targetWordPanel {
+  margin-top: 8px;
+  padding: 10px 12px;
+  background: rgba(15, 23, 42, 0.75);
+  border-radius: 12px;
+  border: 1px solid rgba(99, 102, 241, 0.2);
+}
+
+.targetWordList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.targetWordRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  font-size: 0.85rem;
+  color: #e2e8f0;
+}
+
+.targetWordText {
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
+.targetWordStatus {
+  font-size: 0.8rem;
+  white-space: nowrap;
+}
+
+.wordLists {
+  margin-top: 8px;
+  padding: 10px;
+  background: rgba(15, 23, 42, 0.6);
+  border-radius: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.wordListsTitle {
+  margin: 0 0 8px;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.wordListCol {
+  margin-bottom: 10px;
+}
+
+.wordListName {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 4px;
+}
+
+.wordTags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+.wordTag {
+  font-size: 0.72rem;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #e2e8f0;
+}
+
+.rulesArea {
+  display: flex;
+  justify-content: center;
+}

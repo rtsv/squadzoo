@@ -490,9 +490,7 @@ function DiceBlitz({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
       return `Waiting for ${playerNames[currentPlayerIndex]}...`;
     }
     if (isRolling) return "Rolling...";
-    if (pendingRoll !== null) {
-      return `Rolled ${pendingRoll}. Select one matching opponent cell.`;
-    }
+    if (pendingRoll !== null) return "Select one matching opponent cell.";
     return "Tap the dice to roll!";
   };
 
@@ -716,93 +714,124 @@ function DiceBlitz({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
 
   return (
     <GameLayout
-      onBack={handleBackToMenu}
-      gameTitle="Dice Blitz"
-      sidebar={
-        <>
-          <MatchHistorySidebar
-            scores={scores}
-            playerNames={playerNames}
-            matchHistory={matchHistory}
-          />
-          <GameRules rules={gameRules} />
-          {isOnlineMode && <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />}
-        </>
+      title={`🎲 Dice Blitz${isOnlineMode ? " (Online)" : ""}`}
+      currentPlayer={
+        gameOver
+          ? ""
+          : `${PLAYER_COLORS[currentPlayerIndex].emoji} ${playerNames[currentPlayerIndex]}`
       }
+      onBack={handleBackToMenu}
+      fitViewport
     >
-      <div className={styles.container}>
-        <div className={styles.gameHeader}>
-          <h1 className={styles.title}>Dice Blitz</h1>
-          <p className={styles.subtitle}>Race to clear your grid!</p>
-        </div>
+      {alertMessage && (
+        <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />
+      )}
+      {isOnlineMode && (
+        <VoiceChat
+          enabled={isOnlineMode && gameStarted}
+          myId={roomService.playerId}
+          roomCode={roomCode}
+        />
+      )}
 
-        <div className={styles.controls}>
-          {!gameOver && (
-            <div className={styles.turnBanner}>
-              {playerNames[currentPlayerIndex]}'s Turn
-              {pendingRoll !== null ? ` • Rolled ${pendingRoll} - select opponent cell` : ""}
+      <div className={styles.playRoot}>
+        <div className={styles.mainGameWrapper}>
+          <div className={styles.gameColumn}>
+            <div className={styles.controls}>
+              {!gameOver && (
+                <div className={styles.turnBanner}>
+                  {playerNames[currentPlayerIndex]}&apos;s Turn
+                  {pendingRoll !== null
+                    ? ` • Rolled ${pendingRoll} — pick opponent cell`
+                    : ""}
+                </div>
+              )}
+              <div className={styles.diceArea}>
+                <div
+                  className={`${styles.dice} ${isRolling ? styles.diceRolling : ""} ${diceValue && !isRolling ? styles.diceShow : ""}`}
+                  onClick={canRollNow ? rollDice : undefined}
+                  style={{ cursor: canRollNow ? "pointer" : "default" }}
+                  role="button"
+                  tabIndex={canRollNow ? 0 : -1}
+                  onKeyDown={(e) => {
+                    if (canRollNow && (e.key === "Enter" || e.key === " ")) {
+                      e.preventDefault();
+                      rollDice();
+                    }
+                  }}
+                >
+                  {DICE_FACES[diceValue] || "🎲"}
+                </div>
+                <p className={styles.diceHint}>{getInstruction()}</p>
+              </div>
             </div>
-          )}
-          <div className={styles.diceArea}>
-            <div
-              className={`${styles.dice} ${isRolling ? styles.diceRolling : ""} ${diceValue && !isRolling ? styles.diceShow : ""}`}
-              onClick={canRollNow ? rollDice : undefined}
-              style={{ cursor: canRollNow ? "pointer" : "default" }}
-            >
-              {DICE_FACES[diceValue] || "🎲"}
+
+            <div className={styles.gridsContainer}>
+              {grids.map((grid, pIdx) => (
+                <div
+                  key={pIdx}
+                  className={`${styles.playerCard} ${pIdx === currentPlayerIndex ? styles.activePlayer : ""}`}
+                  style={{ opacity: gameOver && winner !== pIdx ? 0.6 : 1 }}
+                >
+                  <div className={styles.playerName}>
+                    {PLAYER_COLORS[pIdx].emoji} {playerNames[pIdx]}
+                  </div>
+                  <div className={styles.grid}>
+                    {grid.map((row, rIdx) =>
+                      row.map((cell, cIdx) => {
+                        const canSelect =
+                          !gameOver &&
+                          pendingRoll !== null &&
+                          pIdx !== currentPlayerIndex &&
+                          !cell.isCrossed &&
+                          cell.value === pendingRoll &&
+                          (!isOnlineMode || myPlayerIndex === currentPlayerIndex);
+                        return (
+                          <div
+                            key={cell.id}
+                            className={`${styles.cell} ${cell.isCrossed ? styles.crossed : ""} ${canSelect ? styles.cellSelectable : ""}`}
+                            onClick={canSelect ? () => handleCellSelect(pIdx, rIdx, cIdx) : undefined}
+                            style={{ cursor: canSelect ? "pointer" : "default" }}
+                          >
+                            {renderCellDice(cell.value)}
+                            {cell.isCrossed && (
+                              <div className={styles.crossOverlay}>❌</div>
+                            )}
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              ))}
             </div>
-            <p className={styles.diceHint}>{getInstruction()}</p>
-            {lastAction && <p className={styles.lastAction}>{lastAction}</p>}
+
+            <div className={styles.rulesArea}>
+              <GameRules rules={gameRules} compact />
+            </div>
           </div>
-        </div>
 
-        <div className={styles.gridsContainer}>
-          {grids.map((grid, pIdx) => (
-            <div 
-              key={pIdx} 
-              className={`${styles.playerCard} ${pIdx === currentPlayerIndex ? styles.activePlayer : ""}`}
-              style={{ opacity: gameOver && winner !== pIdx ? 0.6 : 1 }}
-            >
-              <div className={styles.playerName}>
-                {PLAYER_COLORS[pIdx].emoji} {playerNames[pIdx]}
-              </div>
-              <div className={styles.grid}>
-                {grid.map((row, rIdx) => 
-                  row.map((cell, cIdx) => (
-                    (() => {
-                      const canSelect =
-                        !gameOver &&
-                        pendingRoll !== null &&
-                        pIdx !== currentPlayerIndex &&
-                        !cell.isCrossed &&
-                        cell.value === pendingRoll &&
-                        (!isOnlineMode || myPlayerIndex === currentPlayerIndex);
-                      return (
-                    <div
-                      key={cell.id}
-                      className={`${styles.cell} ${cell.isCrossed ? styles.crossed : ""} ${canSelect ? styles.cellSelectable : ""}`}
-                      onClick={canSelect ? () => handleCellSelect(pIdx, rIdx, cIdx) : undefined}
-                      style={{ cursor: canSelect ? "pointer" : "default" }}
-                    >
-                      {renderCellDice(cell.value)}
-                      {cell.isCrossed && (
-                        <div className={styles.crossOverlay}>❌</div>
-                      )}
-                    </div>
-                      );
-                    })()
-                  ))
-                )}
-              </div>
-            </div>
-          ))}
+          <div className={styles.sidebarSlot}>
+            <MatchHistorySidebar
+              players={playerNames.map((n, i) => ({
+                name: n || `Player ${i + 1}`,
+                emoji: PLAYER_COLORS[i].emoji,
+              }))}
+              scores={scores}
+              history={matchHistory}
+              getPlayerColor={(i) => PLAYER_COLORS[i]?.hex}
+              getPlayerLightColor={(i) => PLAYER_COLORS[i]?.hex}
+              getPlayerBadge={(i) => PLAYER_COLORS[i]?.emoji}
+            />
+          </div>
         </div>
 
         {gameOver && (
           <div className={styles.winnerOverlay}>
             <h2 className={styles.winnerTitle}>{playerNames[winner]} Wins! 🎉</h2>
             <button
-              className={btnStyles.primary}
+              type="button"
+              className={`${btnStyles.btn} ${btnStyles.btnPrimary} ${btnStyles.btnLarge}`}
               onClick={() => {
                 const nextGrids = [generateGrid(), generateGrid()];
                 setGrids(nextGrids);
@@ -829,13 +858,6 @@ function DiceBlitz({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
               Play Again
             </button>
           </div>
-        )}
-
-        {alertMessage && (
-          <CustomAlert 
-            message={alertMessage} 
-            onClose={() => setAlertMessage(null)} 
-          />
         )}
       </div>
     </GameLayout>

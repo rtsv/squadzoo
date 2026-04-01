@@ -15,6 +15,9 @@ import LudoPage from "./pages/games/LudoPage";
 import NumberRecallPage from "./pages/games/NumberRecallPage";
 import CupStackBattlePage from "./pages/games/CupStackBattlePage";
 import DiceBlitzPage from "./pages/games/DiceBlitzPage";
+import BoxBlitzPage from "./pages/games/BoxBlitzPage";
+import WordHuntPage from "./pages/games/WordHuntPage";
+import NumberGuessDuelPage from "./pages/games/NumberGuessDuelPage";
 
 function App() {
   return (
@@ -38,6 +41,9 @@ function App() {
           <Route path="/games/number-recall" element={<NumberRecallPage />} />
           <Route path="/games/cup-stack-battle" element={<CupStackBattlePage />} />
           <Route path="/games/dice-blitz" element={<DiceBlitzPage />} />
+          <Route path="/games/box-blitz" element={<BoxBlitzPage />} />
+          <Route path="/games/word-hunt" element={<WordHuntPage />} />
+          <Route path="/games/number-guess-duel" element={<NumberGuessDuelPage />} />
           
           {/* Active gameplay pages (no ads for AdSense exclusion) */}
           <Route path="/games/word-chain/play" element={<WordChainPage isPlayMode={true} />} />
@@ -47,6 +53,9 @@ function App() {
           <Route path="/games/number-recall/play" element={<NumberRecallPage isPlayMode={true} />} />
           <Route path="/games/cup-stack-battle/play" element={<CupStackBattlePage isPlayMode={true} />} />
           <Route path="/games/dice-blitz/play" element={<DiceBlitzPage isPlayMode={true} />} />
+          <Route path="/games/box-blitz/play" element={<BoxBlitzPage isPlayMode={true} />} />
+          <Route path="/games/word-hunt/play" element={<WordHuntPage isPlayMode={true} />} />
+          <Route path="/games/number-guess-duel/play" element={<NumberGuessDuelPage isPlayMode={true} />} />
         </Routes>
       </Router>
     </HelmetProvider>

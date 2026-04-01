@@ -18,12 +18,18 @@ const routes = [
   'games/number-recall',
   'games/cup-stack-battle',
   'games/dice-blitz',
+  'games/box-blitz',
+  'games/word-hunt',
+  'games/number-guess-duel',
   'games/word-chain/play',
   'games/tic-tac-toe/play',
   'games/ludo/play',
   'games/number-recall/play',
   'games/cup-stack-battle/play',
-  'games/dice-blitz/play'
+  'games/dice-blitz/play',
+  'games/box-blitz/play',
+  'games/word-hunt/play',
+  'games/number-guess-duel/play'
 ];
 
 const distPath = path.resolve(__dirname, '../dist');

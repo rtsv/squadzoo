@@ -35,6 +35,24 @@ const games = [
       description: "Roll the dice, strike your opponent's grid, and win fast! A high-speed elimination game.",
       icon: "🎲"
     },
+    {
+      id: "box-blitz",
+      title: "Box Blitz",
+      description: "Draw edges, capture boxes, and outscore opponents with dice-powered turns.",
+      icon: "📦"
+    },
+    {
+      id: "word-hunt",
+      title: "Word Hunt",
+      description: "Timed word search on a 9×9 grid — spell words in straight lines, parallel multiplayer.",
+      icon: "🔍"
+    },
+    {
+      id: "number-guess-duel",
+      title: "Number Guess Duel",
+      description: "Hide a number, guess your opponent’s — Higher, Lower, or Correct. First hit wins.",
+      icon: "🔢"
+    },
   ];
   
   export default games;

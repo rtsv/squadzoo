@@ -1,0 +1,275 @@
+.setupContainer {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 30px;
+  background: #2d3748;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: 24px;
+}
+
+.playerCountButtons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.countBtn {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 2px solid rgba(139, 92, 246, 0.3);
+  background: rgba(139, 92, 246, 0.12);
+  color: #e2e8f0;
+  cursor: pointer;
+}
+
+.countBtnActive {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-color: #a78bfa;
+}
+
+.setupButtons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.mainGameWrapper {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.gameContainer {
+  flex: 1;
+  background: linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow:
+    0 4px 24px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.playerBar {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.playerBadge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 2px solid #4a5568;
+  background: #2d3748;
+}
+
+.activePlayer {
+  border-color: #63b3ed;
+  box-shadow: 0 0 14px rgba(99, 179, 237, 0.35);
+}
+
+.scoreChip {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  padding: 2px 8px;
+  font-weight: 700;
+}
+
+.boardStats {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+  color: #a0aec0;
+}
+
+.diceArea {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.dice {
+  font-size: 3.5rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(145deg, #2d3748, #1a202c);
+  border-radius: 16px;
+  border: 3px solid #4a5568;
+  user-select: none;
+}
+
+.diceRolling {
+  animation: diceShake 0.1s infinite;
+}
+
+.diceShow {
+  animation: diceBounce 0.35s ease;
+}
+
+.diceHint {
+  color: #a0aec0;
+  margin: 0;
+}
+
+.lastAction {
+  color: #f6e05e;
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+/* Fixed square cells so edges align flush with dots (no floating gaps) */
+.boardGrid {
+  --cell: clamp(28px, 7.5vw, 40px);
+  margin: 18px auto 0;
+  width: fit-content;
+  display: grid;
+  grid-template-columns: repeat(9, var(--cell));
+  grid-template-rows: repeat(9, var(--cell));
+  gap: 0;
+  padding: 18px;
+  overflow: visible;
+  background:
+    radial-gradient(ellipse 120% 80% at 50% 0%, rgba(99, 102, 241, 0.12) 0%, transparent 55%),
+    linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  border-radius: 16px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.04),
+    0 12px 40px rgba(0, 0, 0, 0.45);
+}
+
+.dot {
+  position: relative;
+  z-index: 2;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #f8fafc 0%, #cbd5e1 45%, #94a3b8 100%);
+  align-self: center;
+  justify-self: center;
+  box-shadow:
+    0 0 0 2px rgba(15, 23, 42, 0.9),
+    0 2px 8px rgba(0, 0, 0, 0.35),
+    0 0 12px rgba(255, 255, 255, 0.15);
+}
+
+.edge {
+  position: relative;
+  z-index: 1;
+  border: none;
+  padding: 0;
+  margin: 0;
+  min-width: 0;
+  min-height: 0;
+  line-height: 0;
+  font-size: 0;
+  border-radius: 0;
+  background: rgba(148, 163, 184, 0.14);
+  /* Bridge into neighbour dot cells so lines meet dot centres */
+}
+
+.edgeH {
+  width: calc(100% + 11px);
+  max-width: none;
+  height: 4px;
+  max-height: 4px;
+  align-self: center;
+  margin-left: calc(-11px / 2);
+  margin-right: calc(-11px / 2);
+}
+
+.edgeV {
+  width: 4px;
+  max-width: 4px;
+  height: calc(100% + 11px);
+  max-height: none;
+  align-self: center;
+  justify-self: center;
+  margin-top: calc(-11px / 2);
+  margin-bottom: calc(-11px / 2);
+}
+
+.edgeDrawn {
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.edgeSelectable {
+  cursor: pointer;
+}
+
+.edgeSelectable:hover {
+  filter: brightness(1.35);
+  background: rgba(129, 140, 248, 0.35) !important;
+}
+
+.box {
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px dashed rgba(100, 116, 139, 0.25);
+  box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+  transition: background 0.25s ease, box-shadow 0.25s ease;
+}
+
+.resultCard {
+  margin-top: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.resultTitle {
+  margin: 0;
+  color: #f6e05e;
+}
+
+.rulesArea {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+@keyframes diceShake {
+  0% { transform: rotate(0deg) scale(1.05); }
+  25% { transform: rotate(8deg) scale(1.1); }
+  50% { transform: rotate(-8deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1.05); }
+}
+
+@keyframes diceBounce {
+  0% { transform: scale(1.3) rotate(10deg); }
+  50% { transform: scale(0.95) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
+}
+
+@media (min-width: 980px) {
+  .mainGameWrapper {
+    flex-direction: row;
+    align-items: flex-start;
+  }
+}

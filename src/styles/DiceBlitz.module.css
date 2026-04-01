@@ -1,89 +1,175 @@
-.container {
+/* Viewport-fit play shell — pairs with GameLayout fitViewport */
+.playRoot,
+.playRoot * {
+  box-sizing: border-box;
+}
+
+.playRoot {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
   display: flex;
   flex-direction: column;
-  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.mainGameWrapper {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2vw, 16px);
   width: 100%;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  color: white;
-  min-height: 80vh;
+  flex: 1;
+  min-height: 0;
+  align-items: stretch;
+}
+
+@media (min-width: 900px) {
+  .mainGameWrapper {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.gameColumn {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(6px, 1.2vw, 12px);
+  overflow: hidden;
+}
+
+.sidebarSlot {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 32vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarSlot > * {
+  flex: 1;
+  min-height: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (min-width: 900px) {
+  .sidebarSlot {
+    flex: 0 0 min(300px, 28vw);
+    max-height: none;
+    align-self: stretch;
+  }
+}
+
+.rulesArea {
+  flex-shrink: 0;
+  margin-top: auto;
+  padding-top: clamp(4px, 1vw, 8px);
 }
 
 .gameHeader {
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: clamp(8px, 2vw, 20px);
 }
 
 .title {
-  font-size: 2.5rem;
+  font-size: clamp(1.25rem, 4vw, 2.5rem);
   margin: 0;
   background: linear-gradient(135deg, #f6e05e, #ed8936);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   font-weight: 800;
   text-transform: uppercase;
-  letter-spacing: 2px;
+  letter-spacing: clamp(1px, 0.3vw, 2px);
 }
 
 .subtitle {
   color: #a0aec0;
-  font-size: 1rem;
+  font-size: clamp(0.85rem, 2vw, 1rem);
 }
 
-/* Grid Layout */
+/* Grids — two player boards, scale to available space */
 .gridsContainer {
+  flex: 1 1 auto;
+  min-height: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 24px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(8px, 2vw, 16px);
   width: 100%;
-  margin-bottom: 40px;
+  align-items: start;
+  justify-items: center;
+}
+
+@media (max-width: 640px) {
+  .gridsContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (orientation: landscape) and (max-height: 520px) {
+  .gridsContainer {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 }
 
 .playerCard {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 20px;
-  padding: 20px;
+  border-radius: clamp(12px, 3vw, 20px);
+  padding: clamp(8px, 2vw, 16px);
   display: flex;
   flex-direction: column;
   align-items: center;
   transition: all 0.3s ease;
   position: relative;
+  width: 100%;
+  max-width: min(100%, 420px);
+  min-height: 0;
 }
 
 .activePlayer {
   border-color: #f6e05e;
   box-shadow: 0 0 20px rgba(246, 224, 94, 0.2);
-  transform: translateY(-5px);
+  transform: translateY(-2px);
 }
 
 .playerName {
-  font-size: 1.25rem;
+  font-size: clamp(0.95rem, 2.2vw, 1.25rem);
   font-weight: 600;
-  margin-bottom: 15px;
+  margin-bottom: clamp(6px, 1.5vw, 12px);
   display: flex;
   align-items: center;
   gap: 8px;
+  text-align: center;
 }
 
 .grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
+  gap: clamp(4px, 1.5vw, 10px);
   width: 100%;
-  max-width: 240px;
+  max-width: min(100%, 42vmin, 280px);
+  aspect-ratio: 1 / 1;
+  margin: 0 auto;
 }
 
 .cell {
   aspect-ratio: 1;
+  min-height: 0;
+  min-width: 0;
   background: rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  border-radius: clamp(8px, 2vw, 12px);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: clamp(1rem, 4vw, 1.5rem);
   font-weight: 700;
   position: relative;
   transition: all 0.2s ease;
@@ -97,17 +183,19 @@
 }
 
 .cellDiceFace {
-  width: 42px;
-  height: 42px;
+  width: min(78%, 2.75rem);
+  aspect-ratio: 1;
+  height: auto;
+  max-height: 85%;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   grid-template-rows: repeat(3, 1fr);
-  gap: 3px;
+  gap: clamp(1px, 0.8vw, 3px);
 }
 
 .cellDot {
-  width: 9px;
-  height: 9px;
+  width: clamp(4px, 1.6vmin, 9px);
+  height: clamp(4px, 1.6vmin, 9px);
   border-radius: 50%;
   background: transparent;
   justify-self: center;
@@ -134,7 +222,7 @@
   align-items: center;
   justify-content: center;
   color: #e53e3e;
-  font-size: 2.5rem;
+  font-size: clamp(1.5rem, 9vmin, 2.5rem);
   animation: crossPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
   pointer-events: none;
 }
@@ -151,40 +239,42 @@
   }
 }
 
-/* Dice UI */
+/* Dice */
 .controls {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 12px;
+  gap: clamp(6px, 1.5vw, 12px);
   z-index: 10;
-  margin-bottom: 24px;
+  flex-shrink: 0;
 }
 
 .diceArea {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
-  padding: 12px 0;
+  gap: clamp(4px, 1vw, 8px);
+  padding: clamp(4px, 1vw, 10px) 0;
 }
 
 .diceWrapper {
   perspective: 1000px;
-  width: 100px;
-  height: 100px;
+  width: clamp(60px, 15vw, 120px);
+  height: clamp(60px, 15vw, 120px);
   cursor: pointer;
 }
 
 .dice {
-  font-size: 4rem;
-  width: 80px;
-  height: 80px;
+  font-size: clamp(2.25rem, 11vw, 4rem);
+  width: clamp(60px, 15vw, 120px);
+  height: clamp(60px, 15vw, 120px);
+  min-width: 44px;
+  min-height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(145deg, #2d3748, #1a202c);
-  border-radius: 16px;
+  border-radius: clamp(12px, 3vw, 16px);
   border: 3px solid #4a5568;
   user-select: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
@@ -198,115 +288,94 @@
   animation: diceBounce 0.35s ease;
 }
 
-/* Turn Banner */
 .turnBanner {
   background: rgba(255, 255, 255, 0.1);
-  padding: 10px 25px;
-  border-radius: 30px;
+  padding: clamp(8px, 1.5vw, 12px) clamp(12px, 3vw, 24px);
+  border-radius: 999px;
   font-weight: 600;
   color: #f6e05e;
-  margin-top: 15px;
   border: 1px solid rgba(246, 224, 94, 0.3);
+  font-size: clamp(0.75rem, 2.2vw, 0.95rem);
+  text-align: center;
+  line-height: 1.35;
+  max-width: 100%;
 }
 
 .diceHint {
   color: #a0aec0;
-  font-size: 0.95rem;
+  font-size: clamp(0.75rem, 2vw, 0.95rem);
   text-align: center;
   margin: 0;
+  padding: 0 clamp(4px, 2vw, 12px);
 }
 
 .lastAction {
   color: #f6e05e;
-  font-size: 0.9rem;
+  font-size: clamp(0.8rem, 2vw, 0.9rem);
   font-weight: 600;
   text-align: center;
   margin: 0;
 }
 
-/* Winner Overlay */
 .winnerOverlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background: rgba(0, 0, 0, 0.85);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   z-index: 1000;
-  padding: 20px;
+  padding: clamp(12px, 3vw, 20px);
   text-align: center;
 }
 
 .winnerTitle {
-  font-size: 4rem;
+  font-size: clamp(1.75rem, 7vw, 4rem);
   font-weight: 800;
   color: #f6e05e;
-  margin-bottom: 20px;
+  margin-bottom: clamp(12px, 3vw, 20px);
   text-shadow: 0 0 30px rgba(246, 224, 94, 0.5);
 }
 
-@media (max-width: 768px) {
-  .title {
-    font-size: 1.75rem;
-  }
-
-  .gridsContainer {
-    grid-template-columns: 1fr;
-  }
-
-  .winnerTitle {
-    font-size: 2.5rem;
-  }
-}
-
-/* max-width: 600px;
-margin: 0 auto;
-padding: 40px;
-background: rgba(255, 255, 255, 0.05);
-backdrop-filter: blur(10px);
-border: 1px solid rgba(255, 255, 255, 0.1);
-border-radius: 24px;
-box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
-} */
-
 .setupDescription {
   color: #a0aec0;
-  font-size: 1.1rem;
+  font-size: clamp(0.95rem, 2vw, 1.1rem);
   line-height: 1.6;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: clamp(16px, 3vw, 30px);
 }
 
 .setupButtons {
   display: flex;
   flex-direction: column;
-  gap: 15px;
+  gap: clamp(10px, 2vw, 15px);
   margin-top: 10px;
+}
+
+.setupButtons button {
+  min-height: 44px;
 }
 
 .setupContainer {
   max-width: 500px;
   margin: 0 auto;
-  padding: 30px;
+  padding: clamp(16px, 4vw, 30px);
   background: #2d3748;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
 }
 
-@media (max-width: 768px) {
-  .title {
-    font-size: 1.75rem;
-  }
+@keyframes diceShake {
+  0% { transform: rotate(0deg) scale(1.05); }
+  25% { transform: rotate(8deg) scale(1.1); }
+  50% { transform: rotate(-8deg) scale(1.05); }
+  75% { transform: rotate(5deg) scale(1.1); }
+  100% { transform: rotate(0deg) scale(1.05); }
+}
 
-  .gridsContainer {
-    grid-template-columns: 1fr;
-  }
-
-  .winnerTitle {
-    font-size: 2.5rem;
-  }
+@keyframes diceBounce {
+  0% { transform: scale(1.3) rotate(10deg); }
+  50% { transform: scale(0.95) rotate(-5deg); }
+  100% { transform: scale(1) rotate(0deg); }
 }

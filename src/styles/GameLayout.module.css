@@ -5,6 +5,49 @@
   background: transparent;
 }
 
+/* Viewport-fit play screens: no page scroll; children use flex to fill space */
+.containerFitViewport {
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: none;
+  min-height: 100dvh;
+  max-height: 100dvh;
+  height: 100dvh;
+  margin: 0;
+  padding: clamp(6px, 1.5vw, 16px);
+  padding-bottom: max(clamp(6px, 1.5vw, 16px), env(safe-area-inset-bottom));
+  overflow: hidden;
+}
+
+.contentFitViewport {
+  box-sizing: border-box;
+  flex: 1;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  display: flex;
+  flex-direction: column;
+  padding: clamp(8px, 1.5vw, 20px);
+}
+
+.containerFitViewport .header {
+  flex-shrink: 0;
+  margin-bottom: clamp(8px, 1.5vw, 16px);
+  padding: clamp(10px, 1.8vw, 18px) clamp(12px, 2vw, 20px);
+}
+
+.containerFitViewport .title {
+  font-size: clamp(16px, 3.5vw, 26px);
+}
+
+.containerFitViewport .playerBadge {
+  font-size: clamp(12px, 2vw, 15px);
+  padding: clamp(6px, 1.2vw, 10px) clamp(10px, 1.8vw, 18px);
+}
+
 .header {
   display: flex;
   justify-content: space-between;

@@ -1,9 +1,11 @@
 import styles from "../styles/GameLayout.module.css";
 import btnStyles from "../styles/Button.module.css";
 
-function GameLayout({ title, currentPlayer, children, onBack }) {
+function GameLayout({ title, currentPlayer, children, onBack, fitViewport = false }) {
   return (
-    <div className={styles.container}>
+    <div
+      className={`${styles.container} ${fitViewport ? styles.containerFitViewport : ""}`}
+    >
       <div className={styles.header}>
         <button className={`${btnStyles.btn} ${btnStyles.btnBack}`} onClick={onBack}>
           ⬅ Back
@@ -14,7 +16,7 @@ function GameLayout({ title, currentPlayer, children, onBack }) {
         </div>
       </div>
 
-      <div className={styles.content}>
+      <div className={`${styles.content} ${fitViewport ? styles.contentFitViewport : ""}`}>
         {children}
       </div>
     </div>

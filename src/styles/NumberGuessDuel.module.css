@@ -1,0 +1,225 @@
+.setupContainer {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: clamp(16px, 4vw, 30px);
+  background: #2d3748;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.setupDescription {
+  text-align: center;
+  color: #cbd5e0;
+  margin-bottom: clamp(12px, 3vw, 20px);
+  font-size: clamp(0.9rem, 2vw, 1rem);
+}
+
+.setupButtons {
+  margin-top: 16px;
+  display: flex;
+  justify-content: center;
+}
+
+.presetRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.presetLabel {
+  color: #a0aec0;
+  font-size: 0.9rem;
+}
+
+.presetBtn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 2px solid rgba(139, 92, 246, 0.35);
+  background: rgba(139, 92, 246, 0.12);
+  color: #e2e8f0;
+  cursor: pointer;
+  font-size: 0.85rem;
+}
+
+.presetBtnActive {
+  background: linear-gradient(135deg, #8b5cf6, #6366f1);
+  border-color: #a78bfa;
+}
+
+.playRoot {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+.mainGameWrapper {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(8px, 2vw, 16px);
+  flex: 1;
+  min-height: 0;
+}
+
+@media (min-width: 900px) {
+  .mainGameWrapper {
+    flex-direction: row;
+    align-items: stretch;
+  }
+}
+
+.gameContainer {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2vw, 14px);
+  padding: clamp(10px, 2vw, 16px);
+  background: linear-gradient(165deg, rgba(30, 41, 59, 0.95) 0%, rgba(15, 23, 42, 0.98) 100%);
+  border: 1px solid rgba(99, 102, 241, 0.2);
+  border-radius: 16px;
+}
+
+.rangeBadge {
+  align-self: flex-start;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #c4b5fd;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(167, 139, 250, 0.35);
+}
+
+.panel {
+  padding: 14px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.65);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panelTitle {
+  margin: 0;
+  font-size: clamp(0.95rem, 2.5vw, 1.1rem);
+  color: #f1f5f9;
+}
+
+.panelHint {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #94a3b8;
+}
+
+.waitBanner {
+  padding: 12px;
+  text-align: center;
+  color: #86efac;
+  font-weight: 600;
+  background: rgba(22, 101, 52, 0.2);
+  border-radius: 10px;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+}
+
+.resultBanner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  text-align: center;
+  border-radius: 12px;
+  background: rgba(234, 179, 8, 0.12);
+  border: 1px solid rgba(250, 204, 21, 0.35);
+}
+
+.resultEmoji {
+  font-size: clamp(1.1rem, 3vw, 1.35rem);
+  font-weight: 700;
+  color: #fde047;
+}
+
+.historySection {
+  margin-top: 4px;
+  padding: 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border: 1px solid rgba(148, 163, 184, 0.12);
+}
+
+.historyTitle {
+  margin: 0 0 10px;
+  font-size: 0.9rem;
+  color: #94a3b8;
+}
+
+.historyCols {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+@media (max-width: 500px) {
+  .historyCols {
+    grid-template-columns: 1fr;
+  }
+}
+
+.historyCol {
+  min-width: 0;
+}
+
+.historyName {
+  font-weight: 600;
+  font-size: 0.85rem;
+  margin-bottom: 6px;
+}
+
+.historyList {
+  margin: 0;
+  padding-left: 1.1rem;
+  font-size: 0.82rem;
+  color: #e2e8f0;
+  line-height: 1.45;
+}
+
+.rulesArea {
+  display: flex;
+  justify-content: center;
+  margin-top: auto;
+}
+
+.sidebarSlot {
+  flex: 0 1 auto;
+  min-width: 0;
+  min-height: 0;
+  max-height: 40vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.sidebarSlot > * {
+  flex: 1;
+  min-height: 0;
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (min-width: 900px) {
+  .sidebarSlot {
+    flex: 0 0 min(300px, 30vw);
+    max-height: none;
+  }
+}

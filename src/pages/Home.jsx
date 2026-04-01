@@ -18,7 +18,10 @@ function Home() {
       "ludo": "/games/ludo",
       "number-recall": "/games/number-recall",
       "cup-stack-battle": "/games/cup-stack-battle",
-      "dice-blitz": "/games/dice-blitz"
+      "dice-blitz": "/games/dice-blitz",
+      "box-blitz": "/games/box-blitz",
+      "word-hunt": "/games/word-hunt",
+      "number-guess-duel": "/games/number-guess-duel"
     };
     navigate(gameRoutes[gameId]);
   };
@@ -126,6 +129,13 @@ function Home() {
               <p>
                 A high-speed race to clear your 3x3 grid! Roll the dice and mark your numbers — first to clear their board wins. Fast and fun for 2 players. 
                 <button onClick={() => navigate("/games/dice-blitz")} className={styles.textLink}>Play Dice Blitz now →</button>
+              </p>
+            </article>
+            <article className={styles.highlightCard}>
+              <h3>📦 Box Blitz</h3>
+              <p>
+                Draw lines, complete boxes, and chain bonus moves with dice-powered turns. A tactical multiplayer strategy game for 2-4 players.
+                <button onClick={() => navigate("/games/box-blitz")} className={styles.textLink}>Play Box Blitz now →</button>
               </p>
             </article>
           </div>
