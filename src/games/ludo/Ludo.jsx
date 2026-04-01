@@ -395,6 +395,10 @@ function Ludo({ onBack, initialRoomCode, onGameStart, isPlayMode = false }) {
 
     return () => {
       console.log('🧹 Cleaning up online game listeners');
+      delete roomService.callbacks.onError;
+      delete roomService.callbacks.onPlayerJoined;
+      delete roomService.callbacks.onPlayerLeft;
+      delete roomService.callbacks.onGameAction;
       
       // Clean up reconnection timer
       if (reconnectionTimer) {

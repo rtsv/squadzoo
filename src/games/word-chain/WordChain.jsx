@@ -248,22 +248,12 @@ function WordChain({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
 
     return () => {
       console.log('🧹 Cleaning up online game listeners');
-      // Cleanup is handled in handleBackToMenu
+      delete roomService.callbacks.onError;
+      delete roomService.callbacks.onPlayerJoined;
+      delete roomService.callbacks.onPlayerLeft;
+      delete roomService.callbacks.onGameAction;
     };
   }, [isOnlineMode, isInRoom]);
-
-  // Separate effect for game-specific handlers
-  useEffect(() => {
-    if (!gameStarted) return;
-
-    const handlePlayerLeft = (data) => {
-      const allPlayers = roomService.getConnectedPlayers();
-      setConnectedPlayers([...allPlayers]);
-      setAlertMessage(`${data.playerName || 'A player'} disconnected!`);
-    };
-
-    roomService.on('onPlayerLeft', handlePlayerLeft);
-  }, [gameStarted]);
 
   function handlePlayerDisconnect(playerId) {
     const disconnectedPlayer = players.find((_, idx) => 

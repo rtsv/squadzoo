@@ -23,3 +23,21 @@ in number recall game do some changes
 2. do not show the number behind tiles any time, only player have to gues it right if it guess then it move for next target number
 3. Add sound effects for correct/wrong tile clicks in Number Recall
 4. add to play online for upto 4 player using room and follow same structure which are using in ludo using roomservice
+
+
+
+URL: https://www.squadzoo.games/
+Checked on: 29.03.2026
+
+Critical Errors 
+
+• Description count: 2 description tags found
+• Canonical link: Page contains 2 canonical links (Recommended: 1 canonical link)
+• Desktop PageSpeed Insights: 0
+
+Warnings 
+
+• Title length: 72 characters (Recommended: 35-65 characters)
+• Mobile PageSpeed Insights: 70
+
+Link to the full report: https://sitechecker.pro/app/main/seo-report?pageUrl=https://www.squadzoo.games/

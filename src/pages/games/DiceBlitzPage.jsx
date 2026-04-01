@@ -18,25 +18,25 @@ function DiceBlitzPage({ isPlayMode = false }) {
   const gameDescription = {
     title: "Dice Blitz",
     description:
-      "Play Dice Blitz – Online Multiplayer Dice Game! Roll the dice, strike your opponent's grid, and win fast! A high-speed elimination game for 2-4 players. No downloads or sign-ups required - works on all devices.",
+      "Play Dice Blitz – Online Multiplayer Dice Race! Clear your own 3x3 grid first to win! A high-speed race for 2 players. No downloads or sign-ups required - works on all devices.",
     features: [
-      "🎲 High-speed dice elimination gameplay",
-      "🎯 Strategic grid-based combat",
-      "👥 2-4 players - local and online multiplayer",
-      "⚡ Fast rounds - perfect for quick fun",
+      "🎲 High-speed dice clearing gameplay",
+      "🏁 Strategic race to clear your board",
+      "👥 Exactly 2 players - local and online multiplayer",
+      "⚡ Fast rounds - perfect for head-to-head fun",
       "📱 Mobile-friendly - play anywhere, anytime",
       "🌐 No download required - play in your browser",
     ],
     howToPlay:
-      "Each player has a 3x3 grid of random numbers (1-6). Take turns rolling a die. When a number is rolled, it is marked as 'crossed' on the opponent's grid. The first player to clear all cells on any opponent's grid wins! Share a room code to play with friends remotely or choose local mode to play on the same device.",
+      "Each player has a 3x3 grid of random numbers (1-6). Take turns rolling a die. When a number is rolled, it is marked as 'crossed' on YOUR own grid. The first player to clear all cells on their own grid wins! Share a room code to play with a friend remotely or choose local mode to play together.",
   };
 
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "Game",
-    name: "Dice Blitz - Online Multiplayer Dice Game",
+    name: "Dice Blitz - 2 Player Dice Race Game Online",
     description:
-      "Play Dice Blitz online with friends! Free multiplayer dice strategy game for 2-4 players. Roll dice and strike opponent grids to win. No downloads or registration required.",
+      "Play Dice Blitz online with a friend! Free 2-player dice race game. Roll dice and clear your own grid first to win. No downloads or registration required.",
     url: "https://www.squadzoo.games/games/dice-blitz",
     image: "https://www.squadzoo.games/images/squad-zoo-logo.png",
     publisher: {
@@ -44,12 +44,12 @@ function DiceBlitzPage({ isPlayMode = false }) {
       name: "SquadZoo",
       url: "https://www.squadzoo.games",
     },
-    genre: ["Dice Game", "Strategy Game", "Multiplayer Game"],
+    genre: ["Dice Game", "Race Game", "Multiplayer Game"],
     gamePlatform: ["Web Browser", "Desktop", "Mobile"],
     numberOfPlayers: {
       "@type": "QuantitativeValue",
       minValue: 2,
-      maxValue: 4,
+      maxValue: 2,
     },
     playMode: ["MultiPlayer"],
     inLanguage: "en",

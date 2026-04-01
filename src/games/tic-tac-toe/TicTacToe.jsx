@@ -69,11 +69,11 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
     if (!isOnlineMode || !isInRoom) return;
 
     // Handle errors
-    roomService.on('onError', (errorMessage) => {
+    const handleError = (errorMessage) => {
       setAlertMessage(errorMessage);
-    });
+    };
 
-    roomService.on('onPlayerJoined', (data) => {
+    const handlePlayerJoined = (data) => {
       console.log('Player joined:', data);
       const allPlayers = roomService.getConnectedPlayers();
       setConnectedPlayers(allPlayers);
@@ -93,16 +93,16 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
           onGameStart();
         }
       }
-    });
+    };
 
-    roomService.on('onPlayerLeft', () => {
+    const handlePlayerLeft = () => {
       setAlertMessage("Opponent disconnected!");
       setTimeout(() => {
         handleBackToMenu();
       }, 2000);
-    });
+    };
 
-    roomService.on('onGameAction', (data) => {
+    const handleGameAction = (data) => {
       console.log('Game action received:', data);
       
       switch (data.action) {
@@ -133,14 +133,22 @@ function TicTacToe({ onBack, initialRoomCode, onGameStart, isPlayMode = false })
           resetGame();
           break;
       }
-    });
+    };
+
+    roomService.on('onError', handleError);
+    roomService.on('onPlayerJoined', handlePlayerJoined);
+    roomService.on('onPlayerLeft', handlePlayerLeft);
+    roomService.on('onGameAction', handleGameAction);
 
     return () => {
-      if (roomService.isConnected()) {
-        roomService.leaveRoom();
-      }
+      // Do not disconnect here: route transitions to /play can remount this component.
+      // Room teardown should only happen on explicit leave/back actions.
+      delete roomService.callbacks.onError;
+      delete roomService.callbacks.onPlayerJoined;
+      delete roomService.callbacks.onPlayerLeft;
+      delete roomService.callbacks.onGameAction;
     };
-  }, [isOnlineMode, isHost, isInRoom]);
+  }, [isOnlineMode, isHost, isInRoom, onGameStart, isPlayMode]);
 
   // Add useEffect to handle initial room code from URL
   useEffect(() => {

@@ -397,7 +397,12 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
     setConnectedPlayers([...roomService.getConnectedPlayers()]);
 
     return () => {
-      if (roomService.isConnected()) roomService.leaveRoom();
+      // Keep PartyKit connection alive across remount/navigation to play mode.
+      // Explicit room leave is handled in handleBackToMenu.
+      delete roomService.callbacks.onError;
+      delete roomService.callbacks.onPlayerJoined;
+      delete roomService.callbacks.onPlayerLeft;
+      delete roomService.callbacks.onGameAction;
     };
   }, [isOnlineMode, isInRoom, gameStarted, handleRemoteGameStart, handleRemoteDice, handleRemoteMerge]);
 
@@ -470,7 +475,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
   }
 
   // ====== BACK TO MENU ======
-  function handleBackToMenu() {
+  const handleBackToMenu = useCallback(() => {
     if (roomService.isConnected()) roomService.leaveRoom();
     setGameMode(null);
     setGameStarted(false);
@@ -496,7 +501,7 @@ function CupStackBattle({ onBack, initialRoomCode, onGameStart, isPlayMode = fal
     setLastAction(null);
     setNewGroupId(null);
     setMergingGroupIds([]);
-  }
+  }, []);
 
   // ====== PLAYER COUNT ======
   function handlePlayerCountChange(count) {

@@ -149,6 +149,13 @@ class RoomService {
             playerName: decodeURIComponent(data.playerName)
           });
         }
+        // Voice chat gets its own dedicated callback — no chaining needed
+        if (this.callbacks.onVoicePlayerJoined) {
+          this.callbacks.onVoicePlayerJoined({
+            playerId: data.playerId,
+            playerName: decodeURIComponent(data.playerName)
+          });
+        }
         break;
 
       case 'player-left':
@@ -173,6 +180,10 @@ class RoomService {
         if (this.callbacks.onPlayerLeft) {
           this.callbacks.onPlayerLeft({ playerId: data.playerId, playerName: data.playerName });
         }
+        // Voice chat gets its own dedicated callback — no chaining needed
+        if (this.callbacks.onVoicePlayerLeft) {
+          this.callbacks.onVoicePlayerLeft({ playerId: data.playerId, playerName: data.playerName });
+        }
         break;
 
       case 'game-action':
@@ -184,6 +195,16 @@ class RoomService {
       case 'game-start':
         if (this.callbacks.onGameStart) {
           this.callbacks.onGameStart(data);
+        }
+        break;
+
+      // Voice signaling messages are dispatched to a dedicated callback
+      // so they never conflict with game logic callbacks (onMessage)
+      case 'voice-offer':
+      case 'voice-answer':
+      case 'voice-ice':
+        if (this.callbacks.onVoiceSignal) {
+          this.callbacks.onVoiceSignal(data);
         }
         break;
 

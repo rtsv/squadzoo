@@ -37,10 +37,14 @@ export function useVoiceChat({ enabled, myId }) {
   const peerConnsRef     = useRef({});     // peerId → RTCPeerConnection
   const iceCandidatesBuf = useRef({});     // peerId → ICE[] buffered before remoteDesc
   const audioElemsRef    = useRef({});     // peerId → HTMLAudioElement
+  const pendingSignalsRef = useRef([]);    // signals that arrived before mic ready
 
   // Keep a stable ref to myId so closures always see the current value
   const myIdRef = useRef(myId);
   useEffect(() => { myIdRef.current = myId; }, [myId]);
+
+  // Keep a stable ref to isMuted so the mic-setup closure never goes stale
+  const isMutedRef = useRef(false);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Helpers
@@ -48,7 +52,14 @@ export function useVoiceChat({ enabled, myId }) {
 
   /** Send a targeted signaling message to one specific peer via PartyKit */
   const sendSignal = useCallback((toPeerId, payload) => {
-    roomService.send({ ...payload, to: toPeerId, from: myIdRef.current });
+    // roomService.playerId is the most reliable source because it's updated from
+    // PartyKit connection events, while prop-driven myId may lag across rerenders.
+    const fromPeerId = roomService.playerId || myIdRef.current;
+    if (!fromPeerId) {
+      console.warn("🎤 Skipping voice signal: missing sender id", payload?.type);
+      return;
+    }
+    roomService.send({ ...payload, to: toPeerId, from: fromPeerId });
   }, []);
 
   /** Attach a remote audio track to an <audio> element and play it */
@@ -67,8 +78,18 @@ export function useVoiceChat({ enabled, myId }) {
   const addLocalTracks = useCallback((pc) => {
     const stream = localStreamRef.current;
     if (!stream) return;
-    stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+    const existingTrackIds = new Set(
+      pc.getSenders().map((sender) => sender.track?.id).filter(Boolean)
+    );
+    stream.getTracks().forEach((track) => {
+      if (!existingTrackIds.has(track.id)) pc.addTrack(track, stream);
+    });
   }, []);
+
+  /** Ensure all existing peers get local tracks once mic becomes ready */
+  const attachLocalTracksToAllPeers = useCallback(() => {
+    Object.values(peerConnsRef.current).forEach((pc) => addLocalTracks(pc));
+  }, [addLocalTracks]);
 
   /** Drain any buffered ICE candidates that arrived before remote description */
   const drainIceCandidates = useCallback(async (pc, peerId) => {
@@ -122,6 +143,16 @@ export function useVoiceChat({ enabled, myId }) {
     return pc;
   }, [sendSignal, playRemoteStream, addLocalTracks]);
 
+  /** Flush deferred voice signals that arrived before mic permission resolved */
+  const flushPendingSignals = useCallback(() => {
+    if (!localStreamRef.current || pendingSignalsRef.current.length === 0) return;
+    const queued = [...pendingSignalsRef.current];
+    pendingSignalsRef.current = [];
+    queued.forEach((msg) => {
+      handleSignal(msg);
+    });
+  }, []);
+
   /** Tear down a single peer connection cleanly */
   const closePeer = useCallback((peerId) => {
     const pc = peerConnsRef.current[peerId];
@@ -168,6 +199,13 @@ export function useVoiceChat({ enabled, myId }) {
     const { type, from, fromName } = data;
     if (!from || from === myIdRef.current) return;
 
+    // If mic is not ready yet, queue offer/answer to avoid creating no-audio peers.
+    // ICE is buffered separately and can be accepted later.
+    if (!localStreamRef.current && (type === "voice-offer" || type === "voice-answer")) {
+      pendingSignalsRef.current.push(data);
+      return;
+    }
+
     if (type === "voice-offer") {
       console.log(`🎤 Received offer from ${fromName} (${from})`);
       setStatus("connecting");
@@ -206,7 +244,11 @@ export function useVoiceChat({ enabled, myId }) {
 
     if (type === "voice-ice") {
       const pc = peerConnsRef.current[from];
-      if (!pc) return;
+      if (!pc) {
+        // Keep ICE so it can be replayed when the peer connection is created.
+        iceCandidatesBuf.current[from] = [...(iceCandidatesBuf.current[from] || []), data.candidate];
+        return;
+      }
       if (pc.remoteDescription) {
         try { await pc.addIceCandidate(new RTCIceCandidate(data.candidate)); } catch { /* ignore */ }
       } else {
@@ -232,18 +274,26 @@ export function useVoiceChat({ enabled, myId }) {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
         if (cancelled) { stream.getTracks().forEach((t) => t.stop()); return; }
         localStreamRef.current = stream;
+        attachLocalTracksToAllPeers();
         setStatus("connecting");
 
-        // Restore mute state if already muted
-        stream.getAudioTracks().forEach((t) => { t.enabled = !isMuted; });
+        // Restore mute state if already muted (read from ref — closure is stable)
+        stream.getAudioTracks().forEach((t) => { t.enabled = !isMutedRef.current; });
 
-        // Call all players who are already in the room (they are the "existing" side,
-        // but we also offer from our side to be safe — duplicate connection prevention
-        // is handled in createPeerConnection() which returns early if peer exists)
+        // Bootstrap calls to existing peers with deterministic initiator selection.
+        // This prevents offer glare (both sides creating offers simultaneously).
+        // Rule: lexicographically smaller peer id initiates.
         const others = roomService.getConnectedPlayers().filter(
           (p) => p.playerId && p.playerId !== myIdRef.current
         );
-        others.forEach(({ playerId, playerName }) => initiateCallTo(playerId, playerName));
+        const selfId = roomService.playerId || myIdRef.current;
+        others.forEach(({ playerId, playerName }) => {
+          if (!selfId || !playerId) return;
+          if (selfId < playerId) {
+            initiateCallTo(playerId, playerName);
+          }
+        });
+        flushPendingSignals();
 
       } catch (err) {
         if (cancelled) return;
@@ -262,46 +312,32 @@ export function useVoiceChat({ enabled, myId }) {
     start();
 
     // ── roomService callbacks ─────────────────────────────────────────────
-    // Voice signaling arrives via the 'onMessage' default fallback
-    const prevOnMessage = roomService.callbacks.onMessage;
-    roomService.on("onMessage", (data) => {
-      if (data.type && data.type.startsWith("voice-")) {
-        handleSignal(data);
-      } else if (prevOnMessage) {
-        prevOnMessage(data);
-      }
-    });
+    // Voice signaling is now routed via onVoiceSignal — a dedicated path in
+    // roomService that is NOT shared with game action callbacks. No chaining
+    // or last-writer-wins collision possible.
+    roomService.on("onVoiceSignal", handleSignal);
 
-    // When a new player joins — we initiate a call to them
-    const prevOnPlayerJoined = roomService.callbacks.onPlayerJoined;
-    roomService.on("onPlayerJoined", (data) => {
+    // When a new player joins — initiate a call to them
+    roomService.on("onVoicePlayerJoined", (data) => {
       if (localStreamRef.current && data.playerId && data.playerId !== myIdRef.current) {
         initiateCallTo(data.playerId, data.playerName || "Player");
       }
-      if (prevOnPlayerJoined) prevOnPlayerJoined(data);
     });
 
     // When a player leaves — close their peer connection
-    const prevOnPlayerLeft = roomService.callbacks.onPlayerLeft;
-    roomService.on("onPlayerLeft", (data) => {
+    roomService.on("onVoicePlayerLeft", (data) => {
       if (data.playerId) closePeer(data.playerId);
-      if (prevOnPlayerLeft) prevOnPlayerLeft(data);
     });
 
     return () => {
       cancelled = true;
-      // Restore previous callbacks
-      if (prevOnMessage !== undefined) roomService.callbacks.onMessage = prevOnMessage;
-      else delete roomService.callbacks.onMessage;
-
-      if (prevOnPlayerJoined !== undefined) roomService.callbacks.onPlayerJoined = prevOnPlayerJoined;
-      else delete roomService.callbacks.onPlayerJoined;
-
-      if (prevOnPlayerLeft !== undefined) roomService.callbacks.onPlayerLeft = prevOnPlayerLeft;
-      else delete roomService.callbacks.onPlayerLeft;
+      // Clear only the voice-specific callbacks we registered
+      delete roomService.callbacks.onVoiceSignal;
+      delete roomService.callbacks.onVoicePlayerJoined;
+      delete roomService.callbacks.onVoicePlayerLeft;
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [enabled]);
+  }, [enabled, attachLocalTracksToAllPeers, initiateCallTo, flushPendingSignals, handleSignal, closePeer]);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Tear down everything on unmount or when disabled
@@ -326,6 +362,7 @@ export function useVoiceChat({ enabled, myId }) {
   const toggleMute = useCallback(() => {
     setIsMuted((prev) => {
       const nextMuted = !prev;
+      isMutedRef.current = nextMuted; // keep ref in sync for closures
       if (localStreamRef.current) {
         localStreamRef.current.getAudioTracks().forEach((t) => { t.enabled = !nextMuted; });
       }

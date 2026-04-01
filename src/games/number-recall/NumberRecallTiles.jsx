@@ -428,6 +428,10 @@ function NumberRecallTiles({ onBack, initialRoomCode, onGameStart, isPlayMode = 
 
     return () => {
       console.log('🧹 Cleaning up online listeners');
+      delete roomService.callbacks.onError;
+      delete roomService.callbacks.onPlayerJoined;
+      delete roomService.callbacks.onPlayerLeft;
+      delete roomService.callbacks.onGameAction;
     };
   }, [isOnlineMode, isInRoom, handleRemoteGameStart, handleRemoteTileClick, handleRemoteNextTurn, gameStarted]);
   

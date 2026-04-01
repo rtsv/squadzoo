@@ -17,7 +17,8 @@ function Home() {
       "tic-tac-toe": "/games/tic-tac-toe",
       "ludo": "/games/ludo",
       "number-recall": "/games/number-recall",
-      "cup-stack-battle": "/games/cup-stack-battle"
+      "cup-stack-battle": "/games/cup-stack-battle",
+      "dice-blitz": "/games/dice-blitz"
     };
     navigate(gameRoutes[gameId]);
   };
@@ -118,6 +119,13 @@ function Home() {
               <p>
                 Roll the dice and stack your cups on opponents! Dominate the board by covering every cup with your color. A fun party game for 2-4 players. 
                 <button onClick={() => navigate("/games/cup-stack-battle")} className={styles.textLink}>Play Cup Stack Battle →</button>
+              </p>
+            </article>
+            <article className={styles.highlightCard}>
+              <h3>🎲 Dice Blitz</h3>
+              <p>
+                A high-speed race to clear your 3x3 grid! Roll the dice and mark your numbers — first to clear their board wins. Fast and fun for 2 players. 
+                <button onClick={() => navigate("/games/dice-blitz")} className={styles.textLink}>Play Dice Blitz now →</button>
               </p>
             </article>
           </div>
