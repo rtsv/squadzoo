@@ -28,7 +28,8 @@ const ICE_CONFIG = {
 export function useVoiceChat({ enabled, myId }) {
   // ── Public state ───────────────────────────────────────────────────────────
   const [status, setStatus] = useState("idle");     // idle | requesting | connecting | connected | error
-  const [isMuted, setIsMuted] = useState(false);
+  /** Default muted on game start; player must click to unmute and send audio */
+  const [isMuted, setIsMuted] = useState(true);
   const [micError, setMicError] = useState(null);
   const [activePeers, setActivePeers] = useState({}); // peerId → { name, speaking }
 
@@ -41,10 +42,12 @@ export function useVoiceChat({ enabled, myId }) {
 
   // Keep a stable ref to myId so closures always see the current value
   const myIdRef = useRef(myId);
-  useEffect(() => { myIdRef.current = myId; }, [myId]);
+  useEffect(() => {
+    myIdRef.current = roomService.playerId || myId;
+  }, [myId]);
 
   // Keep a stable ref to isMuted so the mic-setup closure never goes stale
-  const isMutedRef = useRef(false);
+  const isMutedRef = useRef(true);
 
   // ─────────────────────────────────────────────────────────────────────────
   // Helpers
@@ -269,6 +272,22 @@ export function useVoiceChat({ enabled, myId }) {
     async function start() {
       setStatus("requesting");
       setMicError(null);
+      // Each online voice session starts muted until the player unmutes
+      setIsMuted(true);
+      isMutedRef.current = true;
+
+      async function waitForLocalPlayerId(timeoutMs = 8000) {
+        const deadline = Date.now() + timeoutMs;
+        while (Date.now() < deadline) {
+          const id = roomService.playerId || myIdRef.current;
+          if (id) {
+            myIdRef.current = id;
+            return id;
+          }
+          await new Promise((r) => setTimeout(r, 40));
+        }
+        return roomService.playerId || myIdRef.current;
+      }
 
       try {
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: false });
@@ -279,6 +298,8 @@ export function useVoiceChat({ enabled, myId }) {
 
         // Restore mute state if already muted (read from ref — closure is stable)
         stream.getAudioTracks().forEach((t) => { t.enabled = !isMutedRef.current; });
+
+        await waitForLocalPlayerId();
 
         // Bootstrap calls to existing peers with deterministic initiator selection.
         // This prevents offer glare (both sides creating offers simultaneously).
@@ -315,26 +336,21 @@ export function useVoiceChat({ enabled, myId }) {
     // Voice signaling is now routed via onVoiceSignal — a dedicated path in
     // roomService that is NOT shared with game action callbacks. No chaining
     // or last-writer-wins collision possible.
-    roomService.on("onVoiceSignal", handleSignal);
-
-    // When a new player joins — initiate a call to them
-    roomService.on("onVoicePlayerJoined", (data) => {
-      if (localStreamRef.current && data.playerId && data.playerId !== myIdRef.current) {
-        initiateCallTo(data.playerId, data.playerName || "Player");
-      }
-    });
-
-    // When a player leaves — close their peer connection
-    roomService.on("onVoicePlayerLeft", (data) => {
-      if (data.playerId) closePeer(data.playerId);
+    roomService.setVoiceChatHandlers({
+      onSignal: handleSignal,
+      onPlayerJoined: (data) => {
+        if (localStreamRef.current && data.playerId && data.playerId !== myIdRef.current) {
+          initiateCallTo(data.playerId, data.playerName || "Player");
+        }
+      },
+      onPlayerLeft: (data) => {
+        if (data.playerId) closePeer(data.playerId);
+      },
     });
 
     return () => {
       cancelled = true;
-      // Clear only the voice-specific callbacks we registered
-      delete roomService.callbacks.onVoiceSignal;
-      delete roomService.callbacks.onVoicePlayerJoined;
-      delete roomService.callbacks.onVoicePlayerLeft;
+      roomService.clearVoiceChatHandlers();
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [enabled, attachLocalTracksToAllPeers, initiateCallTo, flushPendingSignals, handleSignal, closePeer]);

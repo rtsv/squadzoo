@@ -7,6 +7,7 @@ import styles from "../styles/VoiceChat.module.css";
  *
  * Drop-in voice-chat panel for any online multiplayer game.
  * Place it inside the game JSX; it only renders in online mode.
+ * Mic starts muted; the player taps the mic button to unmute and send audio.
  *
  * Props:
  *   enabled   {boolean}  - pass `isOnlineMode` from game state

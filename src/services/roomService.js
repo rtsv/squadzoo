@@ -9,6 +9,10 @@ class RoomService {
     this.playerName = '';
     this.callbacks = {};
     this.connectedPlayers = [];
+    /** Isolated from `callbacks` so games can replace onGameAction without breaking voice */
+    this.voiceSignalHandler = null;
+    this.voicePlayerJoinedHandler = null;
+    this.voicePlayerLeftHandler = null;
   }
 
   // Initialize and join/create a room
@@ -149,8 +153,12 @@ class RoomService {
             playerName: decodeURIComponent(data.playerName)
           });
         }
-        // Voice chat gets its own dedicated callback — no chaining needed
-        if (this.callbacks.onVoicePlayerJoined) {
+        if (this.voicePlayerJoinedHandler) {
+          this.voicePlayerJoinedHandler({
+            playerId: data.playerId,
+            playerName: decodeURIComponent(data.playerName)
+          });
+        } else if (this.callbacks.onVoicePlayerJoined) {
           this.callbacks.onVoicePlayerJoined({
             playerId: data.playerId,
             playerName: decodeURIComponent(data.playerName)
@@ -180,8 +188,9 @@ class RoomService {
         if (this.callbacks.onPlayerLeft) {
           this.callbacks.onPlayerLeft({ playerId: data.playerId, playerName: data.playerName });
         }
-        // Voice chat gets its own dedicated callback — no chaining needed
-        if (this.callbacks.onVoicePlayerLeft) {
+        if (this.voicePlayerLeftHandler) {
+          this.voicePlayerLeftHandler({ playerId: data.playerId, playerName: data.playerName });
+        } else if (this.callbacks.onVoicePlayerLeft) {
           this.callbacks.onVoicePlayerLeft({ playerId: data.playerId, playerName: data.playerName });
         }
         break;
@@ -198,12 +207,12 @@ class RoomService {
         }
         break;
 
-      // Voice signaling messages are dispatched to a dedicated callback
-      // so they never conflict with game logic callbacks (onMessage)
       case 'voice-offer':
       case 'voice-answer':
       case 'voice-ice':
-        if (this.callbacks.onVoiceSignal) {
+        if (this.voiceSignalHandler) {
+          this.voiceSignalHandler(data);
+        } else if (this.callbacks.onVoiceSignal) {
           this.callbacks.onVoiceSignal(data);
         }
         break;
@@ -296,6 +305,22 @@ class RoomService {
     });
   }
 
+  clearVoiceChatHandlers() {
+    this.voiceSignalHandler = null;
+    this.voicePlayerJoinedHandler = null;
+    this.voicePlayerLeftHandler = null;
+  }
+
+  /**
+   * Register voice WebRTC handlers outside `callbacks` so replacing `onGameAction`
+   * in games (effect re-runs) never removes voice signaling.
+   */
+  setVoiceChatHandlers({ onSignal, onPlayerJoined, onPlayerLeft }) {
+    this.voiceSignalHandler = onSignal ?? null;
+    this.voicePlayerJoinedHandler = onPlayerJoined ?? null;
+    this.voicePlayerLeftHandler = onPlayerLeft ?? null;
+  }
+
   // Register callbacks
   on(event, callback) {
     this.callbacks[event] = callback;
@@ -317,6 +342,7 @@ class RoomService {
     this.playerId = null;
     this.isHost = false;
     this.connectedPlayers = [];
+    this.clearVoiceChatHandlers();
     this.callbacks = {};
   }
 
