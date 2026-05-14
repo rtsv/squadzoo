@@ -382,7 +382,7 @@ export default function NumberGuessDuel({ onBack, initialRoomCode, onGameStart, 
   };
 
   useEffect(() => {
-    if (!isOnlineMode || !isInRoom || !gameStarted) return;
+    if (!isOnlineMode || !isInRoom) return;
 
     const onError = (msg) => setAlertMessage(msg);
     const onPlayerJoined = () => setConnectedPlayers([...roomService.getConnectedPlayers()]);
