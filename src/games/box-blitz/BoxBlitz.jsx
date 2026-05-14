@@ -7,6 +7,7 @@ import OnlineRoomExample from "../../components/OnlineRoomExample";
 import PlayerNameInput from "../../components/PlayerNameInput";
 import GameRules from "../../components/GameRules";
 import CustomAlert from "../../components/CustomAlert";
+import VoiceChat from "../../components/VoiceChat";
 import MatchHistorySidebar from "../../components/MatchHistorySidebar";
 import roomService from "../../services/roomService";
 import btnStyles from "../../styles/Button.module.css";
@@ -250,14 +251,15 @@ export default function BoxBlitz({ onBack, initialRoomCode, onGameStart, isPlayM
       : `${playerNames[playerIndex]} drew a line`;
 
     if (nextRemaining <= 0) {
-      if (completedThisMove === 0) {
-        nextPlayer = (currentPlayerRef.current + 1) % numPlayers;
-      }
+      // Always alternate when this turn's moves are used up — even if the last edge completed a box
+      nextPlayer = (currentPlayerRef.current + 1) % numPlayers;
       nextTurn += 1;
       nextDice = null;
-      nextMessage = completedThisMove === 0
-        ? `${playerNames[nextPlayer]}'s turn`
-        : `${playerNames[playerIndex]} keeps turn`;
+      const boxNote =
+        completedThisMove > 0
+          ? `${playerNames[playerIndex]} completed ${completedThisMove} box${completedThisMove > 1 ? "es" : ""}! `
+          : "";
+      nextMessage = `${boxNote}${playerNames[nextPlayer]}'s turn`;
     }
 
     const end = finishGameIfNeeded(nextBoxes, nextScores);
@@ -378,10 +380,14 @@ export default function BoxBlitz({ onBack, initialRoomCode, onGameStart, isPlayM
       : `${playerNames[currentPlayerIndex]} drew a line`;
 
     if (nextRemaining <= 0) {
-      if (completed === 0) nextPlayer = (currentPlayerIndex + 1) % numPlayers;
+      nextPlayer = (currentPlayerIndex + 1) % numPlayers;
       nextTurn += 1;
       nextDice = null;
-      msg = completed === 0 ? `${playerNames[nextPlayer]}'s turn` : `${playerNames[currentPlayerIndex]} keeps turn`;
+      const boxNote =
+        completed > 0
+          ? `${playerNames[currentPlayerIndex]} completed ${completed} box${completed > 1 ? "es" : ""}! `
+          : "";
+      msg = `${boxNote}${playerNames[nextPlayer]}'s turn`;
     }
 
     const end = finishGameIfNeeded(nextBoxes, nextScores);
@@ -597,7 +603,7 @@ export default function BoxBlitz({ onBack, initialRoomCode, onGameStart, isPlayM
   const rules = [
     "Roll the dice to get how many lines you can draw this turn.",
     "Draw lines between adjacent dots only.",
-    "Complete a box to score and gain bonus move(s).",
+    "Complete a box to score a point. After your last line this turn, play always passes to the next player.",
     "When all boxes are filled, highest score wins.",
   ];
 
@@ -767,6 +773,9 @@ export default function BoxBlitz({ onBack, initialRoomCode, onGameStart, isPlayM
       fitViewport
     >
       {alertMessage && <CustomAlert message={alertMessage} onClose={() => setAlertMessage(null)} />}
+      {isOnlineMode && gameStarted && (
+        <VoiceChat enabled={isOnlineMode && gameStarted} myId={roomService.playerId} roomCode={roomCode} />
+      )}
       <div className={styles.playRoot}>
       <div className={styles.mainGameWrapper}>
         <div className={styles.gameContainer}>
